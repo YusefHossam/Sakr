@@ -22,7 +22,7 @@ export function Section({
         </div>
         {href && linkLabel && (
           <Link href={href} className="text-sm tracking-[0.2em] text-steel uppercase underline-offset-4 hover:text-chrome hover:underline">
-            {linkLabel} →
+            {linkLabel} <span className="inline-block rtl:-scale-x-100" aria-hidden="true">→</span>
           </Link>
         )}
       </div>

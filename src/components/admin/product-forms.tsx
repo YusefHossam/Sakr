@@ -35,15 +35,15 @@ export function ProductEditor({
       }}
     >
       <div className="grid gap-3 sm:grid-cols-3">
-        <label className="flex flex-col gap-1 text-xs text-dust">
+        <label className="flex flex-col gap-1 text-xs text-steel">
           {t("price")}
           <input type="number" min={1} value={state.price} onChange={(e) => setState({ ...state, price: Number(e.target.value) })} className={adminField} />
         </label>
-        <label className="flex flex-col gap-1 text-xs text-dust">
+        <label className="flex flex-col gap-1 text-xs text-steel">
           {t("cost")}
           <input type="number" min={0} value={state.costPrice} onChange={(e) => setState({ ...state, costPrice: Number(e.target.value) })} className={adminField} />
         </label>
-        <label className="flex flex-col gap-1 text-xs text-dust">
+        <label className="flex flex-col gap-1 text-xs text-steel">
           {t("promo")}
           <input type="number" min={0} max={90} value={state.promoPercent} onChange={(e) => setState({ ...state, promoPercent: Number(e.target.value) })} className={adminField} />
         </label>
@@ -56,7 +56,7 @@ export function ProductEditor({
         <legend className="mb-2 text-xs tracking-[0.2em] text-dust uppercase">{t("stock")}</legend>
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-6" dir="ltr">
           {state.variants.map((v, i) => (
-            <label key={`${v.size}-${v.color}`} className="flex flex-col gap-1 text-[11px] text-dust">
+            <label key={`${v.size}-${v.color}`} className="flex flex-col gap-1 text-xs text-steel">
               {v.size ?? "—"}{v.color ? ` · ${v.color}` : ""}
               <input
                 type="number"
@@ -115,19 +115,19 @@ export function NewProductForm() {
         });
       }}
     >
-      <label className="flex flex-col gap-1 text-xs text-dust">{t("titleField")}<input name="title" required className={adminField} /></label>
-      <label className="flex flex-col gap-1 text-xs text-dust">{t("brand")}<input name="brand" required placeholder="Dior" className={adminField} /></label>
-      <label className="flex flex-col gap-1 text-xs text-dust">
+      <label className="flex flex-col gap-1 text-xs text-steel">{t("titleField")}<input name="title" required className={adminField} /></label>
+      <label className="flex flex-col gap-1 text-xs text-steel">{t("brand")}<input name="brand" required placeholder="Dior" className={adminField} /></label>
+      <label className="flex flex-col gap-1 text-xs text-steel">
         {t("category")}
         <select name="category" className={adminField}>{CATEGORIES.map((c) => <option key={c} value={c}>{tc(c)}</option>)}</select>
       </label>
       <div className="grid grid-cols-2 gap-3">
-        <label className="flex flex-col gap-1 text-xs text-dust">{t("price")}<input name="price" type="number" min={1} required className={adminField} /></label>
-        <label className="flex flex-col gap-1 text-xs text-dust">{t("cost")}<input name="costPrice" type="number" min={0} className={adminField} /></label>
+        <label className="flex flex-col gap-1 text-xs text-steel">{t("price")}<input name="price" type="number" min={1} required className={adminField} /></label>
+        <label className="flex flex-col gap-1 text-xs text-steel">{t("cost")}<input name="costPrice" type="number" min={0} className={adminField} /></label>
       </div>
-      <label className="flex flex-col gap-1 text-xs text-dust sm:col-span-2">{t("images")}<textarea name="images" rows={3} required dir="ltr" className={`${adminField} py-2`} /></label>
-      <label className="flex flex-col gap-1 text-xs text-dust">{t("sizes")}<textarea name="sizes" rows={5} required dir="ltr" placeholder={"40=3\n41=5\n42=2"} className={`${adminField} py-2`} /></label>
-      <label className="flex flex-col gap-1 text-xs text-dust">{t("description")}<textarea name="description" rows={5} className={`${adminField} py-2`} /></label>
+      <label className="flex flex-col gap-1 text-xs text-steel sm:col-span-2">{t("images")}<textarea name="images" rows={3} required dir="ltr" className={`${adminField} py-2`} /></label>
+      <label className="flex flex-col gap-1 text-xs text-steel">{t("sizes")}<textarea name="sizes" rows={5} required dir="ltr" placeholder={"40=3\n41=5\n42=2"} className={`${adminField} py-2`} /></label>
+      <label className="flex flex-col gap-1 text-xs text-steel">{t("description")}<textarea name="description" rows={5} className={`${adminField} py-2`} /></label>
       {error && <p className="text-xs text-blood sm:col-span-2" role="alert">{error}</p>}
       <button type="submit" disabled={pending} className={`${adminButton} sm:col-span-2 sm:justify-self-start`}>{t("create")}</button>
     </form>

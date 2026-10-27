@@ -57,7 +57,7 @@
   },
   "home": {
     "heroTitle": "Born in the streets",
-    "heroText": "Chrome Hearts, Corteiz, Jordan, Off-White, Rick Owens and every colorway they ever dropped. One block. One crew.",
+    "heroText": "Chrome Hearts, Corteiz, Jordan, Off-White, Rick Owens and every colorway they ever dropped. One block. One crew.",
     "heroCta": "Enter the drop",
     "adsLabel": "Now running",
     "adLastPiecesTitle": "Last pieces. 85% off.",
@@ -646,6 +646,7 @@
     "spray": "Spray it",
     "onlyBuyers": "Only customers with an order can spray.",
     "login": "Log in to spray",
-    "done": "Tagged."
+    "done": "Tagged.",
+    "empty": "The wall is still clean. First order, first tag."
   }
 }

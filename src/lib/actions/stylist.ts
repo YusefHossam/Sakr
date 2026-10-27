@@ -57,8 +57,9 @@ async function candidates(prompt: string): Promise<Candidate[]> {
     variants: { $elemMatch: { stock: { $gt: 0 } } },
   })
     .sort({ publishedAt: -1 })
-    .limit(400)
-    .select("slug title brand brandSlug category price images variants")
+    .limit(300)
+    // Only what the picker needs: the payload crosses the network to Atlas on every request.
+    .select({ slug: 1, title: 1, brand: 1, brandSlug: 1, category: 1, price: 1, images: { $slice: 1 }, "variants.stock": 1 })
     .lean();
   return docs.flatMap((d) => {
     const slot = (Object.keys(SLOTS) as (keyof typeof SLOTS)[]).find((k) => (SLOTS[k] as readonly string[]).includes(d.category));

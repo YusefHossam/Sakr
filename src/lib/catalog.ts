@@ -104,7 +104,7 @@ export async function getNewIn(limit = 12): Promise<ProductCard[]> {
   await connectDB();
   // Interleave brands so one brand doesn't fill the whole row.
   const docs = await Product.aggregate<CardSource>([
-    { $match: { active: true, "images.0": { $exists: true } } },
+    { $match: { active: true, "images.0": { $exists: true }, subcategory: { $ne: "mystery" } } },
     { $sort: { publishedAt: -1 } },
     { $group: { _id: "$brandSlug", items: { $push: "$$ROOT" } } },
     { $project: { items: { $slice: ["$items", 2] } } },

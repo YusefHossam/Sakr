@@ -28,6 +28,11 @@ export function GraffitiWall({ tags, loggedIn }: { tags: Tag[]; loggedIn: boolea
         }}
       >
         <div className="smoke-layer opacity-40" aria-hidden="true" />
+        {tags.length === 0 && (
+          <p className="absolute inset-0 grid place-items-center px-6 text-center font-[family-name:var(--font-marker)] text-[clamp(1.2rem,3vw,2.4rem)] text-dust -rotate-3">
+            {t("empty")}
+          </p>
+        )}
         {tags.map((tag) => (
           <span
             key={tag.id}

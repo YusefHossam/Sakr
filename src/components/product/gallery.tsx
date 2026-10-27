@@ -6,9 +6,9 @@ export function Gallery({ images, title }: { images: string[]; title: string }) 
   const [active, setActive] = useState(0);
   if (!images.length) return <div className="aspect-square bg-tile" />;
   return (
-    <div className="flex min-w-0 flex-col-reverse gap-3 md:flex-row">
+    <div className="flex min-w-0 flex-col-reverse gap-3 md:flex-row md:items-start">
       {images.length > 1 && (
-        <ul className="flex gap-2 overflow-x-auto md:max-h-[640px] md:w-20 md:flex-col md:overflow-y-auto" aria-label={title}>
+        <ul className="flex gap-2 overflow-x-auto md:max-h-[560px] md:w-20 md:shrink-0 md:flex-col md:overflow-y-auto" aria-label={title}>
           {images.map((src, i) => (
             <li key={src} className="shrink-0">
               <button

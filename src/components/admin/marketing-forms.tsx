@@ -28,21 +28,21 @@ export function PromoForm() {
         });
       }}
     >
-      <label className="flex flex-col gap-1 text-xs text-dust">
+      <label className="flex flex-col gap-1 text-xs text-steel">
         {t("promoScope")}
         <select value={scope} onChange={(e) => setScope(e.target.value as typeof scope)} className={adminField}>
           {(["site", "brand", "category", "product"] as const).map((s) => <option key={s} value={s}>{t(`scopes.${s}`)}</option>)}
         </select>
       </label>
-      <label className="flex flex-col gap-1 text-xs text-dust">
+      <label className="flex flex-col gap-1 text-xs text-steel">
         {t("promoKey")}
         <input name="key" disabled={scope === "site"} placeholder={scope === "brand" ? "nike" : scope === "category" ? "hoodies" : scope === "product" ? "slug" : ""} dir="ltr" className={adminField} />
       </label>
-      <label className="flex flex-col gap-1 text-xs text-dust">
+      <label className="flex flex-col gap-1 text-xs text-steel">
         {t("percent")}
         <input name="percent" type="number" min={1} max={90} required className={adminField} />
       </label>
-      <label className="flex flex-col gap-1 text-xs text-dust">
+      <label className="flex flex-col gap-1 text-xs text-steel">
         {t("endsAt")}
         <input name="endsAt" type="date" className={adminField} />
       </label>
@@ -81,12 +81,12 @@ export function CouponForm() {
         });
       }}
     >
-      <label className="flex flex-col gap-1 text-xs text-dust">{t("code")}<input name="code" required pattern="[A-Za-z0-9-]{3,30}" placeholder="SAKR10" dir="ltr" className={`${adminField} uppercase`} /></label>
-      <label className="flex flex-col gap-1 text-xs text-dust">{t("percent")}<input name="percent" type="number" min={1} max={90} required className={adminField} /></label>
-      <label className="flex flex-col gap-1 text-xs text-dust">{t("maxUses")}<input name="maxUses" type="number" min={0} defaultValue={0} className={adminField} /></label>
-      <label className="flex flex-col gap-1 text-xs text-dust">{t("endsAt")}<input name="expiresAt" type="date" className={adminField} /></label>
-      <label className="flex flex-col gap-1 text-xs text-dust">{t("influencer")}<input name="influencer" className={adminField} /></label>
-      <label className="flex flex-col gap-1 text-xs text-dust">{t("forCustomer")}<input name="customerEmail" type="email" dir="ltr" className={adminField} /></label>
+      <label className="flex flex-col gap-1 text-xs text-steel">{t("code")}<input name="code" required pattern="[A-Za-z0-9-]{3,30}" placeholder="SAKR10" dir="ltr" className={`${adminField} uppercase`} /></label>
+      <label className="flex flex-col gap-1 text-xs text-steel">{t("percent")}<input name="percent" type="number" min={1} max={90} required className={adminField} /></label>
+      <label className="flex flex-col gap-1 text-xs text-steel">{t("maxUses")}<input name="maxUses" type="number" min={0} defaultValue={0} className={adminField} /></label>
+      <label className="flex flex-col gap-1 text-xs text-steel">{t("endsAt")}<input name="expiresAt" type="date" className={adminField} /></label>
+      <label className="flex flex-col gap-1 text-xs text-steel">{t("influencer")}<input name="influencer" className={adminField} /></label>
+      <label className="flex flex-col gap-1 text-xs text-steel">{t("forCustomer")}<input name="customerEmail" type="email" dir="ltr" className={adminField} /></label>
       {error && <p className="text-xs text-blood sm:col-span-3">{error}</p>}
       <button type="submit" disabled={pending} className={`${adminButton} sm:col-span-3 sm:justify-self-start`}>{t("addCoupon")}</button>
     </form>

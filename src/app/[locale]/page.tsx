@@ -86,9 +86,9 @@ export default async function HomePage() {
       )}
 
       <Section title={t("brandsTitle")}>
-        <ul className="grid grid-cols-2 gap-px bg-ash sm:grid-cols-3 lg:grid-cols-6">
+        <ul className="grid grid-cols-2 border-s border-t border-ash sm:grid-cols-3 lg:grid-cols-6">
           {nav.brands.map((b) => (
-            <li key={b.slug} className="bg-ink">
+            <li key={b.slug} className="border-e border-b border-ash">
               <Link
                 href={`/brands/${b.slug}`}
                 className="glitch-hover flex aspect-[4/3] flex-col items-center justify-center gap-1 p-4 text-center transition-colors hover:bg-smoke"

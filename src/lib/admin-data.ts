@@ -62,13 +62,27 @@ export type ReportData = {
   byBucket: { label: string; orders: number; revenue: number }[];
 };
 
-/** Everything a monthly/yearly PDF needs. */
+export const REPORT_TZ = "Africa/Cairo";
+
+/** Midnight in Cairo on that day, as an instant. Egypt has DST, so the offset comes from Intl. */
+function cairoMidnight(year: number, monthIndex: number, day = 1): Date {
+  const guess = Date.UTC(year, monthIndex, day);
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: REPORT_TZ, hourCycle: "h23", year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric",
+  }).formatToParts(guess);
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value);
+  const offset = Date.UTC(get("year"), get("month") - 1, get("day"), get("hour"), get("minute")) - guess;
+  return new Date(guess - offset);
+}
+
+/** Everything a monthly/yearly PDF needs. Periods and buckets follow Cairo time. */
 export async function getReport(kind: "month" | "year", year: number, month: number): Promise<ReportData> {
   await connectDB();
-  const from = kind === "month" ? new Date(year, month - 1, 1) : new Date(year, 0, 1);
-  const to = kind === "month" ? new Date(year, month, 1) : new Date(year + 1, 0, 1);
+  const from = kind === "month" ? cairoMidnight(year, month - 1) : cairoMidnight(year, 0);
+  const to = kind === "month" ? cairoMidnight(year, month) : cairoMidnight(year + 1, 0);
   const match = { ...SOLD, createdAt: { $gte: from, $lt: to } };
-  const bucket = kind === "month" ? { $dayOfMonth: "$createdAt" } : { $month: "$createdAt" };
+  const local = { date: "$createdAt", timezone: REPORT_TZ };
+  const bucket = kind === "month" ? { $dayOfMonth: local } : { $month: local };
 
   const [totals, extra, byPayment, topProducts, topBrands, coupons, byBucket] = await Promise.all([
     salesBetween(from, to),
@@ -106,6 +120,9 @@ export async function getReport(kind: "month" | "year", year: number, month: num
   ]);
 
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  // One slot per day/month, empty ones included, so the chart reads as a timeline.
+  const slots = kind === "month" ? new Date(Date.UTC(year, month, 0)).getUTCDate() : 12;
+  const found = new Map(byBucket.map((r) => [r._id, r]));
   return {
     title: kind === "month" ? `${MONTHS[month - 1]} ${year}` : `${year}`,
     from,
@@ -117,7 +134,11 @@ export async function getReport(kind: "month" | "year", year: number, month: num
     topProducts: topProducts.map((r) => ({ title: r._id, brand: r.brand, qty: r.qty, revenue: r.revenue })),
     topBrands: topBrands.map((r) => ({ brand: r._id, qty: r.qty, revenue: r.revenue })),
     coupons: coupons.map((r) => ({ code: r._id, orders: r.orders, discount: r.discount })),
-    byBucket: byBucket.map((r) => ({ label: kind === "month" ? String(r._id) : MONTHS[r._id - 1], orders: r.orders, revenue: r.revenue })),
+    byBucket: Array.from({ length: slots }, (_, i) => ({
+      label: kind === "month" ? String(i + 1) : MONTHS[i],
+      orders: found.get(i + 1)?.orders ?? 0,
+      revenue: found.get(i + 1)?.revenue ?? 0,
+    })),
   };
 }
 

@@ -47,7 +47,7 @@ export function ActionButton({
 export function Stat({ label, value, hint, hot = false }: { label: string; value: string | number; hint?: string; hot?: boolean }) {
   return (
     <div className={`flex flex-col gap-1 border p-4 ${hot ? "border-blood/60" : "border-ash"}`}>
-      <span className="text-[11px] tracking-[0.2em] text-dust uppercase">{label}</span>
+      <span className="text-xs tracking-[0.15em] text-steel uppercase">{label}</span>
       <span className={`font-display text-3xl ${hot ? "text-blood" : "text-chrome"}`} dir="ltr">{value}</span>
       {hint && <span className="text-xs text-steel">{hint}</span>}
     </div>

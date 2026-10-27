@@ -49,29 +49,29 @@ export function SettingsForm({ initial }: { initial: Initial }) {
           <input type="checkbox" checked={s.dropLocked} onChange={(e) => setS({ ...s, dropLocked: e.target.checked })} className="size-5 accent-[#9b111e]" />
           {t("locked")}
         </label>
-        <label className="flex flex-col gap-1 text-xs text-dust">{t("dropName")}<input value={s.dropName} onChange={str("dropName")} className={adminField} /></label>
-        <label className="flex flex-col gap-1 text-xs text-dust">{t("password")}<input value={s.dropPassword} onChange={str("dropPassword")} dir="ltr" className={adminField} /></label>
-        <label className="flex flex-col gap-1 text-xs text-dust">{t("opensAt")}<input type="datetime-local" value={s.dropOpensAt} onChange={str("dropOpensAt")} className={adminField} /></label>
-        <label className="flex flex-col gap-1 text-xs text-dust">{t("vipHours")}<input type="number" min={0} max={72} value={s.vipEarlyHours} onChange={num("vipEarlyHours")} className={adminField} /></label>
+        <label className="flex flex-col gap-1 text-xs text-steel">{t("dropName")}<input value={s.dropName} onChange={str("dropName")} className={adminField} /></label>
+        <label className="flex flex-col gap-1 text-xs text-steel">{t("password")}<input value={s.dropPassword} onChange={str("dropPassword")} dir="ltr" className={adminField} /></label>
+        <label className="flex flex-col gap-1 text-xs text-steel">{t("opensAt")}<input type="datetime-local" value={s.dropOpensAt} onChange={str("dropOpensAt")} className={adminField} /></label>
+        <label className="flex flex-col gap-1 text-xs text-steel">{t("vipHours")}<input type="number" min={0} max={72} value={s.vipEarlyHours} onChange={num("vipEarlyHours")} className={adminField} /></label>
       </fieldset>
 
       <fieldset className="grid gap-4 sm:grid-cols-2">
         <legend className="street-heading mb-3 text-2xl">{t("payments")}</legend>
-        <label className="flex flex-col gap-1 text-xs text-dust">{t("instapay")}<input value={s.transferInstapay} onChange={str("transferInstapay")} dir="ltr" className={adminField} /></label>
-        <label className="flex flex-col gap-1 text-xs text-dust">{t("wallet")}<input value={s.transferWallet} onChange={str("transferWallet")} dir="ltr" className={adminField} /></label>
+        <label className="flex flex-col gap-1 text-xs text-steel">{t("instapay")}<input value={s.transferInstapay} onChange={str("transferInstapay")} dir="ltr" className={adminField} /></label>
+        <label className="flex flex-col gap-1 text-xs text-steel">{t("wallet")}<input value={s.transferWallet} onChange={str("transferWallet")} dir="ltr" className={adminField} /></label>
       </fieldset>
 
       <fieldset className="grid gap-4 sm:grid-cols-3">
         <legend className="street-heading mb-3 text-2xl">{t("rules")}</legend>
-        <label className="flex flex-col gap-1 text-xs text-dust">{t("bigOrderThreshold")}<input type="number" min={0} value={s.bigOrderThreshold} onChange={num("bigOrderThreshold")} className={adminField} /></label>
-        <label className="flex flex-col gap-1 text-xs text-dust">{t("bigOrderPercent")}<input type="number" min={1} max={90} value={s.bigOrderPercent} onChange={num("bigOrderPercent")} className={adminField} /></label>
-        <label className="flex flex-col gap-1 text-xs text-dust">{t("apologyPercent")}<input type="number" min={1} max={90} value={s.apologyPercent} onChange={num("apologyPercent")} className={adminField} /></label>
+        <label className="flex flex-col gap-1 text-xs text-steel">{t("bigOrderThreshold")}<input type="number" min={0} value={s.bigOrderThreshold} onChange={num("bigOrderThreshold")} className={adminField} /></label>
+        <label className="flex flex-col gap-1 text-xs text-steel">{t("bigOrderPercent")}<input type="number" min={1} max={90} value={s.bigOrderPercent} onChange={num("bigOrderPercent")} className={adminField} /></label>
+        <label className="flex flex-col gap-1 text-xs text-steel">{t("apologyPercent")}<input type="number" min={1} max={90} value={s.apologyPercent} onChange={num("apologyPercent")} className={adminField} /></label>
       </fieldset>
 
       <fieldset className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <legend className="street-heading mb-3 text-2xl">{t("shipping")}</legend>
         {Object.entries(GOVERNORATES).map(([key, g]) => (
-          <label key={key} className="flex flex-col gap-1 text-xs text-dust">
+          <label key={key} className="flex flex-col gap-1 text-xs text-steel">
             {locale === "ar" ? g.ar : g.en}
             <input
               type="number"

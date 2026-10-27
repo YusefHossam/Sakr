@@ -55,7 +55,7 @@ async function OrdersTable({ searchParams }: Pick<PageProps<"/[locale]/admin/ord
                   <td className="px-2 py-3"><Link href={`/admin/orders/${o.number}`} className="font-display tracking-widest text-bone" dir="ltr">{o.number}</Link></td>
                   <td className="px-2 py-3 text-steel">{o.contact?.name}</td>
                   <td className="px-2 py-3 text-bone" dir="ltr">{o.total.toLocaleString("en")}</td>
-                  <td className={`px-2 py-3 ${o.payment?.status === "awaiting_review" ? "text-blood" : "text-steel"}`}>{o.payment?.method} · {tp(o.payment?.status ?? "pending")}</td>
+                  <td className={`px-2 py-3 ${o.payment?.status === "awaiting_review" ? "text-blood" : "text-steel"}`}>{o.payment?.method && o.payment.method !== o.payment.status && <span className="uppercase" dir="ltr">{o.payment.method} · </span>}{tp(o.payment?.status ?? "pending")}</td>
                   <td className="px-2 py-3 text-steel">{ts(o.status)}</td>
                   <td className="px-2 py-3 text-dust" dir="ltr">{new Date(o.createdAt).toISOString().slice(0, 10)}</td>
                   <td className="px-2 py-3 text-dust" dir="ltr">{new Date(o.deliveryDate).toISOString().slice(0, 10)}</td>

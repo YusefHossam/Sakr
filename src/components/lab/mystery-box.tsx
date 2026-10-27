@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Price } from "@/components/product/price";
+import { useRegion } from "@/components/providers/region-provider";
 import { useRouter } from "@/i18n/navigation";
 import { addToCart } from "@/lib/actions/cart";
 
@@ -10,6 +11,7 @@ type Tier = { slug: string; price: number; worth: number };
 
 export function MysteryBox({ tiers }: { tiers: Tier[] }) {
   const t = useTranslations("mystery");
+  const { format } = useRegion();
   const router = useRouter();
   const [shaking, setShaking] = useState<string | null>(null);
   const [opened, setOpened] = useState<string | null>(null);
@@ -44,7 +46,7 @@ export function MysteryBox({ tiers }: { tiers: Tier[] }) {
           </button>
           <p className="street-heading text-3xl" dir="ltr">{t("tier", { price: tier.price.toLocaleString("en") })}</p>
           <Price price={tier.price} size="lg" />
-          <p className="text-xs text-blood">{t("worth", { price: `${tier.worth.toLocaleString("en")} EGP` })}</p>
+          <p className="text-xs text-blood">{t("worth", { price: format(tier.worth) })}</p>
           <button
             type="button"
             disabled={pending}

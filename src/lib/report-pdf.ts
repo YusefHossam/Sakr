@@ -3,14 +3,14 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import fontkit from "@pdf-lib/fontkit";
 import { PDFDocument, rgb, StandardFonts, type PDFFont, type PDFPage } from "pdf-lib";
-import type { ReportData } from "./admin-data";
+import { REPORT_TZ, type ReportData } from "./admin-data";
 
 const INK = rgb(0.04, 0.04, 0.04);
 const STEEL = rgb(0.42, 0.42, 0.42);
 const RULE = rgb(0.82, 0.82, 0.82);
 const BLOOD = rgb(0.61, 0.07, 0.12);
 const egp = (n: number) => `${Math.round(n).toLocaleString("en")} EGP`;
-// Helvetica only covers WinAnsi; anything else (Arabic, arrows, CJK) would throw, so swap it out.
+// Helvetica only covers WinAnsi; anything else (Arabic, arrows, CJK) would throw, so swap those characters out.
 const ansi = (s: string) => s.replace(/[^ -~ -ÿ‘’“”–—•…]/g, "?");
 
 /** Sales report PDF (A4, English: pdf-lib can't shape Arabic) with the SAKR gothic logo (BR-64). */
@@ -31,7 +31,8 @@ export async function buildReportPdf(r: ReportData, kind: "month" | "year"): Pro
   const header = (p: PDFPage) => {
     p.drawRectangle({ x: 0, y: 842 - 110, width: 595, height: 110, color: INK });
     p.drawText("Sakr", { x: M, y: 842 - 78, size: 54, font: gothic, color: rgb(0.85, 0.85, 0.85) });
-    p.drawText(kind === "month" ? "MONTHLY SALES REPORT" : "YEARLY SALES REPORT", { x: 595 - M - bold.widthOfTextAtSize("MONTHLY SALES REPORT", 10), y: 842 - 52, size: 10, font: bold, color: rgb(0.7, 0.7, 0.7) });
+    const label = kind === "month" ? "MONTHLY SALES REPORT" : "YEARLY SALES REPORT";
+    p.drawText(label, { x: 595 - M - bold.widthOfTextAtSize(label, 10), y: 842 - 52, size: 10, font: bold, color: rgb(0.7, 0.7, 0.7) });
     p.drawText(r.title, { x: 595 - M - bold.widthOfTextAtSize(r.title, 20), y: 842 - 80, size: 20, font: bold, color: rgb(0.95, 0.95, 0.95) });
     y = 842 - 140;
   };
@@ -75,7 +76,9 @@ export async function buildReportPdf(r: ReportData, kind: "month" | "year"): Pro
   };
 
   header(page);
-  text(`${r.from.toISOString().slice(0, 10)} to ${new Date(r.to.getTime() - 1).toISOString().slice(0, 10)}   ·   generated ${new Date().toISOString().slice(0, 16).replace("T", " ")}`, M, 9, sans, STEEL);
+  const day = new Intl.DateTimeFormat("en-CA", { timeZone: REPORT_TZ, year: "numeric", month: "2-digit", day: "2-digit" });
+  const stamp = new Intl.DateTimeFormat("en-CA", { timeZone: REPORT_TZ, dateStyle: "short", timeStyle: "short", hourCycle: "h23" });
+  text(`${day.format(r.from)} to ${day.format(new Date(r.to.getTime() - 1))}   ·   generated ${stamp.format(new Date())} Cairo`, M, 9, sans, STEEL);
   y -= 30;
 
   // Headline numbers.
@@ -106,6 +109,7 @@ export async function buildReportPdf(r: ReportData, kind: "month" | "year"): Pro
     page.drawRectangle({ x: M + i * barW + 1, y: y - chartH, width: Math.max(barW - 2, 1), height: Math.max(h, 0.5), color: INK });
     if (r.byBucket.length <= 12 || i % 3 === 0) page.drawText(b.label, { x: M + i * barW + 1, y: y - chartH - 10, size: 6, font: sans, color: STEEL });
   });
+  page.drawLine({ start: { x: M, y: y - chartH }, end: { x: M + W, y: y - chartH }, thickness: 0.6, color: RULE });
   y -= chartH + 26;
 
   heading("Best sellers");

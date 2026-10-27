@@ -57,7 +57,7 @@
   },
   "home": {
     "heroTitle": "اتولدنا في الشارع",
-    "heroText": "Chrome Hearts وCorteiz وJordan وOff-White وRick Owens، وكل لون نزل منهم. شارع واحد. كرو واحدة.",
+    "heroText": "Chrome Hearts وCorteiz وJordan وOff-White وRick Owens، وكل لون نزل منهم. شارع واحد. كرو واحدة.",
     "heroCta": "ادخل الدروب",
     "adsLabel": "شغّال دلوقتي",
     "adLastPiecesTitle": "آخر القطع. خصم ٨٥٪.",
@@ -646,6 +646,7 @@
     "spray": "ارسم",
     "onlyBuyers": "الرسم للي عنده طلب بس.",
     "login": "سجّل دخول عشان ترسم",
-    "done": "اترسم."
+    "done": "اترسم.",
+    "empty": "الحيطة لسه نضيفة. أول أوردر = أول تاج."
   }
 }
