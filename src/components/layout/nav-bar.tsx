@@ -26,7 +26,7 @@ const ICONS = {
   chevron: "m6 9 6 6 6-6",
 };
 
-export function NavBar({ categories, brands }: { categories: NavCategory[]; brands: NavBrand[] }) {
+export function NavBar({ categories, brands, cartBadge }: { categories: NavCategory[]; brands: NavBrand[]; cartBadge?: React.ReactNode }) {
   const t = useTranslations();
   const [open, setOpen] = useState<MenuKey | null>(null);
   const [drawer, setDrawer] = useState(false);
@@ -83,7 +83,7 @@ export function NavBar({ categories, brands }: { categories: NavCategory[]; bran
           </Link>
           <Link href="/cart" aria-label={t("header.cart")} className="relative text-steel hover:text-chrome">
             <Icon d={ICONS.bag} />
-            <span className="absolute -end-2 -top-1.5 grid size-4 place-items-center rounded-full bg-bone text-[10px] font-bold text-ink">0</span>
+            {cartBadge}
           </Link>
         </div>
       </div>

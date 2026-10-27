@@ -1,0 +1,29 @@
+import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose";
+
+// One document holding everything the admin can tune.
+const settingsSchema = new Schema(
+  {
+    key: { type: String, default: "store", unique: true },
+    lastPiecesMax: { type: Number, default: 3 },
+    lastPiecesDiscount: { type: Number, default: 0.85 },
+    bigOrderThreshold: { type: Number, default: 10_000 },
+    bigOrderPercent: { type: Number, default: 20 },
+    apologyPercent: { type: Number, default: 10 },
+    shippingEgypt: { type: Map, of: Number, default: {} }, // governorate → EGP
+    shippingIntl: { type: Map, of: Number, default: {} }, // country code → EGP
+    transferInstapay: { type: String, default: "sakr@instapay" },
+    transferWallet: { type: String, default: "01000000000" },
+    drop: {
+      locked: { type: Boolean, default: false },
+      password: { type: String, default: "" },
+      name: { type: String, default: "DROP 01" },
+      opensAt: { type: Date, default: null },
+      vipEarlyHours: { type: Number, default: 3 },
+    },
+  },
+  { timestamps: true },
+);
+
+export type SettingsDoc = InferSchemaType<typeof settingsSchema>;
+export const Settings: Model<SettingsDoc> =
+  (mongoose.models.Settings as Model<SettingsDoc>) ?? mongoose.model<SettingsDoc>("Settings", settingsSchema);
