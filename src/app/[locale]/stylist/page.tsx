@@ -3,6 +3,9 @@ import { getTranslations } from "next-intl/server";
 import { Stylist } from "@/components/lab/stylist";
 import { PageHeader } from "@/components/shop/page-header";
 
+// The stylist action may wait on the free Gemini tier (up to ~30s) before falling back to house rules.
+export const maxDuration = 60;
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("stylist");
   return { title: t("title") };

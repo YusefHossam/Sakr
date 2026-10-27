@@ -95,6 +95,12 @@ function ruleOutfits(pool: Candidate[], budget: number | null): Outfit[] {
 
 const promptSchema = z.string().trim().min(2).max(200);
 
+// Free-tier models, tried in order. Busy ones answer 503 within a second or two, so the chain is cheap.
+// "-latest" aliases follow Google's current models (dated names get retired for new keys).
+const GEMINI_MODELS = [...new Set([process.env.GEMINI_MODEL || "gemini-flash-latest", "gemini-flash-latest", "gemini-3.5-flash", "gemini-flash-lite-latest"])];
+const AI_BUDGET_MS = 30_000;
+const AI_TRY_MS = 15_000;
+
 export async function styleMe(input: string, locale: "ar" | "en"): Promise<StylistResult> {
   const parsed = promptSchema.safeParse(input);
   if (!parsed.success) return { ok: false };
@@ -106,34 +112,45 @@ export async function styleMe(input: string, locale: "ar" | "en"): Promise<Styli
   if (key && pool.length) {
     // Gemini (free tier) picks from a short, in-stock shortlist; we validate every slug and the budget.
     const shortlist = pool.sort((a, b) => b.score - a.score).slice(0, 90);
-    try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          contents: [
+    const body = JSON.stringify({
+      contents: [
+        {
+          role: "user",
+          parts: [
             {
-              role: "user",
-              parts: [
-                {
-                  text: `You are SAKR's streetwear stylist in Cairo. Build up to 3 outfits for this request: "${prompt}". ${budget ? `Each outfit's total must be at most ${budget} EGP.` : ""}
+              text: `You are SAKR's streetwear stylist in Cairo. Build up to 3 outfits for this request: "${prompt}". ${budget ? `Each outfit's total must be at most ${budget} EGP.` : ""}
 Use ONLY items from this list (slug | brand | category | price EGP | title):
 ${shortlist.map((c) => `${c.slug} | ${c.brand} | ${c.category} | ${c.price} | ${c.title}`).join("\n")}
 Each outfit: 1 top, 1 bottom, 1 pair of shoes, optionally 1 jacket and 1 accessory. Write "name" (3-5 words) and "why" (one short line) in ${locale === "ar" ? "Egyptian Arabic" : "English"}.
 Reply as JSON: {"outfits":[{"name":"","why":"","slugs":["..."]}]}`,
-                },
-              ],
             },
           ],
-          generationConfig: { responseMimeType: "application/json", temperature: 0.9 },
-        }),
-        signal: AbortSignal.timeout(25_000),
-      });
-      if (res.ok) {
-        const data = (await res.json()) as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+        },
+      ],
+      // Low thinking: picking from a list does not need long reasoning, and it answers much faster.
+      generationConfig: { responseMimeType: "application/json", temperature: 0.9, thinkingConfig: { thinkingLevel: "low" } },
+    });
+    const bySlug = new Map(shortlist.map((c) => [c.slug, c]));
+    // The free tier often answers 503/429 under load: move to the next model, all within one time budget,
+    // and cap each try so one slow queue can't eat the whole budget.
+    const deadline = Date.now() + AI_BUDGET_MS;
+    for (const model of GEMINI_MODELS) {
+      const left = deadline - Date.now();
+      if (left < 3_000) break;
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+          method: "POST",
+          headers: { "content-type": "application/json", "x-goog-api-key": key },
+          body,
+          signal: AbortSignal.timeout(Math.min(left, AI_TRY_MS)),
+        });
+        if (!res.ok) {
+          console.warn(`[stylist] ${model} answered ${res.status}`);
+          continue;
+        }
+        const data = (await res.json()) as { candidates?: { content?: { parts?: { text?: string; thought?: boolean }[] } }[] };
+        const text = (data.candidates?.[0]?.content?.parts ?? []).filter((p) => !p.thought).map((p) => p.text ?? "").join("");
         const json = JSON.parse(text) as { outfits?: { name?: string; why?: string; slugs?: string[] }[] };
-        const bySlug = new Map(shortlist.map((c) => [c.slug, c]));
         const outfits = (json.outfits ?? []).flatMap((o) => {
           const items = (o.slugs ?? []).map((s) => bySlug.get(s)).filter((c): c is Candidate => !!c);
           const total = items.reduce((s, i) => s + i.price, 0);
@@ -141,9 +158,9 @@ Reply as JSON: {"outfits":[{"name":"","why":"","slugs":["..."]}]}`,
           return [{ name: String(o.name ?? "").slice(0, 60), why: String(o.why ?? "").slice(0, 160), items, total }];
         });
         if (outfits.length) return { ok: true, outfits: outfits.map(strip), source: "gemini" };
+      } catch (error) {
+        console.warn(`[stylist] ${model} failed: ${error instanceof Error ? error.name : String(error)}`);
       }
-    } catch (error) {
-      console.warn("[stylist] Gemini failed, using house rules:", error);
     }
   }
   return { ok: true, outfits: ruleOutfits(pool, budget).map(strip), source: "rules" };
