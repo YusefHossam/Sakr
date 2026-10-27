@@ -316,5 +316,57 @@
     "items": "المنتجات",
     "track": "تتبع الطلب",
     "viewOrders": "طلباتي"
+  },
+  "account": {
+    "title": "حسابي",
+    "hello": "إيه الأخبار يا {name}",
+    "level": "المستوى",
+    "levels": {
+      "rookie": "Rookie",
+      "og": "OG",
+      "legend": "Legend"
+    },
+    "nextLevel": "فاضلك {amount} جنيه وتوصل {level}",
+    "maxLevel": "إنت في القمة. الدروبز بتفتحلك قبل الناس بـ {hours} ساعات.",
+    "vipPerk": "OG وLegend الدروب بيفتحلهم قبل الناس بـ {hours} ساعات، ولهم أكواد خاصة.",
+    "points": "النقاط",
+    "orders": "طلباتي",
+    "noOrders": "لسه مفيش طلبات.",
+    "coupons": "كوبوناتي",
+    "noCoupons": "مفيش كوبونات لسه.",
+    "expires": "بينتهي {date}",
+    "sizePassport": "باسبور المقاسات",
+    "sizePassportText": "سجّل مقاساتك مرة واحدة — وكل منتج هيوريك مقاسك.",
+    "top": "التوب",
+    "bottom": "البنطلون",
+    "shoe": "الشوز (أمريكي)",
+    "height": "الطول (سم)",
+    "weight": "الوزن (كجم)",
+    "save": "احفظ",
+    "saved": "اتحفظ",
+    "exchange": "اطلب استبدال",
+    "exchangeTitle": "طلب استبدال",
+    "exchangeRule": "خلال ١٤ يوم من الاستلام، من غير ما يتلبس والتيكت عليه. البوكسرات والشرابات مبتتبدلش.",
+    "exchangeReason": "السبب",
+    "reasons": {
+      "size": "المقاس مش مظبوط",
+      "defect": "مشكلة في المنتج",
+      "wrong-item": "وصلني منتج غلط"
+    },
+    "exchangeConfirm": "بأكد إنه ما اتلبسش والتيكت لسه عليه",
+    "exchangeNote": "تفاصيل (اختياري)",
+    "exchangeSend": "ابعت الطلب",
+    "exchangeSent": "الطلب وصل. هنكلمك.",
+    "exchangeClosed": "مدة الاستبدال خلصت",
+    "exchangeOpen": "طلبت استبدال",
+    "logout": "خروج"
+  },
+  "track": {
+    "title": "تتبع طلبك",
+    "text": "اكتب رقم الطلب والموبايل اللي طلبت بيه.",
+    "number": "رقم الطلب",
+    "phone": "الموبايل",
+    "submit": "تتبع",
+    "notFound": "مفيش طلب بالرقم والموبايل دول."
   }
 }

@@ -316,5 +316,57 @@
     "items": "Items",
     "track": "Track order",
     "viewOrders": "My orders"
+  },
+  "account": {
+    "title": "My account",
+    "hello": "What's good, {name}",
+    "level": "Level",
+    "levels": {
+      "rookie": "Rookie",
+      "og": "OG",
+      "legend": "Legend"
+    },
+    "nextLevel": "{amount} EGP more to reach {level}",
+    "maxLevel": "You're at the top. Drops open for you {hours} hours early.",
+    "vipPerk": "OG and Legend get every drop {hours} hours early plus private codes.",
+    "points": "Points",
+    "orders": "My orders",
+    "noOrders": "No orders yet.",
+    "coupons": "My coupons",
+    "noCoupons": "No coupons yet.",
+    "expires": "Expires {date}",
+    "sizePassport": "Size passport",
+    "sizePassportText": "Save your sizes once — every product page shows yours.",
+    "top": "Tops",
+    "bottom": "Bottoms",
+    "shoe": "Shoes (US)",
+    "height": "Height (cm)",
+    "weight": "Weight (kg)",
+    "save": "Save",
+    "saved": "Saved",
+    "exchange": "Request exchange",
+    "exchangeTitle": "Exchange request",
+    "exchangeRule": "Within 14 days of delivery, unworn and with tags. Boxers and socks can't be exchanged.",
+    "exchangeReason": "Reason",
+    "reasons": {
+      "size": "Wrong size",
+      "defect": "Problem with the item",
+      "wrong-item": "Got the wrong item"
+    },
+    "exchangeConfirm": "I confirm it's unworn and the tags are on",
+    "exchangeNote": "Details (optional)",
+    "exchangeSend": "Send request",
+    "exchangeSent": "Request sent. We'll contact you.",
+    "exchangeClosed": "Exchange window closed",
+    "exchangeOpen": "Exchange requested",
+    "logout": "Log out"
+  },
+  "track": {
+    "title": "Track your order",
+    "text": "Enter your order number and the phone you used at checkout.",
+    "number": "Order number",
+    "phone": "Phone",
+    "submit": "Track",
+    "notFound": "No order matches that number and phone."
   }
 }

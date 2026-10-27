@@ -61,6 +61,12 @@ export async function findOrderByPhone(number: string, phone: string): Promise<O
   return match ? toSummary(o) : null;
 }
 
+/** Whether a delivered order is still inside the exchange window. */
+export function exchangeOpen(o: OrderSummary, days: number): boolean {
+  const deliveredAt = o.history.findLast((h) => h.status === "delivered")?.at;
+  return !!deliveredAt && Date.now() - Date.parse(deliveredAt) <= days * 864e5;
+}
+
 export async function getOrdersForUser(userId: string): Promise<OrderSummary[]> {
   await connectDB();
   const docs = await Order.find({ userId }).sort({ createdAt: -1 }).limit(50).lean<(OrderDoc & { createdAt: Date })[]>();
