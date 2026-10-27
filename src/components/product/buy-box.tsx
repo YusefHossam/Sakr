@@ -13,7 +13,7 @@ type Variant = ProductDetail["variants"][number];
 const CHANNELS = ["whatsapp", "snapchat", "instagram"] as const;
 
 /** Color, size and quantity pickers, live stock warnings, add-to-cart and restock alerts. */
-export function BuyBox({ product }: { product: Pick<ProductDetail, "slug" | "price" | "variants"> }) {
+export function BuyBox({ product }: { product: Pick<ProductDetail, "slug" | "price" | "variants" | "promo"> }) {
   const t = useTranslations("product");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -29,7 +29,8 @@ export function BuyBox({ product }: { product: Pick<ProductDetail, "slug" | "pri
   const variant: Variant | undefined = options.find((v) => (v.size ?? null) === size);
   const stock = variant?.stock ?? 0;
   const low = isLastPieces(stock);
-  const salePrice = variant && low ? variantPrice(product.price, stock) : null;
+  const unit = variantPrice(product.price, variant ? stock : 0, product.promo);
+  const salePrice = unit < product.price ? unit : null;
 
   function add() {
     if (!variant || stock < 1) return;

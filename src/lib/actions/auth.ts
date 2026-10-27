@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { createSession, deleteSession } from "@/lib/auth/session";
 import { connectDB } from "@/lib/db";
-import { User } from "@/models/user";
+import { levelFor, User } from "@/models/user";
 
 export type AuthResult = { ok: true } | { ok: false; error: "invalid" | "taken" | "form" };
 
@@ -26,7 +26,7 @@ export async function register(input: z.input<typeof registerSchema>): Promise<A
     phone: parsed.data.phone,
     passwordHash: await bcrypt.hash(parsed.data.password, 10),
   });
-  await createSession({ userId: String(user._id), role: user.role, name: user.name });
+  await createSession({ userId: String(user._id), role: user.role, name: user.name, level: "rookie" });
   return { ok: true };
 }
 
@@ -43,7 +43,7 @@ export async function login(input: z.input<typeof loginSchema>): Promise<AuthRes
   // Compare even when the user is missing so timing doesn't reveal which emails exist.
   const ok = await bcrypt.compare(parsed.data.password, user?.passwordHash ?? "$2a$10$invalidinvalidinvalidinvalidinvalidinvalidinvalidinvali");
   if (!user || !ok) return { ok: false, error: "invalid" };
-  await createSession({ userId: String(user._id), role: user.role, name: user.name });
+  await createSession({ userId: String(user._id), role: user.role, name: user.name, level: levelFor(user.totalSpent) });
   return { ok: true };
 }
 

@@ -11,6 +11,17 @@ const settingsSchema = new Schema(
     apologyPercent: { type: Number, default: 10 },
     shippingEgypt: { type: Map, of: Number, default: {} }, // governorate → EGP
     shippingIntl: { type: Map, of: Number, default: {} }, // country code → EGP
+    promos: {
+      type: [
+        {
+          scope: { type: String, enum: ["site", "brand", "category", "product"], required: true },
+          key: { type: String, default: "" },
+          percent: { type: Number, min: 1, max: 90, required: true },
+          endsAt: { type: Date, default: null },
+        },
+      ],
+      default: [],
+    },
     transferInstapay: { type: String, default: "sakr@instapay" },
     transferWallet: { type: String, default: "01000000000" },
     drop: {

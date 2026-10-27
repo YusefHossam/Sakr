@@ -1,7 +1,9 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { connectDB } from "./db";
-import { LAST_PIECES_DISCOUNT, LAST_PIECES_MAX } from "./pricing";
+import { LAST_PIECES_MAX, promoFor, variantPrice, type Promo } from "./pricing";
+import { getSettings } from "./settings";
+import { SETTINGS_TAG } from "./tags";
 import { Brand } from "@/models/brand";
 import { CATEGORIES, Product, type Category } from "@/models/product";
 
@@ -24,12 +26,13 @@ export type ProductCard = {
 export type NavCategory = { category: Category; brands: { name: string; slug: string }[] };
 export type NavBrand = { name: string; slug: string; productCount: number };
 
-const CARD_FIELDS = "slug title brand category model colorway price images variants";
+const CARD_FIELDS = "slug title brand brandSlug category model colorway price images variants";
 
 type CardSource = {
   slug: string;
   title: string;
   brand: string;
+  brandSlug: string;
   category: Category;
   model?: string | null;
   colorway?: string | null;
@@ -38,9 +41,12 @@ type CardSource = {
   variants?: { stock: number }[];
 };
 
-function toCard(p: CardSource): ProductCard {
+function toCard(p: CardSource, promos: Promo[]): ProductCard {
   const low = (p.variants ?? []).filter((v) => v.stock >= 1 && v.stock <= LAST_PIECES_MAX).map((v) => v.stock);
   const piecesLeft = low.length ? Math.min(...low) : null;
+  const promo = promoFor(p, promos);
+  // Cards show the best price any size reaches: a last-pieces size or the running promotion.
+  const best = variantPrice(p.price, piecesLeft ?? 0, promo);
   return {
     slug: p.slug,
     title: p.title,
@@ -49,16 +55,22 @@ function toCard(p: CardSource): ProductCard {
     model: p.model ?? null,
     colorway: p.colorway ?? null,
     price: p.price,
-    salePrice: piecesLeft ? Math.round(p.price * (1 - LAST_PIECES_DISCOUNT)) : null,
+    salePrice: best < p.price ? best : null,
     piecesLeft,
     image: p.images?.[0] ?? null,
   };
 }
 
+/** Cards priced with the admin's running promotions (cached readers also tag SETTINGS_TAG). */
+async function toCards(docs: CardSource[]): Promise<ProductCard[]> {
+  const { promos } = await getSettings();
+  return docs.map((d) => toCard(d, promos));
+}
+
 /** Navbar data: every category with the brands that carry it, plus all brands. */
 export async function getNavData(): Promise<{ categories: NavCategory[]; brands: NavBrand[] }> {
   "use cache";
-  cacheTag(CATALOG_TAG);
+  cacheTag(CATALOG_TAG, SETTINGS_TAG);
   cacheLife("hours");
   await connectDB();
   const brands = await Brand.find().sort({ productCount: -1 }).select("name slug categories productCount").lean();
@@ -74,7 +86,7 @@ export async function getNavData(): Promise<{ categories: NavCategory[]; brands:
 /** Products with at least one size/color at three pieces or fewer (85% off). */
 export async function getLastPieces(limit = 12): Promise<{ items: ProductCard[]; total: number }> {
   "use cache";
-  cacheTag(CATALOG_TAG);
+  cacheTag(CATALOG_TAG, SETTINGS_TAG);
   cacheLife("minutes");
   await connectDB();
   const filter = { active: true, variants: { $elemMatch: { stock: { $gte: 1, $lte: LAST_PIECES_MAX } } } };
@@ -82,12 +94,12 @@ export async function getLastPieces(limit = 12): Promise<{ items: ProductCard[];
     Product.find(filter).sort({ price: -1 }).limit(limit).select(CARD_FIELDS).lean<CardSource[]>(),
     Product.countDocuments(filter),
   ]);
-  return { items: docs.map(toCard), total };
+  return { items: await toCards(docs), total };
 }
 
 export async function getNewIn(limit = 12): Promise<ProductCard[]> {
   "use cache";
-  cacheTag(CATALOG_TAG);
+  cacheTag(CATALOG_TAG, SETTINGS_TAG);
   cacheLife("minutes");
   await connectDB();
   // Interleave brands so one brand doesn't fill the whole row.
@@ -101,7 +113,7 @@ export async function getNewIn(limit = 12): Promise<ProductCard[]> {
     { $sort: { publishedAt: -1 } },
     { $limit: limit },
   ]);
-  return docs.map(toCard);
+  return toCards(docs);
 }
 
 export type ModelSpotlight = { model: string; brand: string; modelKey: string; colorways: ProductCard[] };
@@ -109,7 +121,7 @@ export type ModelSpotlight = { model: string; brand: string; modelKey: string; c
 /** The model with the most colorways (or a given one), with every colorway. */
 export async function getModelSpotlight(modelKey?: string, limit = 40): Promise<ModelSpotlight | null> {
   "use cache";
-  cacheTag(CATALOG_TAG);
+  cacheTag(CATALOG_TAG, SETTINGS_TAG);
   cacheLife("hours");
   await connectDB();
   let key = modelKey;
@@ -129,7 +141,7 @@ export async function getModelSpotlight(modelKey?: string, limit = 40): Promise<
     .select(CARD_FIELDS)
     .lean<CardSource[]>();
   if (!docs.length) return null;
-  return { model: docs[0].model ?? "", brand: docs[0].brand, modelKey: key, colorways: docs.map(toCard) };
+  return { model: docs[0].model ?? "", brand: docs[0].brand, modelKey: key, colorways: await toCards(docs) };
 }
 
 export const SORTS = ["new", "price-asc", "price-desc"] as const;
@@ -158,7 +170,7 @@ export const PAGE_SIZE = 24;
 /** Filtered, sorted, paginated products plus the brand facet for the current filter. */
 export async function getListing(query: ListingQuery): Promise<Listing> {
   "use cache";
-  cacheTag(CATALOG_TAG);
+  cacheTag(CATALOG_TAG, SETTINGS_TAG);
   cacheLife("minutes");
   await connectDB();
 
@@ -195,7 +207,7 @@ export async function getListing(query: ListingQuery): Promise<Listing> {
   ]);
 
   return {
-    items: docs.map(toCard),
+    items: await toCards(docs),
     total,
     page,
     pages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
@@ -206,7 +218,7 @@ export async function getListing(query: ListingQuery): Promise<Listing> {
 /** Newest colorway slug of a model, for /models/[key]. */
 export async function getModelEntry(modelKey: string): Promise<string | null> {
   "use cache";
-  cacheTag(CATALOG_TAG);
+  cacheTag(CATALOG_TAG, SETTINGS_TAG);
   cacheLife("hours");
   await connectDB();
   const doc = await Product.findOne({ modelKey, active: true }).sort({ publishedAt: -1 }).select("slug").lean<{ slug: string }>();
@@ -231,6 +243,8 @@ export type ProductDetail = {
   colorways: { slug: string; colorway: string | null; image: string | null }[];
   completeLook: ProductCard[];
   suggestions: ProductCard[];
+  /** Running promotion as a fraction; the buy box combines it with last-pieces pricing. */
+  promo: number;
 };
 
 type DetailSource = Omit<CardSource, "variants"> & {
@@ -258,7 +272,7 @@ const LOOK_PAIRS: Record<Category, Category[]> = {
 
 export async function getProduct(slug: string): Promise<ProductDetail | null> {
   "use cache";
-  cacheTag(CATALOG_TAG, `product:${slug}`);
+  cacheTag(CATALOG_TAG, SETTINGS_TAG, `product:${slug}`);
   cacheLife("minutes");
   await connectDB();
   const p = await Product.findOne({ slug, active: true })
@@ -306,15 +320,16 @@ export async function getProduct(slug: string): Promise<ProductDetail | null> {
     colors: p.colors ?? [],
     variants: (p.variants ?? []).map((v) => ({ size: v.size ?? null, color: v.color ?? null, stock: v.stock })),
     colorways: siblings.map((s) => ({ slug: s.slug, colorway: s.colorway ?? null, image: s.images?.[0] ?? null })),
-    completeLook: look.filter((d): d is CardSource => !!d).map(toCard),
-    suggestions: suggestions.map(toCard),
+    completeLook: await toCards(look.filter((d): d is CardSource => !!d)),
+    suggestions: await toCards(suggestions),
+    promo: promoFor(p, (await getSettings()).promos),
   };
 }
 
 /** First images of a brand's newest pieces, for banners. */
 export async function getBrandImages(brandSlug: string, limit = 4): Promise<string[]> {
   "use cache";
-  cacheTag(CATALOG_TAG);
+  cacheTag(CATALOG_TAG, SETTINGS_TAG);
   cacheLife("hours");
   await connectDB();
   const docs = await Product.find({ brandSlug, active: true, "images.0": { $exists: true } })
@@ -328,7 +343,7 @@ export async function getBrandImages(brandSlug: string, limit = 4): Promise<stri
 /** A spread of product images for the hero poster wall. */
 export async function getHeroImages(limit = 36): Promise<string[]> {
   "use cache";
-  cacheTag(CATALOG_TAG);
+  cacheTag(CATALOG_TAG, SETTINGS_TAG);
   cacheLife("hours");
   await connectDB();
   const docs = await Product.aggregate<{ image: string }>([

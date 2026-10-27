@@ -1,7 +1,8 @@
 import "server-only";
 import { randomBytes } from "node:crypto";
 import { connectDB } from "./db";
-import { isLastPieces, variantPrice } from "./pricing";
+import { isLastPieces, promoFor, variantPrice } from "./pricing";
+import { getSettings } from "./settings";
 import { Cart } from "@/models/cart";
 import { Coupon } from "@/models/coupon";
 import { Product } from "@/models/product";
@@ -27,9 +28,12 @@ export async function getCartLines(userId: string): Promise<CartLine[]> {
   await connectDB();
   const cart = await Cart.findOne({ userId }).lean();
   if (!cart?.items.length) return [];
-  const products = await Product.find({ slug: { $in: cart.items.map((i) => i.productSlug) } })
-    .select("slug title brand images price costPrice variants")
-    .lean();
+  const [products, { promos }] = await Promise.all([
+    Product.find({ slug: { $in: cart.items.map((i) => i.productSlug) } })
+      .select("slug title brand brandSlug category images price costPrice variants")
+      .lean(),
+    getSettings(),
+  ]);
   const bySlug = new Map(products.map((p) => [p.slug, p]));
   return cart.items.flatMap((i) => {
     const p = bySlug.get(i.productSlug);
@@ -45,7 +49,7 @@ export async function getCartLines(userId: string): Promise<CartLine[]> {
         color: i.color ?? null,
         qty: i.qty,
         stock,
-        unitPrice: variantPrice(p.price, stock),
+        unitPrice: variantPrice(p.price, stock, promoFor(p, promos)),
         listPrice: p.price,
         costPrice: p.costPrice ?? 0,
       },

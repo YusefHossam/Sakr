@@ -1,18 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import { joinList } from "@/lib/actions/drop";
 
-// TODO(phase 7): save signups to the database for drop alerts. For now it only confirms locally.
 export function JoinForm() {
   const t = useTranslations("footer");
   const [done, setDone] = useState(false);
+  const [pending, startTransition] = useTransition();
   return (
     <form
       className="flex flex-col gap-3"
       onSubmit={(e) => {
         e.preventDefault();
-        setDone(true);
+        const contact = String(new FormData(e.currentTarget).get("email") ?? "");
+        startTransition(async () => {
+          const res = await joinList({ contact, channel: "email", source: "footer" });
+          setDone(res.ok);
+        });
       }}
     >
       <label htmlFor="join-email" className="sr-only">
@@ -20,6 +25,7 @@ export function JoinForm() {
       </label>
       <input
         id="join-email"
+        name="email"
         type="email"
         required
         placeholder={t("emailPlaceholder")}
@@ -27,7 +33,7 @@ export function JoinForm() {
       />
       <button
         type="submit"
-        disabled={done}
+        disabled={done || pending}
         className="self-start rounded-md border border-bone/70 px-6 py-2.5 font-display text-sm tracking-[0.3em] text-bone uppercase transition-colors hover:bg-bone hover:text-ink disabled:opacity-60"
       >
         {done ? "✓" : t("joinButton")}

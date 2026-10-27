@@ -1,6 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { connectDB } from "./db";
+import type { Promo } from "./pricing";
 import { defaultIntlFee, GOVERNORATES } from "./shipping";
 import { SETTINGS_TAG } from "./tags";
 import { Settings } from "@/models/settings";
@@ -13,6 +14,7 @@ export type StoreSettings = {
   apologyPercent: number;
   shippingEgypt: Record<string, number>;
   shippingIntl: Record<string, number>;
+  promos: Promo[];
   transferInstapay: string;
   transferWallet: string;
   drop: { locked: boolean; password: string; name: string; opensAt: string | null; vipEarlyHours: number };
@@ -34,6 +36,12 @@ export async function getSettings(): Promise<StoreSettings> {
     apologyPercent: doc.apologyPercent,
     shippingEgypt: { ...egypt, ...Object.fromEntries(Object.entries(doc.shippingEgypt ?? {})) },
     shippingIntl: Object.fromEntries(Object.entries(doc.shippingIntl ?? {})),
+    promos: (doc.promos ?? []).map((p) => ({
+      scope: p.scope as Promo["scope"],
+      key: p.key ?? "",
+      percent: p.percent,
+      endsAt: p.endsAt ? new Date(p.endsAt).toISOString() : null,
+    })),
     transferInstapay: doc.transferInstapay,
     transferWallet: doc.transferWallet,
     drop: {

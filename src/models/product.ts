@@ -1,18 +1,8 @@
 import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose";
 
-export const CATEGORIES = [
-  "hoodies",
-  "crewnecks",
-  "jackets",
-  "pants",
-  "sweatpants",
-  "tees",
-  "shorts",
-  "tracksuits",
-  "footwear",
-  "accessories",
-] as const;
-export type Category = (typeof CATEGORIES)[number];
+import { CATEGORIES, type Category } from "../lib/categories.ts";
+
+export { CATEGORIES, type Category };
 
 const variantSchema = new Schema(
   {
