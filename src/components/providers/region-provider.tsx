@@ -2,7 +2,7 @@
 
 import { createContext, use, useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale } from "next-intl";
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { DEFAULT_REGION, findRegion, REGION_STORAGE_KEY, type Rates, type Region } from "@/lib/regions";
 
 type RegionContextValue = {
@@ -18,7 +18,6 @@ const RegionContext = createContext<RegionContextValue | null>(null);
 export function RegionProvider({ rates, children }: { rates: Rates; children: React.ReactNode }) {
   const locale = useLocale();
   const router = useRouter();
-  const pathname = usePathname();
   const [region, setRegionState] = useState<Region>(DEFAULT_REGION);
 
   // The saved choice only exists in the browser, so it is read after hydration.
@@ -37,9 +36,13 @@ export function RegionProvider({ rates, children }: { rates: Rates; children: Re
       try {
         localStorage.setItem(REGION_STORAGE_KEY, next.code);
       } catch {}
-      if (next.locale !== locale) router.replace(pathname, { locale: next.locale });
+      if (next.locale !== locale) {
+        // Read the URL at click time (usePathname here would make every page wait on the URL).
+        const path = location.pathname.replace(new RegExp(`^/${locale}(?=/|$)`), "") || "/";
+        router.replace(`${path}${location.search}`, { locale: next.locale });
+      }
     },
-    [locale, pathname, router],
+    [locale, router],
   );
 
   const value = useMemo<RegionContextValue>(() => {

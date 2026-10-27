@@ -4,6 +4,7 @@ import { z } from "zod";
 const envSchema = z.object({
   MONGODB_URI: z.string().startsWith("mongodb"),
   MONGODB_DB: z.string().min(1).default("sakr"),
+  AUTH_SECRET: z.string().min(32),
 });
 
 export type Env = z.infer<typeof envSchema>;

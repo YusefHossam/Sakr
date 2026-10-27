@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Link, usePathname } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import type { NavBrand, NavCategory } from "@/lib/catalog";
 import { Logo } from "./logo";
 import { RegionMenu } from "./region-menu";
@@ -28,17 +28,19 @@ const ICONS = {
 
 export function NavBar({ categories, brands }: { categories: NavCategory[]; brands: NavBrand[] }) {
   const t = useTranslations();
-  const pathname = usePathname();
   const [open, setOpen] = useState<MenuKey | null>(null);
   const [drawer, setDrawer] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  // Close menus on navigation; shrink the bar once the page scrolls.
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset UI when the route changes
-    setOpen(null);
-    setDrawer(false);
-  }, [pathname]);
+  // Close menus when a link inside them is followed (no usePathname: it would make every page wait on the URL).
+  const closeOnLink = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest("a")) {
+      setOpen(null);
+      setDrawer(false);
+    }
+  };
+
+  // Shrink the bar once the page scrolls.
   useEffect(() => {
     const onScroll = () => setScrolled(scrollY > 24);
     onScroll();
@@ -54,6 +56,7 @@ export function NavBar({ categories, brands }: { categories: NavCategory[]; bran
         scrolled || open ? "border-ash bg-ink/90 backdrop-blur-md" : "border-transparent bg-gradient-to-b from-ink to-transparent"
       }`}
       onMouseLeave={() => setOpen(null)}
+      onClick={closeOnLink}
     >
       <div className="mx-auto flex max-w-[1500px] items-center gap-4 px-4 py-3 md:px-8">
         <button

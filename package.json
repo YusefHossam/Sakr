@@ -12,7 +12,9 @@
     "seed:catalog": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed-catalog.ts"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "flag-icons": "^7.6.0",
+    "jose": "^6.2.13",
     "mongoose": "^9.11.4",
     "next": "16.4.1",
     "next-intl": "^4.14.9",

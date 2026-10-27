@@ -213,6 +213,104 @@ export async function getModelEntry(modelKey: string): Promise<string | null> {
   return doc?.slug ?? null;
 }
 
+export type ProductDetail = {
+  slug: string;
+  title: string;
+  brand: string;
+  brandSlug: string;
+  category: Category;
+  subcategory: string | null;
+  model: string | null;
+  modelKey: string | null;
+  colorway: string | null;
+  description: string;
+  price: number;
+  images: string[];
+  colors: string[];
+  variants: { size: string | null; color: string | null; stock: number }[];
+  colorways: { slug: string; colorway: string | null; image: string | null }[];
+  completeLook: ProductCard[];
+  suggestions: ProductCard[];
+};
+
+type DetailSource = Omit<CardSource, "variants"> & {
+  brandSlug: string;
+  subcategory?: string | null;
+  modelKey?: string | null;
+  description?: string;
+  colors?: string[];
+  variants?: { size: string | null; color: string | null; stock: number }[];
+};
+
+// What pairs with what for "complete the look".
+const LOOK_PAIRS: Record<Category, Category[]> = {
+  hoodies: ["pants", "footwear", "accessories"],
+  crewnecks: ["pants", "footwear", "accessories"],
+  jackets: ["hoodies", "pants", "footwear"],
+  pants: ["hoodies", "tees", "footwear"],
+  sweatpants: ["hoodies", "footwear", "accessories"],
+  tees: ["pants", "jackets", "footwear"],
+  shorts: ["tees", "footwear", "accessories"],
+  tracksuits: ["footwear", "accessories", "tees"],
+  footwear: ["hoodies", "pants", "accessories"],
+  accessories: ["hoodies", "tees", "footwear"],
+};
+
+export async function getProduct(slug: string): Promise<ProductDetail | null> {
+  "use cache";
+  cacheTag(CATALOG_TAG, `product:${slug}`);
+  cacheLife("minutes");
+  await connectDB();
+  const p = await Product.findOne({ slug, active: true })
+    .select("slug title brand brandSlug category subcategory model modelKey colorway description price images colors variants")
+    .lean<DetailSource>();
+  if (!p) return null;
+
+  const [siblings, look, suggestions] = await Promise.all([
+    p.modelKey
+      ? Product.find({ modelKey: p.modelKey, active: true }).sort({ publishedAt: -1 }).limit(150).select("slug colorway images").lean<{ slug: string; colorway?: string; images?: string[] }[]>()
+      : Promise.resolve([]),
+    Promise.all(
+      LOOK_PAIRS[p.category].map((category) =>
+        Product.findOne({ category, active: true, brandSlug: p.brandSlug, "images.0": { $exists: true } })
+          .sort({ publishedAt: -1 })
+          .select(CARD_FIELDS)
+          .lean<CardSource>()
+          .then((doc) =>
+            doc ??
+            Product.findOne({ category, active: true, "images.0": { $exists: true } }).sort({ publishedAt: -1 }).select(CARD_FIELDS).lean<CardSource>(),
+          ),
+      ),
+    ),
+    // A pool; the page shows a random handful from it on every visit.
+    Product.find({ category: p.category, active: true, slug: { $ne: p.slug }, modelKey: p.modelKey ? { $ne: p.modelKey } : { $exists: true } })
+      .sort({ publishedAt: -1 })
+      .limit(40)
+      .select(CARD_FIELDS)
+      .lean<CardSource[]>(),
+  ]);
+
+  return {
+    slug: p.slug,
+    title: p.title,
+    brand: p.brand,
+    brandSlug: p.brandSlug,
+    category: p.category,
+    subcategory: p.subcategory ?? null,
+    model: p.model ?? null,
+    modelKey: p.modelKey ?? null,
+    colorway: p.colorway ?? null,
+    description: p.description ?? "",
+    price: p.price,
+    images: p.images ?? [],
+    colors: p.colors ?? [],
+    variants: (p.variants ?? []).map((v) => ({ size: v.size ?? null, color: v.color ?? null, stock: v.stock })),
+    colorways: siblings.map((s) => ({ slug: s.slug, colorway: s.colorway ?? null, image: s.images?.[0] ?? null })),
+    completeLook: look.filter((d): d is CardSource => !!d).map(toCard),
+    suggestions: suggestions.map(toCard),
+  };
+}
+
 /** First images of a brand's newest pieces, for banners. */
 export async function getBrandImages(brandSlug: string, limit = 4): Promise<string[]> {
   "use cache";
