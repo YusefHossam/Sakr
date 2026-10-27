@@ -4,8 +4,10 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Section } from "@/components/home/section";
 import { BuyBox } from "@/components/product/buy-box";
+import { TrackAffinity } from "@/components/home/for-you";
 import { Gallery } from "@/components/product/gallery";
 import { LiveViewers } from "@/components/product/live-viewers";
+import { PersonalBits } from "@/components/product/personal";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductTabs } from "@/components/product/product-tabs";
 import { RandomPicks } from "@/components/product/random-picks";
@@ -41,6 +43,7 @@ async function ProductContent({ params }: Pick<PageProps<"/[locale]/product/[slu
 
   return (
     <div className="mx-auto max-w-[1500px] px-4 pt-6 md:px-8">
+      <TrackAffinity brand={product.brandSlug} category={product.category} />
       <nav aria-label="Breadcrumb" className="mb-6 text-xs text-dust">
         <ol className="flex flex-wrap items-center gap-2">
           <li><Link href="/" className="hover:text-bone">{t("breadcrumbHome")}</Link></li>
@@ -94,6 +97,9 @@ async function ProductContent({ params }: Pick<PageProps<"/[locale]/product/[slu
           )}
 
           <BuyBox product={product} />
+          <Suspense fallback={null}>
+            <PersonalBits category={product.category} image={product.images[0] ?? null} title={product.title} />
+          </Suspense>
           <ProductTabs category={product.category} description={product.description} />
         </div>
       </div>

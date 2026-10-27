@@ -1,7 +1,9 @@
 import { getTranslations } from "next-intl/server";
 import { AdCarousel, type AdSlide } from "@/components/home/ad-carousel";
 import { ColorwaySpotlight } from "@/components/home/colorway-spotlight";
+import { ForYou } from "@/components/home/for-you";
 import { Hero } from "@/components/home/hero";
+import { LabSection } from "@/components/home/lab-section";
 import { Section } from "@/components/home/section";
 import { ProductCard } from "@/components/product/product-card";
 import { Link } from "@/i18n/navigation";
@@ -72,6 +74,10 @@ export default async function HomePage() {
           </div>
         </Section>
       )}
+
+      <ForYou title={t("forYou")} />
+
+      <LabSection />
 
       {spotlight && (
         <Section title={t("spotlightTitle")} text={t("spotlightText")}>

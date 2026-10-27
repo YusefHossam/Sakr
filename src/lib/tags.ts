@@ -3,3 +3,4 @@ export const cartTag = (userId: string) => `cart:${userId}`;
 export const ordersTag = (userId: string) => `orders:${userId}`;
 export const ADMIN_TAG = "admin";
 export const SETTINGS_TAG = "settings";
+export const WALL_TAG = "wall";

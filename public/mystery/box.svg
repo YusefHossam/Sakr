@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
+  <rect width="600" height="600" fill="#c9c9c9"/>
+  <g transform="translate(300 330)">
+    <path d="M-170 -40 L0 -110 L170 -40 L0 30 Z" fill="#2c2c2c"/>
+    <path d="M-170 -40 L0 30 L0 220 L-170 150 Z" fill="#0e0e0e"/>
+    <path d="M170 -40 L0 30 L0 220 L170 150 Z" fill="#1c1c1c"/>
+    <path d="M-85 -75 L85 -5 L85 20 L-85 -50 Z" fill="#9b111e"/>
+    <text x="-95" y="130" font-family="serif" font-size="92" fill="#b9b9b9" transform="skewY(22)">?</text>
+    <text x="40" y="140" font-family="serif" font-size="40" fill="#5f5f5f" transform="skewY(-22)" letter-spacing="4">SAKR</text>
+  </g>
+</svg>

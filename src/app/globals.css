@@ -68,6 +68,10 @@
   60% { transform: none; text-shadow: none; }
 }
 
+@keyframes spray {
+  0% { clip-path: inset(0 100% 0 0); filter: blur(6px); }
+  100% { clip-path: inset(0 0 0 0); filter: blur(0); }
+}
 @keyframes eq {
   from { transform: scaleY(0.2); }
   to { transform: scaleY(1); }
