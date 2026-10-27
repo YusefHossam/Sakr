@@ -1,0 +1,110 @@
+{
+  "common": {
+    "appName": "SAKR",
+    "tagline": "فخامة شوارع القاهرة",
+    "egp": "جنيه",
+    "approxEgp": "≈ {price} جنيه",
+    "lastPieces": "فاضل {count} بس",
+    "shopNow": "تسوّق دلوقتي",
+    "viewAll": "شوف الكل",
+    "colorways": "{count, plural, one {لون واحد} two {لونين} few {# ألوان} many {# لون} other {# لون}}"
+  },
+  "categories": {
+    "hoodies": "هوديز",
+    "crewnecks": "كرونيكس",
+    "jackets": "جواكت",
+    "pants": "بناطيل",
+    "sweatpants": "سويت بانتس",
+    "tees": "تيشيرتات",
+    "shorts": "شورتات",
+    "tracksuits": "تراكسوت",
+    "footwear": "شوزات",
+    "accessories": "إكسسوارات",
+    "brands": "البراندات",
+    "shopAll": "تسوّق الكل"
+  },
+  "accessories": {
+    "chains": "سلاسل",
+    "bracelets": "بريسليتات",
+    "rings": "خواتم",
+    "sunglasses": "نضارات",
+    "socks": "شرابات",
+    "boxers": "بوكسرات",
+    "headwear": "كابات",
+    "bags": "شنط",
+    "belts": "أحزمة"
+  },
+  "intro": {
+    "enter": "ادخل",
+    "hint": "شغّل الصوت"
+  },
+  "header": {
+    "openMenu": "افتح القايمة",
+    "closeMenu": "اقفل القايمة",
+    "search": "بحث",
+    "account": "حسابي",
+    "cart": "السلة",
+    "region": "الدولة واللغة",
+    "home": "الصفحة الرئيسية",
+    "allIn": "كل ال{category}"
+  },
+  "music": {
+    "play": "شغّل المزيكا",
+    "pause": "وقّف المزيكا",
+    "next": "اللي بعدها",
+    "credit": "{title} — {artist}",
+    "license": "الرخصة"
+  },
+  "home": {
+    "heroTitle": "اتولدنا في الشارع",
+    "heroText": "Chrome Hearts وCorteiz وJordan وOff-White وRick Owens، وكل لون نزل منهم. شارع واحد. كرو واحدة.",
+    "heroCta": "ادخل الدروب",
+    "adsLabel": "شغّال دلوقتي",
+    "adLastPiecesTitle": "آخر القطع. خصم ٨٥٪.",
+    "adLastPiecesText": "{count} قطعة قربت تخلص. أول ما المقاس يوصل ٣ قطع، السعر بيقع.",
+    "adModelTitle": "{model}",
+    "adModelText": "{count} لون. موديل واحد. اختار بتاعك.",
+    "adBrandTitle": "{brand}",
+    "adBrandText": "{count} قطعة في الخزنة.",
+    "lastPiecesTitle": "آخر القطع",
+    "lastPiecesText": "المقاس اللي فاضل منه ٣ أو أقل بينزل ٨٥٪. لما يخلص، خلص.",
+    "spotlightTitle": "كل الألوان",
+    "spotlightText": "موديل واحد، وكل لون نزل بيه.",
+    "brandsTitle": "العائلات",
+    "newInTitle": "لسه نازل",
+    "previous": "اللي قبله",
+    "nextSlide": "اللي بعده"
+  },
+  "footer": {
+    "about": "SAKR",
+    "aboutText": "فخامة الشوارع من القاهرة. كل دروب محدود، وكل لون موجود هنا.",
+    "address": "الزمالك، القاهرة، مصر",
+    "phone": "+20 100 000 0000",
+    "email": "support@sakr.store",
+    "join": "انضم للكرو",
+    "joinText": "دروبز وسحوبات وأكواد خاصة. من غير سبام.",
+    "emailPlaceholder": "إيميلك",
+    "joinButton": "انضم",
+    "categories": "الأقسام",
+    "information": "معلومات",
+    "policies": "السياسات",
+    "faq": "أسئلة شائعة",
+    "sizeGuide": "دليل المقاسات",
+    "trackOrder": "تتبع طلبك",
+    "contact": "كلمنا",
+    "returns": "سياسة الاستبدال",
+    "shipping": "سياسة الشحن",
+    "privacy": "الخصوصية",
+    "terms": "الشروط والأحكام",
+    "securePayment": "دفع آمن",
+    "rights": "© {year} SAKR. كل الحقوق محفوظة.",
+    "musicCredits": "حقوق المزيكا"
+  },
+  "regions": {
+    "EG": "مصر", "SA": "السعودية", "AE": "الإمارات", "KW": "الكويت", "QA": "قطر", "BH": "البحرين", "OM": "عُمان",
+    "JO": "الأردن", "LB": "لبنان", "IQ": "العراق", "MA": "المغرب", "DZ": "الجزائر", "TN": "تونس", "LY": "ليبيا",
+    "SD": "السودان", "US": "أمريكا", "GB": "بريطانيا", "DE": "ألمانيا", "FR": "فرنسا", "IT": "إيطاليا",
+    "ES": "إسبانيا", "NL": "هولندا", "CA": "كندا", "AU": "أستراليا", "TR": "تركيا", "CH": "سويسرا",
+    "SE": "السويد", "JP": "اليابان", "IN": "الهند", "BR": "البرازيل"
+  }
+}

@@ -1,0 +1,207 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/navigation";
+import type { NavBrand, NavCategory } from "@/lib/catalog";
+import { Logo } from "./logo";
+import { RegionMenu } from "./region-menu";
+
+const TOP_CATEGORIES = ["hoodies", "crewnecks", "jackets", "pants", "sweatpants", "tees", "shorts", "footwear", "accessories"] as const;
+const ACCESSORY_TYPES = ["chains", "bracelets", "rings", "sunglasses", "socks", "boxers", "headwear", "bags", "belts"] as const;
+
+type MenuKey = (typeof TOP_CATEGORIES)[number] | "brands";
+
+const Icon = ({ d, label }: { d: string; label?: string }) => (
+  <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden={label ? undefined : true} role={label ? "img" : undefined} aria-label={label}>
+    <path d={d} />
+  </svg>
+);
+const ICONS = {
+  search: "M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm10 2-4.35-4.35",
+  user: "M20 21a8 8 0 1 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10z",
+  bag: "M6 7h12l1 14H5L6 7zm3 0a3 3 0 0 1 6 0",
+  menu: "M4 7h16M4 12h16M4 17h16",
+  close: "M6 6l12 12M18 6 6 18",
+  chevron: "m6 9 6 6 6-6",
+};
+
+export function NavBar({ categories, brands }: { categories: NavCategory[]; brands: NavBrand[] }) {
+  const t = useTranslations();
+  const pathname = usePathname();
+  const [open, setOpen] = useState<MenuKey | null>(null);
+  const [drawer, setDrawer] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  // Close menus on navigation; shrink the bar once the page scrolls.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset UI when the route changes
+    setOpen(null);
+    setDrawer(false);
+  }, [pathname]);
+  useEffect(() => {
+    const onScroll = () => setScrolled(scrollY > 24);
+    onScroll();
+    addEventListener("scroll", onScroll, { passive: true });
+    return () => removeEventListener("scroll", onScroll);
+  }, []);
+
+  const brandsFor = (c: string) => categories.find((x) => x.category === c)?.brands ?? [];
+
+  return (
+    <header
+      className={`sticky top-0 z-50 border-b transition-colors duration-300 ${
+        scrolled || open ? "border-ash bg-ink/90 backdrop-blur-md" : "border-transparent bg-gradient-to-b from-ink to-transparent"
+      }`}
+      onMouseLeave={() => setOpen(null)}
+    >
+      <div className="mx-auto flex max-w-[1500px] items-center gap-4 px-4 py-3 md:px-8">
+        <button
+          type="button"
+          className="text-steel hover:text-chrome lg:hidden"
+          onClick={() => setDrawer(true)}
+          aria-label={t("header.openMenu")}
+          aria-expanded={drawer}
+        >
+          <Icon d={ICONS.menu} />
+        </button>
+
+        <Logo className={`transition-[font-size] duration-300 ${scrolled ? "text-4xl" : "text-5xl"}`} />
+
+        <div className="ms-auto flex items-center gap-3">
+          <Link href="/search" aria-label={t("header.search")} className="text-steel hover:text-chrome">
+            <Icon d={ICONS.search} />
+          </Link>
+          <div className="hidden sm:block">
+            <RegionMenu />
+          </div>
+          <Link href="/account" aria-label={t("header.account")} className="text-steel hover:text-chrome">
+            <Icon d={ICONS.user} />
+          </Link>
+          <Link href="/cart" aria-label={t("header.cart")} className="relative text-steel hover:text-chrome">
+            <Icon d={ICONS.bag} />
+            <span className="absolute -end-2 -top-1.5 grid size-4 place-items-center rounded-full bg-bone text-[10px] font-bold text-ink">0</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Second row on desktop: the category bar, centred under the logo row. */}
+      <div className="mx-auto hidden max-w-[1500px] px-8 pb-1 lg:block">
+        <nav aria-label="Main" className="flex justify-center">
+          <ul className="flex items-center gap-1 xl:gap-2">
+            {[...TOP_CATEGORIES, "brands" as const].map((key) => (
+              <li key={key}>
+                <button
+                  type="button"
+                  onMouseEnter={() => setOpen(key)}
+                  onFocus={() => setOpen(key)}
+                  onClick={() => setOpen(open === key ? null : key)}
+                  aria-expanded={open === key}
+                  className={`glitch-hover flex items-center gap-1 px-2 py-2 font-display text-[13px] tracking-[0.14em] uppercase transition-colors xl:text-sm ${
+                    open === key ? "text-chrome" : "text-steel hover:text-bone"
+                  }`}
+                >
+                  {t(`categories.${key}`)}
+                </button>
+              </li>
+            ))}
+            <li>
+              <Link href="/shop" className="px-2 py-2 font-display text-[13px] tracking-[0.14em] text-blood uppercase hover:text-chrome xl:text-sm">
+                {t("categories.shopAll")}
+              </Link>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      {/* Desktop mega menu */}
+      {open && (
+        <div className="absolute inset-x-0 top-full hidden border-b border-ash bg-ink/95 backdrop-blur-md lg:block" style={{ animation: "fade-up 0.2s ease both" }}>
+          <div className="mx-auto grid max-w-[1500px] grid-cols-[220px_1fr] gap-10 px-8 py-8">
+            <div className="flex flex-col gap-3">
+              <p className="street-heading text-4xl">{t(`categories.${open}`)}</p>
+              {open !== "brands" && (
+                <Link href={`/shop/${open}`} className="text-sm text-steel underline-offset-4 hover:text-chrome hover:underline">
+                  {t("header.allIn", { category: t(`categories.${open}`) })} →
+                </Link>
+              )}
+            </div>
+            <div className="grid grid-cols-4 gap-x-8 gap-y-2 xl:grid-cols-5">
+              {open === "accessories" &&
+                ACCESSORY_TYPES.map((type) => (
+                  <Link key={type} href={`/shop/accessories?type=${type}`} className="py-1 text-sm text-bone hover:text-chrome">
+                    {t(`accessories.${type}`)}
+                  </Link>
+                ))}
+              {open === "brands"
+                ? brands.map((b) => (
+                    <Link key={b.slug} href={`/brands/${b.slug}`} className="flex items-baseline justify-between gap-3 py-1 text-sm text-steel hover:text-chrome">
+                      <span>{b.name}</span>
+                      <span className="text-xs text-dust" dir="ltr">{b.productCount}</span>
+                    </Link>
+                  ))
+                : brandsFor(open).map((b) => (
+                    <Link key={b.slug} href={`/shop/${open}?brand=${b.slug}`} className="py-1 text-sm text-steel hover:text-chrome">
+                      {b.name}
+                    </Link>
+                  ))}
+            </div>
+          </div>
+          <div className="barbed" aria-hidden="true" />
+        </div>
+      )}
+
+      {/* Mobile drawer */}
+      {drawer && (
+        <div className="fixed inset-0 z-[65] lg:hidden" role="dialog" aria-modal="true">
+          <button type="button" className="absolute inset-0 bg-ink/70" onClick={() => setDrawer(false)} aria-label={t("header.closeMenu")} />
+          <div className="absolute inset-y-0 start-0 flex w-[86vw] max-w-sm flex-col overflow-y-auto border-e border-ash bg-pitch p-5">
+            <div className="mb-6 flex items-center justify-between">
+              <Logo className="text-5xl" />
+              <button type="button" onClick={() => setDrawer(false)} aria-label={t("header.closeMenu")} className="text-steel">
+                <Icon d={ICONS.close} />
+              </button>
+            </div>
+            <div className="mb-4 sm:hidden">
+              <RegionMenu />
+            </div>
+            <ul className="flex flex-col divide-y divide-ash">
+              {[...TOP_CATEGORIES, "brands" as const].map((key) => (
+                <li key={key}>
+                  <details className="group py-1">
+                    <summary className="flex cursor-pointer list-none items-center justify-between py-2.5 font-display text-lg tracking-[0.12em] text-bone uppercase">
+                      {t(`categories.${key}`)}
+                      <span className="text-dust transition-transform group-open:rotate-180">
+                        <Icon d={ICONS.chevron} />
+                      </span>
+                    </summary>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 pb-3">
+                      {key === "brands"
+                        ? brands.map((b) => (
+                            <Link key={b.slug} href={`/brands/${b.slug}`} className="py-1 text-sm text-steel">
+                              {b.name}
+                            </Link>
+                          ))
+                        : (key === "accessories" ? ACCESSORY_TYPES.map((type) => ({ href: `/shop/accessories?type=${type}`, label: t(`accessories.${type}`) })) : [])
+                            .concat(brandsFor(key).map((b) => ({ href: `/shop/${key}?brand=${b.slug}`, label: b.name })))
+                            .map((l) => (
+                              <Link key={l.href} href={l.href} className="py-1 text-sm text-steel">
+                                {l.label}
+                              </Link>
+                            ))}
+                    </div>
+                  </details>
+                </li>
+              ))}
+              <li>
+                <Link href="/shop" className="block py-3.5 font-display text-lg tracking-[0.12em] text-blood uppercase">
+                  {t("categories.shopAll")}
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+      )}
+    </header>
+  );
+}

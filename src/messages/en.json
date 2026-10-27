@@ -1,0 +1,110 @@
+{
+  "common": {
+    "appName": "SAKR",
+    "tagline": "Cairo street luxury",
+    "egp": "EGP",
+    "approxEgp": "≈ {price} EGP",
+    "lastPieces": "Only {count} left",
+    "shopNow": "Shop now",
+    "viewAll": "View all",
+    "colorways": "{count, plural, one {# colorway} other {# colorways}}"
+  },
+  "categories": {
+    "hoodies": "Hoodies",
+    "crewnecks": "Crewnecks",
+    "jackets": "Jackets",
+    "pants": "Pants",
+    "sweatpants": "Sweatpants",
+    "tees": "Tees",
+    "shorts": "Shorts",
+    "tracksuits": "Tracksuits",
+    "footwear": "Shoes",
+    "accessories": "Accessories",
+    "brands": "Brands",
+    "shopAll": "Shop all"
+  },
+  "accessories": {
+    "chains": "Chains",
+    "bracelets": "Bracelets",
+    "rings": "Rings",
+    "sunglasses": "Sunglasses",
+    "socks": "Socks",
+    "boxers": "Boxers",
+    "headwear": "Caps & hats",
+    "bags": "Bags",
+    "belts": "Belts"
+  },
+  "intro": {
+    "enter": "Enter",
+    "hint": "Sound on"
+  },
+  "header": {
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "search": "Search",
+    "account": "Account",
+    "cart": "Cart",
+    "region": "Country & language",
+    "home": "SAKR home",
+    "allIn": "All {category}"
+  },
+  "music": {
+    "play": "Play music",
+    "pause": "Pause music",
+    "next": "Next track",
+    "credit": "{title} — {artist}",
+    "license": "License"
+  },
+  "home": {
+    "heroTitle": "Born in the streets",
+    "heroText": "Chrome Hearts, Corteiz, Jordan, Off-White, Rick Owens and every colorway they ever dropped. One block. One crew.",
+    "heroCta": "Enter the drop",
+    "adsLabel": "Now running",
+    "adLastPiecesTitle": "Last pieces. 85% off.",
+    "adLastPiecesText": "{count} pieces are almost gone. When a size hits three, the price drops.",
+    "adModelTitle": "{model}",
+    "adModelText": "{count} colorways. One model. Pick yours.",
+    "adBrandTitle": "{brand}",
+    "adBrandText": "{count} pieces in the vault.",
+    "lastPiecesTitle": "Last pieces",
+    "lastPiecesText": "Sizes with three or fewer left drop 85%. Gone when they're gone.",
+    "spotlightTitle": "Every colorway",
+    "spotlightText": "One model, every color it ever came in.",
+    "brandsTitle": "The families",
+    "newInTitle": "Fresh off the block",
+    "previous": "Previous",
+    "nextSlide": "Next"
+  },
+  "footer": {
+    "about": "SAKR",
+    "aboutText": "Street luxury out of Cairo. Every drop is limited, every colorway is here.",
+    "address": "Zamalek, Cairo, Egypt",
+    "phone": "+20 100 000 0000",
+    "email": "support@sakr.store",
+    "join": "Join the crew",
+    "joinText": "Drops, raffles and private codes. No spam.",
+    "emailPlaceholder": "Your email",
+    "joinButton": "Join",
+    "categories": "Categories",
+    "information": "Information",
+    "policies": "Policies",
+    "faq": "FAQ",
+    "sizeGuide": "Size guide",
+    "trackOrder": "Track your order",
+    "contact": "Contact us",
+    "returns": "Exchange policy",
+    "shipping": "Shipping policy",
+    "privacy": "Privacy policy",
+    "terms": "Terms & conditions",
+    "securePayment": "Secure payment",
+    "rights": "© {year} SAKR. All rights reserved.",
+    "musicCredits": "Music credits"
+  },
+  "regions": {
+    "EG": "Egypt", "SA": "Saudi Arabia", "AE": "UAE", "KW": "Kuwait", "QA": "Qatar", "BH": "Bahrain", "OM": "Oman",
+    "JO": "Jordan", "LB": "Lebanon", "IQ": "Iraq", "MA": "Morocco", "DZ": "Algeria", "TN": "Tunisia", "LY": "Libya",
+    "SD": "Sudan", "US": "United States", "GB": "United Kingdom", "DE": "Germany", "FR": "France", "IT": "Italy",
+    "ES": "Spain", "NL": "Netherlands", "CA": "Canada", "AU": "Australia", "TR": "Türkiye", "CH": "Switzerland",
+    "SE": "Sweden", "JP": "Japan", "IN": "India", "BR": "Brazil"
+  }
+}
