@@ -22,7 +22,7 @@ slides category, clean hero, **full admin panel** (customers, catalog bulk tools
 - 16 "Likely to sell out" prediction from viewers and sales speed
 - 35 Search that understands Arabic, English and Franco ("hoodie" = "هودي" = "7oody")
 
-## Phase C: Buying
+## Phase C: Buying (done 2026-10-28: pre-order, gift mode, wallet, same-day shipping, Egyptian copy)
 - 17 Pre-order for the next drop, with a deposit
 - 19 Gift mode: message and card, no prices in the parcel
 - 20 Account wallet: refunds, gifts, cashback

@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ApologyForm } from "@/components/admin/apology-form";
-import { OrderTools } from "@/components/admin/more-forms";
+import { OrderTools, RefundToWalletButton } from "@/components/admin/more-forms";
 import { Link } from "@/i18n/navigation";
 import { ActionButton, adminButton } from "@/components/admin/ui";
 import { approvePayment, rejectOrder, setOrderStatus } from "@/lib/actions/admin";
@@ -55,6 +55,15 @@ async function OrderDetail({ params }: Pick<PageProps<"/[locale]/admin/orders/[n
       </div>
 
       <OrderTools number={o.number} note={o.adminNote ?? ""} refunded={!!o.refunded} deliveryDate={new Date(o.deliveryDate).toISOString().slice(0, 10)} />
+      <RefundToWalletButton number={o.number} total={o.total} refunded={!!o.refunded} />
+      {(o.gift?.enabled || o.sameDay || o.preorder?.enabled || o.walletUsed > 0) && (
+        <ul className="flex flex-wrap gap-2 text-xs">
+          {o.sameDay && <li className="border border-bone/60 px-2 py-1 text-bone">SAME-DAY</li>}
+          {o.preorder?.enabled && <li className="border border-bone/60 px-2 py-1 text-bone">PRE-ORDER{o.preorder.shipsAt ? ` · ships ${new Date(o.preorder.shipsAt).toISOString().slice(0, 10)}` : ""}</li>}
+          {o.walletUsed > 0 && <li className="border border-ash px-2 py-1 text-steel">WALLET −{o.walletUsed.toLocaleString("en")} EGP</li>}
+          {o.gift?.enabled && <li className="border border-bone/60 px-2 py-1 text-bone">GIFT{o.gift.to ? ` · to ${o.gift.to}` : ""}{o.gift.message ? ` · "${o.gift.message}"` : ""}</li>}
+        </ul>
+      )}
 
       {!closed && (
         <section className="flex flex-wrap gap-2">

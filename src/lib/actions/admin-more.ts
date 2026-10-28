@@ -11,6 +11,7 @@ import { CATALOG_TAG } from "@/lib/catalog";
 import { connectDB } from "@/lib/db";
 import { issueCoupon } from "@/lib/shop-data";
 import { ordersTag, SETTINGS_TAG } from "@/lib/tags";
+import { moveWallet } from "@/lib/wallet";
 import { Order } from "@/models/order";
 import { Product, CATEGORIES } from "@/models/product";
 import { Settings } from "@/models/settings";
@@ -218,5 +219,60 @@ export async function saveContent(input: z.input<typeof contentSchema>): Promise
   await Settings.updateOne({ key: "store" }, { $set: { announcement: { text: d.announcementText, active: d.announcementActive }, banners: d.banners } }, { upsert: true });
   updateTag(SETTINGS_TAG);
   await audit(admin, "content.save", "announcement + banners", `${d.banners.length} banners`);
+  return { ok: true };
+}
+
+// ---------- Wallet and pre-orders (phase C) ----------
+
+/** Adds or takes money from a customer's wallet (a gift, a correction). Negative amounts fail rather than going below zero. */
+export async function adjustCustomerWallet(id: string, amount: number, note: string): Promise<AdminResult> {
+  const admin = await requireAdmin();
+  const n = Math.trunc(Number(amount));
+  if (!objectId.safeParse(id).success || !Number.isFinite(n) || n === 0 || Math.abs(n) > 1_000_000) return { ok: false, error: "invalid" };
+  const balance = await moveWallet(id, n, n > 0 ? "gift" : "adjustment", { note: note.trim().slice(0, 200) });
+  if (balance === null) return { ok: false, error: "funds" };
+  await audit(admin, "customer.wallet", id, `${n} (${note.slice(0, 60)})`);
+  return { ok: true, message: String(balance) };
+}
+
+/** Refunds an order into the customer's wallet, once. The amount defaults to the order total. */
+export async function refundOrderToWallet(number: string, amount?: number): Promise<AdminResult> {
+  const admin = await requireAdmin();
+  await connectDB();
+  const order = await Order.findOne({ number });
+  if (!order) return { ok: false, error: "not-found" };
+  if (order.refunded) return { ok: false, error: "already" };
+  const value = Math.trunc(Number(amount ?? order.total));
+  if (!Number.isFinite(value) || value < 1 || value > order.total) return { ok: false, error: "invalid" };
+  const balance = await moveWallet(String(order.userId), value, "refund", { orderNumber: number, note: "Order refund" });
+  if (balance === null) return { ok: false, error: "invalid" };
+  order.refunded = true;
+  order.history.push({ status: order.status, at: new Date(), note: `Refunded ${value} EGP to wallet` });
+  await order.save();
+  updateTag(ordersTag(String(order.userId)));
+  await audit(admin, "order.refund-wallet", number, String(value));
+  return { ok: true, message: String(balance) };
+}
+
+const preorderSchema = z.object({
+  enabled: z.boolean(),
+  limit: z.coerce.number().int().min(0).max(100_000),
+  shipsAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).or(z.literal("")),
+});
+
+/** Opens or closes pre-orders on a product: units on offer and the date it ships. */
+export async function setPreorder(slug: string, input: z.input<typeof preorderSchema>): Promise<AdminResult> {
+  const admin = await requireAdmin();
+  const parsed = preorderSchema.safeParse(input);
+  if (!parsed.success || (parsed.data.enabled && !parsed.data.shipsAt)) return { ok: false, error: "invalid" };
+  await connectDB();
+  const res = await Product.updateOne(
+    { slug },
+    { $set: { "preorder.enabled": parsed.data.enabled, "preorder.limit": parsed.data.limit, "preorder.shipsAt": parsed.data.shipsAt ? new Date(`${parsed.data.shipsAt}T12:00:00`) : null } },
+  );
+  if (!res.matchedCount) return { ok: false, error: "not-found" };
+  updateTag(`product:${slug}`);
+  updateTag(CATALOG_TAG);
+  await audit(admin, "product.preorder", slug, parsed.data.enabled ? `${parsed.data.limit} units, ships ${parsed.data.shipsAt}` : "closed");
   return { ok: true };
 }

@@ -35,7 +35,7 @@ async function Sheet({ params }: Pick<PageProps<"/[locale]/admin/orders/[number]
           <p className="mt-1 text-xs text-neutral-500">SAKR · Cairo, Egypt</p>
         </div>
         <div className="text-end">
-          <p className="text-xs tracking-widest text-neutral-500 uppercase">Invoice</p>
+          <p className="text-xs tracking-widest text-neutral-500 uppercase">{o.gift?.enabled ? "Gift packing slip" : "Invoice"}</p>
           <p className="text-xl font-semibold">{o.number}</p>
           <p className="text-xs text-neutral-500">{new Date(o.createdAt).toISOString().slice(0, 10)}</p>
         </div>
@@ -54,13 +54,20 @@ async function Sheet({ params }: Pick<PageProps<"/[locale]/admin/orders/[number]
           <p className="text-neutral-500">Delivery {new Date(o.deliveryDate).toISOString().slice(0, 10)}</p>
         </div>
       </div>
+      {o.gift?.enabled && (
+        <div className="border border-neutral-400 p-5 text-center">
+          <p className="text-xs tracking-widest text-neutral-500 uppercase">A gift{o.gift.to ? ` for ${o.gift.to}` : ""}</p>
+          {o.gift.message && <p className="mt-2 text-base italic">“{o.gift.message}”</p>}
+          <p className="mt-2 text-xs text-neutral-500">From {c.name}</p>
+        </div>
+      )}
       <table className="w-full">
         <thead>
           <tr className="border-b border-neutral-300 text-xs tracking-widest text-neutral-500 uppercase">
             <th className="py-2 text-start font-normal">Item</th>
             <th className="py-2 text-end font-normal">Qty</th>
-            <th className="py-2 text-end font-normal">Price</th>
-            <th className="py-2 text-end font-normal">Total</th>
+            {!o.gift?.enabled && <th className="py-2 text-end font-normal">Price</th>}
+            {!o.gift?.enabled && <th className="py-2 text-end font-normal">Total</th>}
           </tr>
         </thead>
         <tbody>
@@ -68,20 +75,21 @@ async function Sheet({ params }: Pick<PageProps<"/[locale]/admin/orders/[number]
             <tr key={`${i.productSlug}-${i.size}`} className="border-b border-neutral-200">
               <td className="py-2">{i.brand} {i.title}{i.size && ` · ${i.size}`}</td>
               <td className="py-2 text-end">{i.qty}</td>
-              <td className="py-2 text-end">{egp(i.unitPrice)}</td>
-              <td className="py-2 text-end">{egp(i.unitPrice * i.qty)}</td>
+              {!o.gift?.enabled && <td className="py-2 text-end">{egp(i.unitPrice)}</td>}
+              {!o.gift?.enabled && <td className="py-2 text-end">{egp(i.unitPrice * i.qty)}</td>}
             </tr>
           ))}
         </tbody>
       </table>
-      <div className="ms-auto flex w-64 flex-col gap-1">
+      {!o.gift?.enabled && <div className="ms-auto flex w-64 flex-col gap-1">
         <p className="flex justify-between"><span>Subtotal</span><span>{egp(o.subtotal)}</span></p>
         {o.discount > 0 && <p className="flex justify-between"><span>Discount{o.couponCode && ` (${o.couponCode})`}</span><span>−{egp(o.discount)}</span></p>}
         <p className="flex justify-between"><span>Shipping</span><span>{egp(o.shipping)}</span></p>
         <p className="flex justify-between border-t border-neutral-300 pt-1 text-base font-semibold"><span>Total</span><span>{egp(o.total)}</span></p>
         <p className="flex justify-between text-neutral-500"><span>{p.method.toUpperCase()} · {p.status}</span><span>{o.dueNow !== o.total ? `${egp(o.dueNow)} due now` : ""}</span></p>
+        {o.walletUsed > 0 && <p className="flex justify-between text-neutral-500"><span>Paid from wallet</span><span>−{egp(o.walletUsed)}</span></p>}
         {o.refunded && <p className="text-end font-medium text-red-700">REFUNDED</p>}
-      </div>
+      </div>}
       <p className="text-center text-xs text-neutral-500">Thank you for shopping SAKR. Exchanges within 14 days, unworn with tags.</p>
       <PrintButton />
     </div>

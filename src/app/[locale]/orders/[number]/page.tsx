@@ -42,6 +42,36 @@ async function OrderContent({ params, searchParams }: Pick<PageProps<"/[locale]/
             )}
           </div>
         )}
+        {order.paymentStatus === "pending" && order.paymentMethod === "card" && order.status === "awaiting_payment" && (
+          <p className="border border-blood/50 bg-blood/10 p-4 text-sm text-bone" role="status">
+            {locale === "ar" ? "لسه ما كمّلتش الدفع؟ القطعة محجوزة ليك شوية. لو الدفع وقف معاك كلمنا على واتساب وهنكمّله سوا." : "Haven't finished paying? Your pieces are held for a short while. If payment stalled, message us on WhatsApp and we'll finish it together."}
+          </p>
+        )}
+        {order.paymentStatus === "awaiting_review" && (
+          <p className="border border-ash p-4 text-sm text-steel" role="status">
+            {locale === "ar" ? "صورة التحويل وصلتنا. بنراجعها ودقايق ونأكدلك الأوردر." : "We have your transfer screenshot. We're checking it and will confirm the order shortly."}
+          </p>
+        )}
+        {(order.sameDay || order.gift || order.preorderShipsAt !== null || order.walletUsed > 0) && (
+          <ul className="flex flex-col gap-1 border border-ash p-4 text-sm text-steel">
+            {order.sameDay && <li>{locale === "ar" ? "شحن نفس اليوم" : "Same-day delivery"}</li>}
+            {order.preorderShipsAt !== null && (
+              <li>
+                {locale === "ar" ? "طلب مسبق" : "Pre-order"}
+                {order.preorderShipsAt ? ` · ${locale === "ar" ? "بيتشحن من" : "ships from"} ${order.preorderShipsAt}` : ""}.{" "}
+                {locale === "ar" ? "الباقي بيتدفع قبل الشحن." : "The balance is due before it ships."}
+              </li>
+            )}
+            {order.walletUsed > 0 && <li dir="auto">{locale === "ar" ? "اتدفع من المحفظة" : "Paid from wallet"}: {order.walletUsed.toLocaleString("en")} EGP</li>}
+            {order.gift && (
+              <li dir="auto">
+                {locale === "ar" ? "هدية" : "Gift"}
+                {order.gift.to ? ` · ${order.gift.to}` : ""}
+                {order.gift.message ? ` · "${order.gift.message}"` : ""}
+              </li>
+            )}
+          </ul>
+        )}
         <Link href="/account" className="self-start text-sm text-steel underline underline-offset-4 hover:text-bone">{t("viewOrders")} →</Link>
       </OrderView>
     </>

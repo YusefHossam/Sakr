@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { addToCart } from "@/lib/actions/cart";
 import { requestRestockNotice } from "@/lib/actions/engagement";
@@ -13,8 +13,10 @@ type Variant = ProductDetail["variants"][number];
 const CHANNELS = ["whatsapp", "snapchat", "instagram"] as const;
 
 /** Color, size and quantity pickers, live stock warnings, add-to-cart and restock alerts. */
-export function BuyBox({ product }: { product: Pick<ProductDetail, "slug" | "price" | "variants" | "promo"> }) {
+export function BuyBox({ product }: { product: Pick<ProductDetail, "slug" | "price" | "variants" | "promo" | "preorder"> }) {
   const t = useTranslations("product");
+  const locale = useLocale();
+  const L = (ar: string, en: string) => (locale === "ar" ? ar : en);
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
@@ -27,9 +29,13 @@ export function BuyBox({ product }: { product: Pick<ProductDetail, "slug" | "pri
   const [status, setStatus] = useState<"idle" | "added" | "stock" | "error">("idle");
 
   const variant: Variant | undefined = options.find((v) => (v.size ?? null) === size);
-  const stock = variant?.stock ?? 0;
-  const low = isLastPieces(stock);
-  const unit = variantPrice(product.price, variant ? stock : 0, product.promo);
+  const rawStock = variant?.stock ?? 0;
+  // Out of stock but open for pre-order: the pre-order units left stand in for the stock.
+  const preLeft = rawStock < 1 && product.preorder.enabled ? product.preorder.left : 0;
+  const isPre = preLeft > 0;
+  const stock = rawStock > 0 ? rawStock : preLeft;
+  const low = isLastPieces(rawStock);
+  const unit = variantPrice(product.price, variant ? rawStock : 0, product.promo);
   const salePrice = unit < product.price ? unit : null;
 
   function add() {
@@ -77,7 +83,7 @@ export function BuyBox({ product }: { product: Pick<ProductDetail, "slug" | "pri
           <legend className="mb-3 text-xs tracking-[0.25em] text-dust uppercase">{t("size")}</legend>
           <div className="grid grid-cols-4 gap-2 sm:grid-cols-6" dir="ltr">
             {options.map((v) => {
-              const out = v.stock < 1;
+              const out = v.stock < 1 && !(product.preorder.enabled && product.preorder.left > 0);
               const selected = (v.size ?? null) === size;
               return (
                 <button
@@ -108,6 +114,14 @@ export function BuyBox({ product }: { product: Pick<ProductDetail, "slug" | "pri
         </p>
       )}
 
+      {variant && isPre && (
+        <p className="border border-bone/40 bg-smoke px-4 py-3 text-sm text-bone" role="status">
+          {L("طلب مسبق", "Pre-order")}
+          {product.preorder.shipsAt ? ` · ${L("بيوصل", "ships")} ${product.preorder.shipsAt}` : ""} · {L(`فاضل ${preLeft} وحدة`, `${preLeft} left`)}
+          <span className="mt-1 block text-xs text-steel">{L("بتدفع ٥٠٪ عربون دلوقتي والباقي قبل الشحن.", "Pay a 50% deposit now, the rest before it ships.")}</span>
+        </p>
+      )}
+
       {variant && stock < 1 ? (
         <RestockForm slug={product.slug} size={variant.size} color={variant.color} />
       ) : (
@@ -130,7 +144,7 @@ export function BuyBox({ product }: { product: Pick<ProductDetail, "slug" | "pri
             disabled={!variant || pending}
             className="min-h-12 flex-1 bg-bone font-display tracking-[0.3em] text-ink uppercase transition-colors hover:bg-chrome disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {!variant ? t("selectSize") : pending ? t("adding") : status === "added" ? `✓ ${t("added")}` : t("addToCart")}
+            {!variant ? t("selectSize") : pending ? t("adding") : status === "added" ? `✓ ${t("added")}` : isPre ? L("اطلب مسبقًا", "Pre-order") : t("addToCart")}
           </button>
         </div>
       )}

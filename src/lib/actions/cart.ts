@@ -29,14 +29,17 @@ export async function addToCart(input: z.input<typeof itemSchema>): Promise<Cart
   const { slug, size, color, qty } = parsed.data;
 
   await connectDB();
-  const product = await Product.findOne({ slug, active: true }).select("variants").lean();
+  const product = await Product.findOne({ slug, active: true }).select("variants preorder").lean();
   const variant = product?.variants.find((v) => (v.size ?? null) === size && (v.color ?? null) === color);
   if (!variant) return { ok: false, error: "invalid" };
+  // Out of stock but open for pre-order: the pre-order units left count as the stock.
+  const preLeft = product?.preorder?.enabled ? Math.max(0, (product.preorder.limit ?? 0) - (product.preorder.taken ?? 0)) : 0;
+  const capacity = variant.stock > 0 ? variant.stock : preLeft;
 
   const cart = (await Cart.findOne({ userId: session.userId })) ?? new Cart({ userId: session.userId, items: [] });
   const line = cart.items.find((i) => sameLine(i, slug, size, color));
   const wanted = (line?.qty ?? 0) + qty;
-  if (wanted > variant.stock) return { ok: false, error: "stock" };
+  if (wanted > capacity) return { ok: false, error: "stock" };
   if (line) line.qty = Math.min(wanted, 10);
   else cart.items.push({ productSlug: slug, size, color, qty });
   await cart.save();
@@ -58,9 +61,10 @@ export async function updateCartLine(input: z.input<typeof lineSchema>): Promise
   const cart = await Cart.findOne({ userId: session.userId });
   if (!cart) return { ok: true, count: 0 };
   if (qty > 0) {
-    const product = await Product.findOne({ slug }).select("variants").lean();
+    const product = await Product.findOne({ slug }).select("variants preorder").lean();
     const stock = product?.variants.find((v) => (v.size ?? null) === size && (v.color ?? null) === color)?.stock ?? 0;
-    if (qty > stock) return { ok: false, error: "stock" };
+    const preLeft = product?.preorder?.enabled ? Math.max(0, (product.preorder.limit ?? 0) - (product.preorder.taken ?? 0)) : 0;
+    if (qty > (stock > 0 ? stock : preLeft)) return { ok: false, error: "stock" };
   }
   const index = cart.items.findIndex((i) => sameLine(i, slug, size, color));
   if (index >= 0) {

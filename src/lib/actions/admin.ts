@@ -18,7 +18,8 @@ import { ExchangeRequest } from "@/models/exchange";
 import { Order, ORDER_STATUSES } from "@/models/order";
 import { CATEGORIES, Product } from "@/models/product";
 import { Settings } from "@/models/settings";
-import { User } from "@/models/user";
+import { CASHBACK, moveWallet, refundWalletUse } from "@/lib/wallet";
+import { levelFor, User } from "@/models/user";
 
 export type AdminResult = { ok: true; message?: string } | { ok: false; error: string };
 
@@ -53,6 +54,7 @@ export async function rejectOrder(number: string): Promise<AdminResult> {
   order.history.push({ status: "cancelled", at: new Date(), note: "Cancelled by admin" });
   await order.save();
   await restock(order.items);
+  await refundWalletUse(order);
   updateTag(ordersTag(String(order.userId)));
   return { ok: true };
 }
@@ -73,6 +75,10 @@ export async function setOrderStatus(number: string, status: z.input<typeof stat
   // Delivered orders count toward the customer's level and earn points (BR-38 / BR-53).
   if (next === "delivered" && !wasDelivered) {
     if (order.payment!.method === "cod") order.payment!.status = "paid";
+    // Cashback by level goes to the wallet: the level the customer had before this order counts.
+    const buyer = await User.findById(order.userId).select("totalSpent");
+    const cashback = buyer ? Math.round(order.total * CASHBACK[levelFor(buyer.totalSpent)]) : 0;
+    if (cashback > 0) await moveWallet(String(order.userId), cashback, "cashback", { orderNumber: order.number, note: `${Math.round(CASHBACK[levelFor(buyer!.totalSpent)] * 100)}% cashback` });
     await User.updateOne({ _id: order.userId }, { $inc: { totalSpent: order.total, points: Math.floor(order.total * POINTS_PER_EGP) } });
   }
   await order.save();

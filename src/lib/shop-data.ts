@@ -22,6 +22,9 @@ export type CartLine = {
   unitPrice: number;
   listPrice: number;
   costPrice: number;
+  /** Sold before it is in stock: `stock` is then the pre-order units left. */
+  preorder: boolean;
+  shipsAt: string | null;
 };
 
 export async function getCartLines(userId: string): Promise<CartLine[]> {
@@ -30,7 +33,7 @@ export async function getCartLines(userId: string): Promise<CartLine[]> {
   if (!cart?.items.length) return [];
   const [products, { promos }] = await Promise.all([
     Product.find({ slug: { $in: cart.items.map((i) => i.productSlug) } })
-      .select("slug title brand brandSlug category images price costPrice variants")
+      .select("slug title brand brandSlug category images price costPrice variants preorder")
       .lean(),
     getSettings(),
   ]);
@@ -38,7 +41,10 @@ export async function getCartLines(userId: string): Promise<CartLine[]> {
   return cart.items.flatMap((i) => {
     const p = bySlug.get(i.productSlug);
     if (!p) return [];
-    const stock = p.variants.find((v) => (v.size ?? null) === (i.size ?? null) && (v.color ?? null) === (i.color ?? null))?.stock ?? 0;
+    const variantStock = p.variants.find((v) => (v.size ?? null) === (i.size ?? null) && (v.color ?? null) === (i.color ?? null))?.stock ?? 0;
+    const left = p.preorder?.enabled ? Math.max(0, (p.preorder.limit ?? 0) - (p.preorder.taken ?? 0)) : 0;
+    const isPre = variantStock < 1 && left > 0;
+    const stock = isPre ? left : variantStock;
     return [
       {
         slug: p.slug,
@@ -49,9 +55,11 @@ export async function getCartLines(userId: string): Promise<CartLine[]> {
         color: i.color ?? null,
         qty: i.qty,
         stock,
-        unitPrice: variantPrice(p.price, stock, promoFor(p, promos)),
+        unitPrice: variantPrice(p.price, isPre ? 0 : stock, promoFor(p, promos)),
         listPrice: p.price,
         costPrice: p.costPrice ?? 0,
+        preorder: isPre,
+        shipsAt: isPre && p.preorder?.shipsAt ? new Date(p.preorder.shipsAt).toISOString().slice(0, 10) : null,
       },
     ];
   });

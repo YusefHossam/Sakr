@@ -38,7 +38,7 @@ async function CheckoutContent() {
     getCartLines(session!.userId),
     getMyCoupons(session!.userId),
     getSettings(),
-    User.findById(session!.userId).select("name email phone phone2").lean(),
+    User.findById(session!.userId).select("name email phone phone2 walletBalance").lean(),
   ]);
   if (!lines.length) redirect({ href: "/cart", locale });
 
@@ -50,6 +50,7 @@ async function CheckoutContent() {
       shipping={{ egypt: settings.shippingEgypt, intl: settings.shippingIntl }}
       transfer={{ instapay: settings.transferInstapay, wallet: settings.transferWallet }}
       cardEnabled={paymobEnabled()}
+      wallet={user?.walletBalance ?? 0}
     />
   );
 }

@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
+import { PreorderForm } from "@/components/admin/more-forms";
 import { ProductEditor } from "@/components/admin/product-forms";
 import { Link } from "@/i18n/navigation";
 import { requireAdmin } from "@/lib/auth/admin";
@@ -36,6 +37,13 @@ async function Editor({ params }: Pick<PageProps<"/[locale]/admin/products/[slug
           <Link href={`/product/${p.slug}`} className="text-xs text-steel underline underline-offset-4">/product/{p.slug}</Link>
         </div>
       </div>
+      <PreorderForm
+        slug={p.slug}
+        enabled={!!p.preorder?.enabled}
+        limit={p.preorder?.limit ?? 50}
+        taken={p.preorder?.taken ?? 0}
+        shipsAt={p.preorder?.shipsAt ? new Date(p.preorder.shipsAt).toISOString().slice(0, 10) : ""}
+      />
       <ProductEditor
         slug={p.slug}
         initial={{

@@ -20,6 +20,10 @@ export type OrderSummary = {
   delayReason: string | null;
   delayCoupon: string | null;
   rewardCoupon: string | null;
+  sameDay: boolean;
+  gift: { to: string; message: string } | null;
+  preorderShipsAt: string | null;
+  walletUsed: number;
 };
 
 export function toSummary(o: OrderDoc & { createdAt?: Date }): OrderSummary {
@@ -41,6 +45,10 @@ export function toSummary(o: OrderDoc & { createdAt?: Date }): OrderSummary {
     delayReason: o.delay?.reason ?? null,
     delayCoupon: o.delay?.couponCode ?? null,
     rewardCoupon: o.rewardCouponCode ?? null,
+    sameDay: !!o.sameDay,
+    gift: o.gift?.enabled ? { to: o.gift.to ?? "", message: o.gift.message ?? "" } : null,
+    preorderShipsAt: o.preorder?.enabled ? (o.preorder.shipsAt ? new Date(o.preorder.shipsAt).toISOString().slice(0, 10) : "") : null,
+    walletUsed: o.walletUsed ?? 0,
   };
 }
 

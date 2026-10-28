@@ -33,6 +33,8 @@ const userSchema = new Schema(
     // Admin controls: a blocked customer cannot log in; the note is internal.
     blocked: { type: Boolean, default: false },
     adminNote: { type: String, default: "", maxlength: 500 },
+    // Store credit in EGP: refunds, gifts and cashback. Movements are in WalletTx.
+    walletBalance: { type: Number, default: 0, min: 0 },
     points: { type: Number, default: 0 },
     sizePassport: {
       top: { type: String, default: null },

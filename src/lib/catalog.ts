@@ -250,6 +250,8 @@ export type ProductDetail = {
   description: string;
   descriptionAr: string;
   price: number;
+  /** Open for pre-order: sold before it is in stock, `left` units, shipping on shipsAt. */
+  preorder: { enabled: boolean; left: number; shipsAt: string | null };
   images: string[];
   colors: string[];
   variants: { size: string | null; color: string | null; stock: number }[];
@@ -266,6 +268,7 @@ type DetailSource = Omit<CardSource, "variants"> & {
   modelKey?: string | null;
   description?: string;
   descriptionAr?: string;
+  preorder?: { enabled?: boolean; limit?: number; taken?: number; shipsAt?: Date | null };
   colors?: string[];
   variants?: { size: string | null; color: string | null; stock: number }[];
 };
@@ -291,7 +294,7 @@ export async function getProduct(slug: string): Promise<ProductDetail | null> {
   cacheLife("minutes");
   await connectDB();
   const p = await Product.findOne({ slug, active: true })
-    .select("slug title brand brandSlug category subcategory model modelKey colorway description descriptionAr price images colors variants")
+    .select("slug title brand brandSlug category subcategory model modelKey colorway description descriptionAr price images colors variants preorder")
     .lean<DetailSource>();
   if (!p) return null;
 
@@ -332,6 +335,11 @@ export async function getProduct(slug: string): Promise<ProductDetail | null> {
     description: p.description ?? "",
     descriptionAr: p.descriptionAr ?? "",
     price: p.price,
+    preorder: {
+      enabled: !!p.preorder?.enabled,
+      left: p.preorder?.enabled ? Math.max(0, (p.preorder.limit ?? 0) - (p.preorder.taken ?? 0)) : 0,
+      shipsAt: p.preorder?.shipsAt ? new Date(p.preorder.shipsAt).toISOString().slice(0, 10) : null,
+    },
     images: p.images ?? [],
     colors: p.colors ?? [],
     variants: (p.variants ?? []).map((v) => ({ size: v.size ?? null, color: v.color ?? null, stock: v.stock })),

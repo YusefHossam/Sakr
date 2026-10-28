@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Price } from "@/components/product/price";
 import { updateCartLine } from "@/lib/actions/cart";
@@ -9,6 +9,7 @@ import type { CartLine } from "@/lib/shop-data";
 
 export function CartLines({ lines }: { lines: CartLine[] }) {
   const t = useTranslations("cart");
+  const locale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +37,12 @@ export function CartLines({ lines }: { lines: CartLine[] }) {
             <p className="text-xs text-steel">
               {l.size && <>{t("size")}: <span dir="ltr">{l.size}</span></>} {l.color && <>· {t("color")}: {l.color}</>}
             </p>
+            {l.preorder && (
+              <p className="text-xs text-bone">
+                {locale === "ar" ? "طلب مسبق" : "Pre-order"}
+                {l.shipsAt ? ` · ${locale === "ar" ? "بيتشحن من" : "ships from"} ${l.shipsAt}` : ""}
+              </p>
+            )}
             {l.qty > l.stock && <p className="text-xs text-blood">{t("unavailable")}</p>}
             <div className="mt-auto flex flex-wrap items-center gap-3">
               <label className="sr-only" htmlFor={`qty-${l.slug}-${l.size}`}>{t("qty")}</label>

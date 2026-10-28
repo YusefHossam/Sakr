@@ -6,7 +6,7 @@ import { adminButton, adminField } from "@/components/admin/ui";
 import { useRouter } from "@/i18n/navigation";
 import type { AdminResult } from "@/lib/actions/admin";
 import {
-  addCustomerPoints, bulkActive, bulkPrice, bulkStock, grantCustomerCoupon, resetCustomerPassword, restockProduct, saveContent,
+  addCustomerPoints, adjustCustomerWallet, refundOrderToWallet, setPreorder, bulkActive, bulkPrice, bulkStock, grantCustomerCoupon, resetCustomerPassword, restockProduct, saveContent,
   saveCustomerNote, saveOrderNote, setCustomerBlocked, setCustomerLevel, setCustomerRole, setDeliveryDate, setOrderRefunded,
 } from "@/lib/actions/admin-more";
 
@@ -203,6 +203,66 @@ export function ContentForm({ announcement, banners: initial }: { announcement: 
 
       <div className="flex items-center gap-3">
         <button type="button" disabled={pending} onClick={() => run(() => saveContent({ announcementText: text, announcementActive: active, banners }))} className={adminButton}>{L("احفظ المحتوى", "Save content")}</button>
+        {status}
+      </div>
+    </div>
+  );
+}
+
+// ---------- Phase C: wallet, refunds to wallet, pre-orders ----------
+
+export function WalletControl({ id, balance }: { id: string; balance: number }) {
+  const { run, pending, status, L } = useRun();
+  const [amount, setAmount] = useState("500");
+  const [note, setNote] = useState("");
+  return (
+    <div className="flex flex-col gap-3 border border-ash p-4">
+      <p className="text-sm text-bone">{L("المحفظة", "Wallet")}: <span dir="ltr">{balance.toLocaleString("en")} EGP</span></p>
+      <div className="flex flex-wrap items-end gap-3">
+        <label className={label}>
+          {L("المبلغ (+ إضافة / − خصم)", "Amount (+ add / − take)")}
+          <input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="numeric" dir="ltr" className={`${adminField} w-32`} />
+        </label>
+        <label className={`${label} min-w-48 flex-1`}>
+          {L("السبب", "Reason")}
+          <input value={note} onChange={(e) => setNote(e.target.value)} maxLength={200} className={adminField} />
+        </label>
+        <button type="button" disabled={pending} onClick={() => run(() => adjustCustomerWallet(id, Number(amount), note), L("تعدّل المحفظة؟", "Change the wallet?"))} className={adminButton}>{L("نفّذ", "Apply")}</button>
+        {status}
+      </div>
+    </div>
+  );
+}
+
+export function RefundToWalletButton({ number, total, refunded }: { number: string; total: number; refunded: boolean }) {
+  const { run, pending, status, L } = useRun();
+  const [amount, setAmount] = useState(String(total));
+  if (refunded) return null;
+  return (
+    <div className="flex flex-wrap items-end gap-3">
+      <label className={label}>
+        {L("رد للمحفظة (جنيه)", "Refund to wallet (EGP)")}
+        <input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="numeric" dir="ltr" className={`${adminField} w-32`} />
+      </label>
+      <button type="button" disabled={pending} onClick={() => run(() => refundOrderToWallet(number, Number(amount)), L("ترد الفلوس للمحفظة؟", "Refund into the wallet?"))} className={adminButton}>{L("رد للمحفظة", "Refund to wallet")}</button>
+      {status}
+    </div>
+  );
+}
+
+export function PreorderForm({ slug, enabled, limit, taken, shipsAt }: { slug: string; enabled: boolean; limit: number; taken: number; shipsAt: string }) {
+  const { run, pending, status, L } = useRun();
+  const [on, setOn] = useState(enabled);
+  const [units, setUnits] = useState(String(limit));
+  const [date, setDate] = useState(shipsAt);
+  return (
+    <div className="flex flex-col gap-3 border border-ash p-4">
+      <p className="text-sm text-bone">{L("طلب مسبق", "Pre-order")} {taken > 0 && <span className="text-steel" dir="ltr">· {taken}/{limit}</span>}</p>
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="flex items-center gap-2 text-sm text-bone"><input type="checkbox" checked={on} onChange={(e) => setOn(e.target.checked)} className="size-4 accent-[#b9b9b9]" />{L("مفتوح", "Open")}</label>
+        <label className={label}>{L("الكمية المتاحة", "Units")}<input value={units} onChange={(e) => setUnits(e.target.value)} inputMode="numeric" dir="ltr" className={`${adminField} w-28`} /></label>
+        <label className={label}>{L("ميعاد الشحن", "Ships on")}<input type="date" value={date} onChange={(e) => setDate(e.target.value)} dir="ltr" className={adminField} /></label>
+        <button type="button" disabled={pending} onClick={() => run(() => setPreorder(slug, { enabled: on, limit: Number(units), shipsAt: date }))} className={adminButton}>{L("احفظ", "Save")}</button>
         {status}
       </div>
     </div>

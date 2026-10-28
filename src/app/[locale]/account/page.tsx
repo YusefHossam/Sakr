@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { locale as rootLocale } from "next/root-params";
 import { getTranslations } from "next-intl/server";
 import { ExchangeButton, LogoutButton, SizePassportForm } from "@/components/account/account-forms";
+import { WalletSection } from "@/components/account/wallet-section";
 import { Price } from "@/components/product/price";
 import { PageHeader } from "@/components/shop/page-header";
 import { Link, redirect } from "@/i18n/navigation";
@@ -96,6 +97,8 @@ async function AccountContent() {
           <p className="text-sm text-steel">{t("noOrders")}</p>
         )}
       </section>
+
+      <WalletSection userId={session!.userId} />
 
       <section className="flex flex-col gap-4">
         <h2 className="street-heading text-3xl">{t("coupons")}</h2>

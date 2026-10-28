@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { CustomerTools } from "@/components/admin/more-forms";
+import { CustomerTools, WalletControl } from "@/components/admin/more-forms";
 import { Stat } from "@/components/admin/ui";
 import { Link } from "@/i18n/navigation";
 import { requireAdmin } from "@/lib/auth/admin";
@@ -52,6 +52,7 @@ async function Detail({ params }: Pick<PageProps<"/[locale]/admin/customers/[id]
       <section className="flex flex-col gap-3">
         <h2 className="street-heading text-2xl">{L("تحكم", "Controls")}</h2>
         <CustomerTools id={id} level={level} blocked={user.blocked} role={user.role} self={id === admin.userId} note={user.adminNote ?? ""} />
+        <WalletControl id={id} balance={user.walletBalance ?? 0} />
       </section>
       <section className="flex flex-col gap-3">
         <h2 className="street-heading text-2xl">{L("الأوردرات", "Orders")}</h2>

@@ -43,6 +43,13 @@ const productSchema = new Schema(
     },
     active: { type: Boolean, default: true },
     publishedAt: { type: Date, default: null },
+    // Pre-order: sold before it is in stock, up to `limit` units, shipping on shipsAt.
+    preorder: {
+      enabled: { type: Boolean, default: false },
+      limit: { type: Number, default: 50, min: 0 },
+      taken: { type: Number, default: 0, min: 0 },
+      shipsAt: { type: Date, default: null },
+    },
   },
   { timestamps: true },
 );

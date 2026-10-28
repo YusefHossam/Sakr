@@ -17,6 +17,7 @@ const orderItemSchema = new Schema(
     unitPrice: { type: Number, required: true }, // after the last-pieces discount
     listPrice: { type: Number, required: true },
     costPrice: { type: Number, default: 0 },
+    preorder: { type: Boolean, default: false }, // reserved from the pre-order units, not from stock
   },
   { _id: false },
 );
@@ -54,6 +55,22 @@ const orderSchema = new Schema(
     notes: { type: String, default: "" },
     adminNote: { type: String, default: "", maxlength: 500 }, // internal, never shown to the customer
     refunded: { type: Boolean, default: false },
+    // Wallet money spent on this order, and whether it has been given back (cancelled orders).
+    walletUsed: { type: Number, default: 0, min: 0 },
+    walletRefunded: { type: Boolean, default: false },
+    // Delivered the same day (Greater Cairo, ordered before the cutoff).
+    sameDay: { type: Boolean, default: false },
+    // A present: the parcel carries a card instead of prices.
+    gift: {
+      enabled: { type: Boolean, default: false },
+      to: { type: String, default: "", maxlength: 80 },
+      message: { type: String, default: "", maxlength: 240 },
+    },
+    // Pre-order for a drop that is not in stock yet: paid as a deposit, shipped on shipsAt.
+    preorder: {
+      enabled: { type: Boolean, default: false },
+      shipsAt: { type: Date, default: null },
+    },
     payment: {
       method: { type: String, enum: PAYMENT_METHODS, required: true },
       plan: { type: String, enum: ["full", "deposit"], default: "full" },

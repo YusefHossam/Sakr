@@ -292,7 +292,9 @@
       "empty": "Your cart is empty.",
       "cod": "Cash on delivery is for Egypt only.",
       "card": "Card payments aren't set up yet.",
-      "payment": "Couldn't start the payment. Try again."
+      "payment": "Couldn't start the payment. Try again.",
+      "wallet": "Not enough wallet balance.",
+      "sameday": "Same-day delivery is not available right now: Greater Cairo, before 2 pm, not on a Friday."
     }
   },
   "order": {

@@ -9,6 +9,7 @@ import { Gallery } from "@/components/product/gallery";
 import { FitNote } from "@/components/product/fit-note";
 import { GoesWith } from "@/components/product/goes-with";
 import { SellOutHint } from "@/components/product/sell-out-hint";
+import { SameDayBadge } from "@/components/product/same-day-badge";
 import { LiveViewers } from "@/components/product/live-viewers";
 import { PersonalBits } from "@/components/product/personal";
 import { ProductTabs } from "@/components/product/product-tabs";
@@ -102,6 +103,7 @@ async function ProductContent({ params }: Pick<PageProps<"/[locale]/product/[slu
           )}
 
           <BuyBox product={product} />
+          <SameDayBadge />
           <FitNote brandSlug={product.brandSlug} category={product.category} />
           <Suspense fallback={null}>
             <PersonalBits category={product.category} subcategory={product.subcategory} image={product.images[0] ?? null} title={product.title} />
