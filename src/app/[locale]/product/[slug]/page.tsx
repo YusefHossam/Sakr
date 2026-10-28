@@ -55,7 +55,7 @@ async function ProductContent({ params }: Pick<PageProps<"/[locale]/product/[slu
       </nav>
 
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-14">
-        <Gallery images={product.images} title={product.title} />
+        <Gallery images={product.images} title={product.title} slug={product.slug} />
 
         <div className="flex min-w-0 flex-col gap-6 lg:sticky lg:top-32 lg:self-start">
           <div className="flex flex-col gap-2" dir="ltr">

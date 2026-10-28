@@ -4,6 +4,7 @@ import { ColorwaySpotlight } from "@/components/home/colorway-spotlight";
 import { ForYou } from "@/components/home/for-you";
 import { Hero } from "@/components/home/hero";
 import { LabSection } from "@/components/home/lab-section";
+import { MoodSection } from "@/components/home/mood-section";
 import { Section } from "@/components/home/section";
 import { ProductCard } from "@/components/product/product-card";
 import { Link } from "@/i18n/navigation";
@@ -81,6 +82,8 @@ export default async function HomePage() {
       )}
 
       <ForYou title={t("forYou")} />
+
+      <MoodSection />
 
       <LabSection />
 

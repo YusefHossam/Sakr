@@ -7,6 +7,7 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { Bats } from "@/components/layout/bats";
 import { AnnouncementBar } from "@/components/layout/announcement-bar";
+import { MOOD_STORAGE_KEY } from "@/lib/moods";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { Intro } from "@/components/layout/intro";
@@ -44,6 +45,9 @@ export async function generateMetadata(): Promise<Metadata> {
 // Runs before first paint: hides the intro for visitors who already pressed ENTER this session.
 const skipIntroScript = `try{if(sessionStorage.getItem(${JSON.stringify(INTRO_KEY)}))document.documentElement.dataset.entered="1"}catch(e){}`;
 
+// Runs before first paint: Cairo day/night, and the mood the visitor picked last time.
+const themeScript = `try{var h=+new Intl.DateTimeFormat("en-US",{hour:"numeric",hourCycle:"h23",timeZone:"Africa/Cairo"}).format(new Date());document.documentElement.dataset.time=h>=19||h<6?"night":"day";var m=localStorage.getItem(${JSON.stringify(MOOD_STORAGE_KEY)});if(m)document.documentElement.dataset.mood=m}catch(e){}`;
+
 export default async function LocaleLayout({ children }: LayoutProps<"/[locale]">) {
   const locale = await rootLocale();
   if (!hasLocale(routing.locales, locale)) notFound();
@@ -59,6 +63,9 @@ export default async function LocaleLayout({ children }: LayoutProps<"/[locale]"
       <body className="grain vhs flex min-h-full flex-col">
         <Script id="skip-intro" strategy="beforeInteractive">
           {skipIntroScript}
+        </Script>
+        <Script id="theme" strategy="beforeInteractive">
+          {themeScript}
         </Script>
         <NextIntlClientProvider>
           <RegionProvider rates={rates}>

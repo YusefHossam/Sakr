@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, ViewTransition } from "react";
 
-export function Gallery({ images, title }: { images: string[]; title: string }) {
+export function Gallery({ images, title, slug }: { images: string[]; title: string; slug: string }) {
   const [active, setActive] = useState(0);
   if (!images.length) return <div className="aspect-square bg-tile" />;
   return (
@@ -25,10 +25,12 @@ export function Gallery({ images, title }: { images: string[]; title: string }) 
           ))}
         </ul>
       )}
+      <ViewTransition name={`p-${slug}`} share="auto">
       <div className="relative aspect-square min-w-0 flex-1 overflow-hidden bg-tile">
         {/* eslint-disable-next-line @next/next/no-img-element -- remote CDN image */}
         <img key={images[active]} src={images[active]} alt={title} className="size-full object-contain p-6 mix-blend-multiply md:p-10" style={{ animation: "fade-up 0.3s ease both" }} />
       </div>
+      </ViewTransition>
     </div>
   );
 }

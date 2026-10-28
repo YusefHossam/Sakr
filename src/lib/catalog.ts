@@ -150,6 +150,9 @@ export type Sort = (typeof SORTS)[number];
 export type ListingQuery = {
   category?: Category;
   brand?: string;
+  /** A mood: only these brands, and none of these categories. */
+  brands?: readonly string[];
+  excludeCategories?: readonly string[];
   type?: string;
   sale?: boolean;
   q?: string;
@@ -176,6 +179,8 @@ export async function getListing(query: ListingQuery): Promise<Listing> {
 
   const base: Record<string, unknown> = { active: true };
   if (query.category) base.category = query.category;
+  else if (query.excludeCategories?.length) base.category = { $nin: [...query.excludeCategories] };
+  if (query.brands?.length) base.brandSlug = { $in: [...query.brands] };
   if (query.type) base.subcategory = query.type;
   if (query.sale) base.variants = { $elemMatch: { stock: { $gte: 1, $lte: LAST_PIECES_MAX } } };
   if (query.q) base.$text = { $search: query.q };

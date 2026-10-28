@@ -3,6 +3,8 @@ import { z } from "zod";
 import { ProductCard } from "@/components/product/product-card";
 import { Link } from "@/i18n/navigation";
 import { getListing, SORTS, type Listing, type ListingQuery } from "@/lib/catalog";
+import type { Mood } from "@/lib/moods";
+import { MOODS } from "@/lib/moods";
 import type { Category } from "@/models/product";
 
 export type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -24,16 +26,20 @@ type Props = {
   category?: Category;
   /** Fixed brand (brand pages); hides the brand filter. */
   brand?: string;
+  /** Mood pages: restricts the grid to the mood's brands and kinds of pieces. */
+  mood?: Mood;
 };
 
 /** Product grid with brand/type/sale filters, sort and pagination, all driven by the URL. */
-export async function ShopListing({ basePath, searchParams, category, brand }: Props) {
+export async function ShopListing({ basePath, searchParams, category, brand, mood }: Props) {
   const raw = await searchParams;
   const flat = Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]));
   const parsed = querySchema.parse(flat);
   const query: ListingQuery = {
     category,
     brand: brand ?? parsed.brand,
+    brands: mood ? MOODS[mood].brands : undefined,
+    excludeCategories: mood ? MOODS[mood].exclude : undefined,
     type: category === "accessories" ? parsed.type : undefined,
     sale: parsed.sale === "last-pieces",
     q: parsed.q,
@@ -110,7 +116,7 @@ export async function ShopListing({ basePath, searchParams, category, brand }: P
       {listing.items.length ? (
         <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {listing.items.map((p, i) => (
-            <ProductCard key={p.slug} product={p} priority={i < 5} />
+            <ProductCard key={p.slug} product={p} priority={i < 5} transition />
           ))}
         </div>
       ) : (

@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { Falcon3D } from "./falcon-3d";
 
 /**
  * Poster-wall hero: rows of product shots drifting behind a smoke layer and the chrome wordmark.
@@ -25,8 +26,9 @@ export async function Hero({ images }: { images: string[] }) {
       <div className="absolute inset-x-0 bottom-0 -z-10 h-1/3 bg-gradient-to-t from-ink to-transparent" aria-hidden="true" />
       <div className="smoke-layer -z-10" aria-hidden="true" />
 
-      <div className="flex flex-col items-center gap-10 px-4 pt-24 text-center">
-        <h1 className="chrome-text font-gothic text-[clamp(6rem,24vw,16rem)] leading-[0.85]" dir="ltr">
+      <div className="flex flex-col items-center gap-6 px-4 pt-24 text-center">
+        <Falcon3D />
+        <h1 className="chrome-text font-gothic text-[clamp(5rem,18vw,12rem)] leading-[0.85]" dir="ltr">
           Sakr
         </h1>
         <Link href="/shop" className="group flex flex-col items-center gap-3 text-sm tracking-[0.6em] text-steel transition-colors hover:text-chrome" dir="ltr">
