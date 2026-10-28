@@ -1,6 +1,7 @@
 import "server-only";
 import { revalidateTag } from "next/cache";
 import { connectDB } from "./db";
+import { logEvent } from "./events";
 import { ordersTag } from "./tags";
 import { refundWalletUse } from "./wallet";
 import { Order } from "@/models/order";
@@ -38,6 +39,7 @@ export async function settleCardPayment(orderNumber: string, success: boolean, t
     await refundWalletUse(order);
   }
   await order.save();
+  await logEvent(orderNumber, success ? "payment.card-paid" : "payment.card-failed", { amount: order.total, detail: transactionId });
   revalidateTag(ordersTag(String(order.userId)), { expire: 0 });
   return order;
 }

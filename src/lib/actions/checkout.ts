@@ -12,6 +12,7 @@ import { getSettings, shippingFee } from "@/lib/settings";
 import { earliestDelivery } from "@/lib/shipping";
 import { findUsableCoupon, getCartLines, issueCoupon } from "@/lib/shop-data";
 import { cartTag, ordersTag } from "@/lib/tags";
+import { logEvent } from "@/lib/events";
 import { moveWallet } from "@/lib/wallet";
 import { REGIONS } from "@/lib/regions";
 import { Cart } from "@/models/cart";
@@ -178,6 +179,7 @@ export async function placeOrder(form: FormData): Promise<CheckoutResult> {
     return null;
   });
   if (!order) return { ok: false, error: "invalid" };
+  await logEvent(number, "order.placed", { detail: `${f.method}${sameDay ? ", same-day" : ""}${isPreorder ? ", pre-order" : ""}`, amount: total, actor: "customer" });
 
   if (needsProof && proof instanceof File) {
     await PaymentProof.create({ orderId: order._id, mime: proof.type, data: Buffer.from(await proof.arrayBuffer()) });

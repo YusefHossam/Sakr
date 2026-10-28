@@ -5,6 +5,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { addToCart } from "@/lib/actions/cart";
 import { requestRestockNotice } from "@/lib/actions/engagement";
+import { useLiveVariants } from "@/lib/live-stock";
+import { enqueue } from "@/lib/offline-cart";
 import { isLastPieces, LAST_PIECES_DISCOUNT, variantPrice } from "@/lib/pricing";
 import type { ProductDetail } from "@/lib/catalog";
 import { Price } from "./price";
@@ -13,7 +15,9 @@ type Variant = ProductDetail["variants"][number];
 const CHANNELS = ["whatsapp", "snapchat", "instagram"] as const;
 
 /** Color, size and quantity pickers, live stock warnings, add-to-cart and restock alerts. */
-export function BuyBox({ product }: { product: Pick<ProductDetail, "slug" | "price" | "variants" | "promo" | "preorder"> }) {
+export function BuyBox({ product: initial }: { product: Pick<ProductDetail, "slug" | "price" | "variants" | "promo" | "preorder"> }) {
+  const variants = useLiveVariants(initial.slug, initial.variants);
+  const product = { ...initial, variants };
   const t = useTranslations("product");
   const locale = useLocale();
   const L = (ar: string, en: string) => (locale === "ar" ? ar : en);
@@ -26,7 +30,7 @@ export function BuyBox({ product }: { product: Pick<ProductDetail, "slug" | "pri
   const firstInStock = options.find((v) => v.stock > 0) ?? null;
   const [size, setSize] = useState<string | null>(options.length === 1 ? (options[0].size ?? null) : (firstInStock?.size ?? null));
   const [qty, setQty] = useState(1);
-  const [status, setStatus] = useState<"idle" | "added" | "stock" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "added" | "queued" | "stock" | "error">("idle");
 
   const variant: Variant | undefined = options.find((v) => (v.size ?? null) === size);
   const rawStock = variant?.stock ?? 0;
@@ -40,8 +44,15 @@ export function BuyBox({ product }: { product: Pick<ProductDetail, "slug" | "pri
 
   function add() {
     if (!variant || stock < 1) return;
+    const line = { slug: product.slug, size: variant.size ?? null, color: variant.color ?? null, qty };
+    // Offline: keep the line and send it when the connection returns.
+    if (!navigator.onLine) {
+      enqueue(line);
+      setStatus("queued");
+      return;
+    }
     startTransition(async () => {
-      const res = await addToCart({ slug: product.slug, size: variant.size, color: variant.color, qty });
+      const res = await addToCart(line);
       if (res.ok) {
         setStatus("added");
         router.refresh();
@@ -148,6 +159,7 @@ export function BuyBox({ product }: { product: Pick<ProductDetail, "slug" | "pri
           </button>
         </div>
       )}
+      {status === "queued" && <p className="text-sm text-steel" role="status">{L("إنت أوفلاين. القطعة محفوظة وهتتضاف للسلة أول ما النت يرجع.", "You're offline. It's saved and will be added to your cart when the connection returns.")}</p>}
       {status === "stock" && <p className="text-sm text-blood" role="alert">{t("soldOutSize")}</p>}
     </div>
   );

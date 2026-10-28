@@ -33,6 +33,7 @@ export async function Footer() {
         { href: "/duel", label: "Hot or Not" },
         { href: "/crew", label: "Crew" },
         { href: "/live", label: "Live drop" },
+        { href: "/status", label: "Status" },
         { href: "/contact", label: t("footer.contact") },
       ],
     },

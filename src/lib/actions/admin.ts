@@ -18,6 +18,7 @@ import { ExchangeRequest } from "@/models/exchange";
 import { Order, ORDER_STATUSES } from "@/models/order";
 import { CATEGORIES, Product } from "@/models/product";
 import { Settings } from "@/models/settings";
+import { logEvent } from "@/lib/events";
 import { CASHBACK, moveWallet, refundWalletUse } from "@/lib/wallet";
 import { levelFor, User } from "@/models/user";
 
@@ -39,6 +40,7 @@ export async function approvePayment(number: string): Promise<AdminResult> {
     order.history.push({ status: "confirmed", at: new Date(), note: "Transfer approved" });
   }
   await order.save();
+  await logEvent(number, "payment.approved", { amount: order.total, actor: admin.name });
   updateTag(ordersTag(String(order.userId)));
   return { ok: true };
 }
@@ -55,6 +57,7 @@ export async function rejectOrder(number: string): Promise<AdminResult> {
   await order.save();
   await restock(order.items);
   await refundWalletUse(order);
+  await logEvent(number, "order.cancelled", { actor: admin.name });
   updateTag(ordersTag(String(order.userId)));
   return { ok: true };
 }
@@ -82,6 +85,7 @@ export async function setOrderStatus(number: string, status: z.input<typeof stat
     await User.updateOne({ _id: order.userId }, { $inc: { totalSpent: order.total, points: Math.floor(order.total * POINTS_PER_EGP) } });
   }
   await order.save();
+  await logEvent(number, "order.status", { detail: next, actor: admin.name });
   updateTag(ordersTag(String(order.userId)));
   return { ok: true };
 }

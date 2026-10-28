@@ -36,7 +36,7 @@ slides category, clean hero, **full admin panel** (customers, catalog bulk tools
 - 29 Crew mode: crews pool points for a group discount
 - 30 Live drop stream with a buy button and chat
 
-## Phase E: Engineering
+## Phase E: Engineering (done 2026-10-28; reports still read orders directly, not the event log)
 - 39 Live updates (SSE): viewers and stock change without refresh
 - 45 Offline cart that syncs when the connection returns
 - 46 Event log for every order/payment/shipping event; reports read from it

@@ -7,6 +7,7 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { Bats } from "@/components/layout/bats";
 import { AnnouncementBar } from "@/components/layout/announcement-bar";
+import { CartSync } from "@/components/cart/cart-sync";
 import { ChatWidget } from "@/components/layout/chat-widget";
 import { MOOD_STORAGE_KEY } from "@/lib/moods";
 import { Footer } from "@/components/layout/footer";
@@ -79,6 +80,7 @@ export default async function LocaleLayout({ children }: LayoutProps<"/[locale]"
               <Footer />
               <MusicPlayer />
               <ChatWidget />
+              <CartSync />
             </MusicProvider>
           </RegionProvider>
         </NextIntlClientProvider>
