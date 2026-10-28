@@ -19,6 +19,7 @@
     "shorts": "شورتات",
     "tracksuits": "تراكسوت",
     "footwear": "شوزات",
+    "slides": "سلايدز",
     "accessories": "إكسسوارات",
     "brands": "البراندات",
     "shopAll": "تسوّق الكل"
@@ -56,8 +57,7 @@
     "license": "الرخصة"
   },
   "home": {
-    "heroTitle": "اتولدنا في الشارع",
-    "heroText": "Chrome Hearts وCorteiz وJordan وOff-White وRick Owens، وكل لون نزل منهم. شارع واحد. كرو واحدة.",
+    "heroEnter": "ENTER",
     "heroCta": "ادخل الدروب",
     "adsLabel": "شغّال دلوقتي",
     "adLastPiecesTitle": "آخر القطع. خصم ٨٥٪.",

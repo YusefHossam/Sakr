@@ -267,6 +267,7 @@ const LOOK_PAIRS: Record<Category, Category[]> = {
   shorts: ["tees", "footwear", "accessories"],
   tracksuits: ["footwear", "accessories", "tees"],
   footwear: ["hoodies", "pants", "accessories"],
+  slides: ["tees", "shorts", "accessories"],
   accessories: ["hoodies", "tees", "footwear"],
 };
 

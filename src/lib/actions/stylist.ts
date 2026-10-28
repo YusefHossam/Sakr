@@ -13,7 +13,7 @@ export type StylistResult = { ok: true; outfits: Outfit[]; source: "gemini" | "r
 const SLOTS = {
   top: ["hoodies", "tees", "crewnecks"],
   bottom: ["pants", "sweatpants", "shorts"],
-  shoes: ["footwear"],
+  shoes: ["footwear", "slides"],
   outer: ["jackets"],
   accessory: ["accessories"],
 } as const;

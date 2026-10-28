@@ -42,14 +42,14 @@ const SHOES: SizeChart = {
 };
 
 export function sizeChartFor(category: Category): SizeChart | null {
-  if (category === "footwear") return SHOES;
+  if (category === "footwear" || category === "slides") return SHOES;
   if (["pants", "sweatpants", "shorts"].includes(category)) return BOTTOMS;
   if (category === "accessories") return null;
   return TOPS;
 }
 
 export function washingKey(category: Category) {
-  if (category === "footwear") return "washingShoes" as const;
+  if (category === "footwear" || category === "slides") return "washingShoes" as const;
   if (category === "accessories") return "washingAccessories" as const;
   if (["pants", "sweatpants", "shorts"].includes(category)) return "washingBottoms" as const;
   return "washingTops" as const;

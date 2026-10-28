@@ -25,17 +25,13 @@ export async function Hero({ images }: { images: string[] }) {
       <div className="absolute inset-x-0 bottom-0 -z-10 h-1/3 bg-gradient-to-t from-ink to-transparent" aria-hidden="true" />
       <div className="smoke-layer -z-10" aria-hidden="true" />
 
-      <div className="flex flex-col items-center gap-6 px-4 pt-24 text-center">
-        <p className="chrome-text font-gothic text-[clamp(6rem,24vw,16rem)] leading-[0.85]" dir="ltr">
+      <div className="flex flex-col items-center gap-10 px-4 pt-24 text-center">
+        <h1 className="chrome-text font-gothic text-[clamp(6rem,24vw,16rem)] leading-[0.85]" dir="ltr">
           Sakr
-        </p>
-        <h1 className="street-heading animate-flicker text-[clamp(1.8rem,5vw,3.5rem)] leading-none">{t("heroTitle")}</h1>
-        <p className="max-w-xl text-sm leading-relaxed text-steel md:text-base">{t("heroText")}</p>
-        <Link
-          href="/shop"
-          className="mt-2 border border-bone/70 px-10 py-3.5 font-display tracking-[0.35em] text-bone uppercase transition-colors hover:bg-bone hover:text-ink"
-        >
-          {t("heroCta")}
+        </h1>
+        <Link href="/shop" className="group flex flex-col items-center gap-3 text-sm tracking-[0.6em] text-steel transition-colors hover:text-chrome" dir="ltr">
+          <span className="h-14 w-px bg-gradient-to-b from-transparent to-bone/60 transition-all duration-500 group-hover:h-20" aria-hidden="true" />
+          {t("heroEnter")}
         </Link>
       </div>
     </section>

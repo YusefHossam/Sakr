@@ -15,7 +15,7 @@ const SLOTS = {
   outer: { categories: ["jackets"] },
   top: { categories: ["hoodies", "tees", "crewnecks"] },
   bottom: { categories: ["pants", "sweatpants", "shorts"] },
-  shoes: { categories: ["footwear"] },
+  shoes: { categories: ["footwear", "slides"] },
   accessory: { categories: ["accessories"] },
 } as const;
 type Slot = keyof typeof SLOTS;

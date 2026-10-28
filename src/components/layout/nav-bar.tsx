@@ -7,7 +7,7 @@ import type { NavBrand, NavCategory } from "@/lib/catalog";
 import { Logo } from "./logo";
 import { RegionMenu } from "./region-menu";
 
-const TOP_CATEGORIES = ["hoodies", "crewnecks", "jackets", "pants", "sweatpants", "tees", "shorts", "footwear", "accessories"] as const;
+const TOP_CATEGORIES = ["hoodies", "crewnecks", "jackets", "pants", "sweatpants", "tees", "shorts", "footwear", "slides", "accessories"] as const;
 const ACCESSORY_TYPES = ["chains", "bracelets", "rings", "sunglasses", "socks", "boxers", "headwear", "bags", "belts"] as const;
 
 type MenuKey = (typeof TOP_CATEGORIES)[number] | "brands";

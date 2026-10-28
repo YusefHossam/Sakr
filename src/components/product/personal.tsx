@@ -16,7 +16,7 @@ export async function PersonalBits({ category, image, title }: { category: Categ
   if (session) {
     await connectDB();
     const passport = (await User.findById(session.userId).select("sizePassport").lean())?.sizePassport;
-    size = TOPS.includes(category) ? (passport?.top ?? null) : BOTTOMS.includes(category) ? (passport?.bottom ?? null) : category === "footwear" && passport?.shoeUS ? `US ${passport.shoeUS}` : null;
+    size = TOPS.includes(category) ? (passport?.top ?? null) : BOTTOMS.includes(category) ? (passport?.bottom ?? null) : (category === "footwear" || category === "slides") && passport?.shoeUS ? `US ${passport.shoeUS}` : null;
   }
   return (
     <div className="flex flex-col gap-3">
