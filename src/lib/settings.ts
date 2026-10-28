@@ -19,6 +19,7 @@ export type StoreSettings = {
   transferWallet: string;
   drop: { locked: boolean; password: string; name: string; opensAt: string | null; vipEarlyHours: number };
   announcement: { text: string; active: boolean };
+  live: { active: boolean; title: string; embedUrl: string; productSlugs: string[] };
   banners: { title: string; text: string; href: string; image: string; active: boolean }[];
 };
 
@@ -54,6 +55,7 @@ export async function getSettings(): Promise<StoreSettings> {
       vipEarlyHours: doc.drop?.vipEarlyHours ?? 3,
     },
     announcement: { text: doc.announcement?.text ?? "", active: doc.announcement?.active ?? false },
+    live: { active: doc.live?.active ?? false, title: doc.live?.title ?? "", embedUrl: doc.live?.embedUrl ?? "", productSlugs: doc.live?.productSlugs ?? [] },
     banners: (doc.banners ?? []).map((b) => ({ title: b.title ?? "", text: b.text ?? "", href: b.href ?? "/shop", image: b.image ?? "", active: b.active ?? true })),
   };
 }

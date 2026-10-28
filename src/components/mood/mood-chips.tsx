@@ -4,14 +4,14 @@ import { Link } from "@/i18n/navigation";
 import { MOOD_KEYS, MOODS, type Mood } from "@/lib/moods";
 
 /** The four moods as links, with a way back to the default look. */
-export async function MoodChips({ active, base = "moods" }: { active?: Mood; base?: "moods" | "fits" }) {
+export async function MoodChips({ active, base = "moods" }: { active?: Mood; base?: "moods" | "fits" | "duel" }) {
   const locale = (await getLocale()) === "ar" ? "ar" : "en";
   return (
     <div className="flex flex-wrap items-center gap-2" role="navigation" aria-label="Mood">
       {MOOD_KEYS.map((m) => (
         <Link
           key={m}
-          href={`/${base}/${m}`}
+          href={base === "duel" ? `/duel?mood=${m}` : `/${base}/${m}`}
           className={`border px-4 py-2 text-sm transition-colors ${active === m ? "border-bone bg-bone text-ink" : "border-ash text-steel hover:border-dust hover:text-bone"}`}
         >
           {MOODS[m][locale]}

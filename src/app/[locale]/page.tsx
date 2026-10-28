@@ -3,6 +3,7 @@ import { AdCarousel, type AdSlide } from "@/components/home/ad-carousel";
 import { ColorwaySpotlight } from "@/components/home/colorway-spotlight";
 import { ForYou } from "@/components/home/for-you";
 import { Hero } from "@/components/home/hero";
+import { CrowdSection } from "@/components/home/crowd-section";
 import { LabSection } from "@/components/home/lab-section";
 import { MoodSection } from "@/components/home/mood-section";
 import { Section } from "@/components/home/section";
@@ -86,6 +87,7 @@ export default async function HomePage() {
       <MoodSection />
 
       <LabSection />
+      <CrowdSection />
 
       {spotlight && (
         <Section title={t("spotlightTitle")} text={t("spotlightText")}>

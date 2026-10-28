@@ -29,7 +29,7 @@ slides category, clean hero, **full admin panel** (customers, catalog bulk tools
 - 33 Same-day shipping in Greater Cairo for orders before 2 pm, with a countdown
 - 38 All site copy in proper street Egyptian (404, empty cart, payment reminders)
 
-## Phase D: Community
+## Phase D: Community (done 2026-10-28: Hot or Not duel + fit of the week, public wardrobe profile, badges, Crew mode, Live drop)
 - 8 Hot or Not: two looks head to head, best look of the week on the home page
 - 26 Public "My wardrobe" profile (what I bought, my level, my badges)
 - 27 Badges and achievements

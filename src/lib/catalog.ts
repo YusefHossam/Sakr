@@ -461,3 +461,12 @@ export async function getFits(mood: Mood, day: string, count = 6): Promise<Fit[]
     outfits.map(async (outfit) => ({ outfit, cards: await toCards(outfit.items.map((i) => docs.get(i.slug)).filter((d): d is StyleDoc => !!d) as unknown as CardSource[]) })),
   );
 }
+
+/** Cards for a list of slugs, in the order given (used by the duel leaderboard). */
+export async function getCardsBySlugs(slugs: string[]): Promise<ProductCard[]> {
+  await connectDB();
+  const docs = await Product.find({ slug: { $in: slugs }, active: true }).select(CARD_FIELDS).lean<CardSource[]>();
+  const cards = await toCards(docs);
+  const order = new Map(slugs.map((x, i) => [x, i]));
+  return cards.sort((a, b) => (order.get(a.slug) ?? 0) - (order.get(b.slug) ?? 0));
+}

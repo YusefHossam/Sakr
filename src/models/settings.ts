@@ -24,6 +24,13 @@ const settingsSchema = new Schema(
     },
     transferInstapay: { type: String, default: "sakr@instapay" },
     transferWallet: { type: String, default: "01000000000" },
+    // The live drop: a YouTube/Twitch embed, the pieces on sale during it, and the chat switch.
+    live: {
+      active: { type: Boolean, default: false },
+      title: { type: String, default: "" },
+      embedUrl: { type: String, default: "" },
+      productSlugs: { type: [String], default: [] },
+    },
     // Thin bar above the header, and extra banners that lead the home carousel.
     announcement: { text: { type: String, default: "" }, active: { type: Boolean, default: false } },
     banners: {

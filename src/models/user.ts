@@ -35,6 +35,10 @@ const userSchema = new Schema(
     adminNote: { type: String, default: "", maxlength: 500 },
     // Store credit in EGP: refunds, gifts and cashback. Movements are in WalletTx.
     walletBalance: { type: Number, default: 0, min: 0 },
+    // Public wardrobe page at /u/<handle>. Off until the customer turns it on.
+    handle: { type: String, lowercase: true, trim: true, match: /^[a-z0-9_]{3,20}$/, unique: true, sparse: true },
+    profilePublic: { type: Boolean, default: false },
+    bio: { type: String, default: "", maxlength: 140 },
     points: { type: Number, default: 0 },
     sizePassport: {
       top: { type: String, default: null },

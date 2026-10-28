@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { locale as rootLocale } from "next/root-params";
 import { getTranslations } from "next-intl/server";
 import { ExchangeButton, LogoutButton, SizePassportForm } from "@/components/account/account-forms";
+import { BadgeGrid } from "@/components/social/badge-grid";
+import { ProfileForm } from "@/components/social/profile-form";
 import { WalletSection } from "@/components/account/wallet-section";
 import { Price } from "@/components/product/price";
 import { PageHeader } from "@/components/shop/page-header";
@@ -10,6 +12,8 @@ import { Link, redirect } from "@/i18n/navigation";
 import { getSession } from "@/lib/auth/session";
 import { connectDB } from "@/lib/db";
 import { exchangeOpen, getOrdersForUser } from "@/lib/order-queries";
+import { badgesFor } from "@/lib/badges";
+import { getBadgeStats } from "@/lib/social-data";
 import { getSettings } from "@/lib/settings";
 import { getMyCoupons } from "@/lib/shop-data";
 import { EXCHANGE_DAYS, ExchangeRequest } from "@/models/exchange";
@@ -38,13 +42,14 @@ async function AccountContent() {
   if (!session) redirect({ href: "/login?next=/account", locale });
   await connectDB();
   const [user, orders, coupons, settings, exchanges] = await Promise.all([
-    User.findById(session!.userId).select("name totalSpent points sizePassport").lean(),
+    User.findById(session!.userId).select("name totalSpent points sizePassport handle bio profilePublic").lean(),
     getOrdersForUser(session!.userId),
     getMyCoupons(session!.userId),
     getSettings(),
     ExchangeRequest.find({ userId: session!.userId }).select("orderNumber").lean(),
   ]);
   if (!user) redirect({ href: "/login", locale });
+  const badges = badgesFor(await getBadgeStats(session!.userId), locale === "ar" ? "ar" : "en");
   const level = levelFor(user!.totalSpent);
   const next = level === "rookie" ? "og" : level === "og" ? "legend" : null;
   const requested = new Set(exchanges.map((e) => e.orderNumber));
@@ -99,6 +104,16 @@ async function AccountContent() {
       </section>
 
       <WalletSection userId={session!.userId} />
+
+      <section className="flex flex-col gap-4">
+        <h2 className="street-heading text-3xl">{locale === "ar" ? "الشارات" : "Badges"}</h2>
+        <BadgeGrid badges={badges} showHints />
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="street-heading text-3xl">{locale === "ar" ? "دولابي العام" : "My public wardrobe"}</h2>
+        <ProfileForm initial={{ handle: user!.handle ?? "", bio: user!.bio ?? "", profilePublic: user!.profilePublic ?? false }} />
+      </section>
 
       <section className="flex flex-col gap-4">
         <h2 className="street-heading text-3xl">{t("coupons")}</h2>

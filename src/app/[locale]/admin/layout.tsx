@@ -13,6 +13,7 @@ const NAV: readonly (readonly [string, string | null, string, string])[] = [
   ["/catalog", null, "الكتالوج", "Catalog"],
   ["/marketing", "marketing", "", ""],
   ["/content", null, "المحتوى", "Content"],
+  ["/live", null, "اللايف", "Live drop"],
   ["/inbox", "inbox", "", ""],
   ["/analytics", null, "التحليلات", "Analytics"],
   ["/reports", "reports", "", ""],
