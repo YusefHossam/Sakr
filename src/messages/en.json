@@ -425,7 +425,9 @@
       "status": "Status",
       "date": "Date",
       "delivery": "Delivery",
-      "none": "No orders."
+      "none": "No orders.",
+      "search": "Search order no., name or phone",
+      "searchGo": "Search"
     },
     "order": {
       "items": "Items",

@@ -7,12 +7,13 @@ import { LabSection } from "@/components/home/lab-section";
 import { Section } from "@/components/home/section";
 import { ProductCard } from "@/components/product/product-card";
 import { Link } from "@/i18n/navigation";
+import { getSettings } from "@/lib/settings";
 import { getBrandImages, getHeroImages, getLastPieces, getModelSpotlight, getNavData, getNewIn } from "@/lib/catalog";
 
 const FEATURED_BRAND = "chrome-hearts";
 
 export default async function HomePage() {
-  const [t, heroImages, lastPieces, spotlight, newIn, nav, featuredImages] = await Promise.all([
+  const [t, heroImages, lastPieces, spotlight, newIn, nav, featuredImages, settings] = await Promise.all([
     getTranslations("home"),
     getHeroImages(),
     getLastPieces(8),
@@ -20,11 +21,15 @@ export default async function HomePage() {
     getNewIn(12),
     getNavData(),
     getBrandImages(FEATURED_BRAND),
+    getSettings(),
   ]);
   const featured = nav.brands.find((b) => b.slug === FEATURED_BRAND);
 
   // Running promotions, discounts first (BR-61).
-  const slides: AdSlide[] = [];
+  // Banners set in Admin → Content lead the automatic ones.
+  const slides: AdSlide[] = settings.banners
+    .filter((b) => b.active && b.title)
+    .map((b, i) => ({ id: `custom-${i}`, eyebrow: "SAKR", title: b.title, text: b.text, href: b.href, images: b.image ? [b.image] : [], hot: false }));
   if (lastPieces.total) {
     slides.push({
       id: "last-pieces",

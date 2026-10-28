@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { requireAdmin } from "@/lib/auth/admin";
 import { connectDB } from "@/lib/db";
 import { Order, ORDER_STATUSES } from "@/models/order";
+import { ExportLink } from "@/components/admin/export-link";
 
 export default async function AdminOrders({ searchParams }: PageProps<"/[locale]/admin/orders">) {
   const t = await getTranslations("admin.orders");
@@ -22,8 +23,14 @@ async function OrdersTable({ searchParams }: Pick<PageProps<"/[locale]/admin/ord
   const [t, ts, tp, q] = await Promise.all([getTranslations("admin.orders"), getTranslations("order.statuses"), getTranslations("order.payments"), searchParams]);
   const status = typeof q.status === "string" && (ORDER_STATUSES as readonly string[]).includes(q.status) ? (q.status as (typeof ORDER_STATUSES)[number]) : null;
   const payment = q.payment === "awaiting_review" ? "awaiting_review" : null;
+  const text = typeof q.q === "string" ? q.q.trim().slice(0, 60) : "";
+  const re = text ? new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i") : null;
   await connectDB();
-  const orders = await Order.find({ ...(status ? { status } : {}), ...(payment ? { "payment.status": payment } : {}) })
+  const orders = await Order.find({
+    ...(status ? { status } : {}),
+    ...(payment ? { "payment.status": payment } : {}),
+    ...(re ? { $or: [{ number: re }, { "contact.name": re }, { "contact.phone": re }, { "contact.email": re }] } : {}),
+  })
     .sort({ createdAt: -1 })
     .limit(200)
     .select("number contact.name total status payment createdAt deliveryDate")
@@ -32,6 +39,11 @@ async function OrdersTable({ searchParams }: Pick<PageProps<"/[locale]/admin/ord
 
   return (
     <>
+      <form action="/admin/orders" className="flex flex-wrap items-center gap-3">
+        <input name="q" defaultValue={text} placeholder={t("search")} className="min-h-10 w-72 border border-ash bg-smoke px-3 text-sm text-bone placeholder:text-dust focus:border-steel focus:outline-none" />
+        <button className="min-h-10 border border-bone/70 px-4 text-xs tracking-[0.15em] text-bone uppercase hover:bg-bone hover:text-ink">{t("searchGo")}</button>
+        <ExportLink type="orders" />
+      </form>
       <div className="flex gap-2 overflow-x-auto pb-1">
         <Link href="/admin/orders" className={chip(!status && !payment)}>{t("all")}</Link>
         <Link href="/admin/orders?payment=awaiting_review" className={chip(!!payment)}>{tp("awaiting_review")}</Link>

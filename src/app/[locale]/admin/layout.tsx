@@ -1,29 +1,36 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 
 export const metadata: Metadata = { title: { default: "Admin", template: "%s — SAKR Admin" }, robots: { index: false, follow: false } };
 
-const NAV = [
-  ["", "dashboard"],
-  ["/orders", "orders"],
-  ["/products", "products"],
-  ["/marketing", "marketing"],
-  ["/inbox", "inbox"],
-  ["/reports", "reports"],
-  ["/settings", "settings"],
-] as const;
+// [path, translation key or null, Arabic label, English label]: the newer sections carry their own labels.
+const NAV: readonly (readonly [string, string | null, string, string])[] = [
+  ["", "dashboard", "", ""],
+  ["/orders", "orders", "", ""],
+  ["/customers", null, "العملاء", "Customers"],
+  ["/products", "products", "", ""],
+  ["/catalog", null, "الكتالوج", "Catalog"],
+  ["/marketing", "marketing", "", ""],
+  ["/content", null, "المحتوى", "Content"],
+  ["/inbox", "inbox", "", ""],
+  ["/analytics", null, "التحليلات", "Analytics"],
+  ["/reports", "reports", "", ""],
+  ["/audit", null, "سجل العمليات", "Audit log"],
+  ["/team", null, "الفريق", "Team"],
+  ["/settings", "settings", "", ""],
+];
 
 export default async function AdminLayout({ children }: LayoutProps<"/[locale]/admin">) {
-  const t = await getTranslations("admin.nav");
+  const [t, locale] = await Promise.all([getTranslations("admin.nav"), getLocale()]);
   return (
     <div className="mx-auto flex max-w-[1500px] flex-col gap-8 px-4 pt-6 md:flex-row md:px-8">
-      <nav aria-label="Admin" className="md:w-52 md:shrink-0">
+      <nav aria-label="Admin" className="md:w-52 md:shrink-0 print:hidden">
         <ul className="flex gap-1 overflow-x-auto border-b border-ash pb-3 md:sticky md:top-32 md:flex-col md:border-b-0 md:border-e md:pe-4">
-          {NAV.map(([href, key]) => (
-            <li key={key}>
+          {NAV.map(([href, key, ar, en]) => (
+            <li key={href}>
               <Link href={`/admin${href}`} className="block whitespace-nowrap px-3 py-2 text-sm text-steel hover:bg-smoke hover:text-bone">
-                {t(key)}
+                {key ? t(key as "dashboard") : locale === "ar" ? ar : en}
               </Link>
             </li>
           ))}

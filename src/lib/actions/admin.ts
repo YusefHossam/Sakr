@@ -3,6 +3,7 @@
 import { updateTag } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth/admin";
+import { audit } from "@/lib/audit";
 import { CATALOG_TAG } from "@/lib/catalog";
 import { connectDB } from "@/lib/db";
 import { restock } from "@/lib/orders";
@@ -26,7 +27,8 @@ const POINTS_PER_EGP = 1 / 100;
 // ---------- Orders ----------
 
 export async function approvePayment(number: string): Promise<AdminResult> {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  await audit(admin, "approvePayment", number);
   await connectDB();
   const order = await Order.findOne({ number });
   if (!order || order.payment!.status !== "awaiting_review") return { ok: false, error: "state" };
@@ -41,7 +43,8 @@ export async function approvePayment(number: string): Promise<AdminResult> {
 }
 
 export async function rejectOrder(number: string): Promise<AdminResult> {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  await audit(admin, "rejectOrder", number);
   await connectDB();
   const order = await Order.findOne({ number });
   if (!order || order.status === "cancelled" || order.status === "delivered") return { ok: false, error: "state" };
@@ -57,7 +60,8 @@ export async function rejectOrder(number: string): Promise<AdminResult> {
 const statusSchema = z.enum(ORDER_STATUSES);
 
 export async function setOrderStatus(number: string, status: z.input<typeof statusSchema>): Promise<AdminResult> {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  await audit(admin, "setOrderStatus", number);
   const next = statusSchema.parse(status);
   if (next === "cancelled") return rejectOrder(number);
   await connectDB();
@@ -78,7 +82,8 @@ export async function setOrderStatus(number: string, status: z.input<typeof stat
 
 /** Late order: tell the customer why, with an apology coupon (BR-62). */
 export async function sendApology(number: string, reason: string): Promise<AdminResult> {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  await audit(admin, "sendApology", number);
   const text = reason.trim().slice(0, 300);
   if (text.length < 3) return { ok: false, error: "reason" };
   await connectDB();
@@ -104,7 +109,8 @@ const productEditSchema = z.object({
 });
 
 export async function saveProduct(slug: string, input: z.input<typeof productEditSchema>): Promise<AdminResult> {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  await audit(admin, "saveProduct", slug);
   const parsed = productEditSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid" };
   const { price, costPrice, active, promoPercent, variants } = parsed.data;
@@ -143,7 +149,8 @@ const slugify = (s: string) => s.toLowerCase().normalize("NFKD").replace(/[^\w\s
 
 /** "ينزل بردكت": adds a product by hand (e.g. Dior/Gucci pieces the scrapers couldn't reach). */
 export async function createProduct(input: z.input<typeof newProductSchema>): Promise<AdminResult> {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  await audit(admin, "createProduct", input);
   const parsed = newProductSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid" };
   const d = parsed.data;
@@ -175,7 +182,8 @@ const promoSchema = z.object({
 });
 
 export async function addPromo(input: z.input<typeof promoSchema>): Promise<AdminResult> {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  await audit(admin, "addPromo", input);
   const parsed = promoSchema.safeParse(input);
   if (!parsed.success || (parsed.data.scope !== "site" && !parsed.data.key)) return { ok: false, error: "invalid" };
   await connectDB();
@@ -186,7 +194,8 @@ export async function addPromo(input: z.input<typeof promoSchema>): Promise<Admi
 }
 
 export async function removePromo(index: number): Promise<AdminResult> {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  await audit(admin, "removePromo", index);
   await connectDB();
   const doc = await Settings.findOne({ key: "store" });
   if (!doc || !doc.promos[index]) return { ok: false, error: "not-found" };
@@ -206,7 +215,8 @@ const couponSchema = z.object({
 });
 
 export async function createCoupon(input: z.input<typeof couponSchema>): Promise<AdminResult> {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  await audit(admin, "createCoupon", input);
   const parsed = couponSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid" };
   const d = parsed.data;
@@ -222,7 +232,8 @@ export async function createCoupon(input: z.input<typeof couponSchema>): Promise
 }
 
 export async function deactivateCoupon(code: string): Promise<AdminResult> {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  await audit(admin, "deactivateCoupon", code);
   await connectDB();
   await Coupon.updateOne({ code }, { $set: { active: false } });
   return { ok: true };
@@ -231,7 +242,8 @@ export async function deactivateCoupon(code: string): Promise<AdminResult> {
 // ---------- Inbox ----------
 
 export async function moderateReview(id: string, approve: boolean): Promise<AdminResult> {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  await audit(admin, "moderateReview", id);
   await connectDB();
   const review = approve ? await Review.findByIdAndUpdate(id, { approved: true }) : await Review.findByIdAndDelete(id);
   if (review) updateTag(reviewsTag(review.productSlug));
@@ -239,7 +251,8 @@ export async function moderateReview(id: string, approve: boolean): Promise<Admi
 }
 
 export async function setExchangeStatus(id: string, status: "approved" | "rejected"): Promise<AdminResult> {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  await audit(admin, "setExchangeStatus", id);
   await connectDB();
   const ex = await ExchangeRequest.findByIdAndUpdate(id, { status });
   if (ex) updateTag(ordersTag(String(ex.userId)));
@@ -247,7 +260,8 @@ export async function setExchangeStatus(id: string, status: "approved" | "reject
 }
 
 export async function markRestockHandled(id: string): Promise<AdminResult> {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  await audit(admin, "markRestockHandled", id);
   await connectDB();
   await NotifyRequest.findByIdAndUpdate(id, { notified: true });
   return { ok: true };
@@ -270,7 +284,8 @@ const settingsSchema = z.object({
 });
 
 export async function saveSettings(input: z.input<typeof settingsSchema>): Promise<AdminResult> {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  await audit(admin, "saveSettings", "store settings");
   const parsed = settingsSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid" };
   const d = parsed.data;

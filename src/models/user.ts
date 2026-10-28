@@ -30,6 +30,9 @@ const userSchema = new Schema(
     role: { type: String, enum: ["customer", "admin"], default: "customer" },
     // Lifetime spend on delivered orders (EGP); drives the level (BR-53).
     totalSpent: { type: Number, default: 0 },
+    // Admin controls: a blocked customer cannot log in; the note is internal.
+    blocked: { type: Boolean, default: false },
+    adminNote: { type: String, default: "", maxlength: 500 },
     points: { type: Number, default: 0 },
     sizePassport: {
       top: { type: String, default: null },

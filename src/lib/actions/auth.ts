@@ -43,6 +43,7 @@ export async function login(input: z.input<typeof loginSchema>): Promise<AuthRes
   // Compare even when the user is missing so timing doesn't reveal which emails exist.
   const ok = await bcrypt.compare(parsed.data.password, user?.passwordHash ?? "$2a$10$invalidinvalidinvalidinvalidinvalidinvalidinvalidinvali");
   if (!user || !ok) return { ok: false, error: "invalid" };
+  if (user.blocked) return { ok: false, error: "invalid" };
   await createSession({ userId: String(user._id), role: user.role, name: user.name, level: levelFor(user.totalSpent) });
   return { ok: true };
 }

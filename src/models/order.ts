@@ -52,6 +52,8 @@ const orderSchema = new Schema(
     },
     deliveryDate: { type: Date, required: true },
     notes: { type: String, default: "" },
+    adminNote: { type: String, default: "", maxlength: 500 }, // internal, never shown to the customer
+    refunded: { type: Boolean, default: false },
     payment: {
       method: { type: String, enum: PAYMENT_METHODS, required: true },
       plan: { type: String, enum: ["full", "deposit"], default: "full" },

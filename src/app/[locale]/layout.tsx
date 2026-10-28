@@ -6,6 +6,7 @@ import { locale as rootLocale } from "next/root-params";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { Bats } from "@/components/layout/bats";
+import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { Intro } from "@/components/layout/intro";
@@ -64,6 +65,7 @@ export default async function LocaleLayout({ children }: LayoutProps<"/[locale]"
             <MusicProvider>
               <Intro />
               <Bats />
+              <AnnouncementBar />
               <Header />
               <main className="flex-1">{children}</main>
               <Footer />

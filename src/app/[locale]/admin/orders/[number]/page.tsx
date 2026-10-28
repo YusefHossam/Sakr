@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ApologyForm } from "@/components/admin/apology-form";
+import { OrderTools } from "@/components/admin/more-forms";
+import { Link } from "@/i18n/navigation";
 import { ActionButton, adminButton } from "@/components/admin/ui";
 import { approvePayment, rejectOrder, setOrderStatus } from "@/lib/actions/admin";
 import { requireAdmin } from "@/lib/auth/admin";
@@ -44,10 +46,15 @@ async function OrderDetail({ params }: Pick<PageProps<"/[locale]/admin/orders/[n
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="street-heading text-4xl" dir="ltr">{o.number}</h1>
-          <p className="text-sm text-steel">{ts(o.status)} · {p.method} · {tp(p.status)} · {egp(o.total)}{o.dueNow !== o.total && ` (${egp(o.dueNow)} now)`}</p>
+          <p className="text-sm text-steel">{ts(o.status)} · {p.method} · {tp(p.status)} · {egp(o.total)}{o.dueNow !== o.total && ` (${egp(o.dueNow)} now)`}{o.refunded && <span className="ms-2 border border-blood/70 px-1.5 text-[10px] text-blood">REFUNDED</span>}</p>
         </div>
+        <div className="flex flex-wrap gap-2">
+        <Link href={`/admin/orders/${o.number}/invoice`} className={adminButton}>Invoice</Link>
         <a href={`https://wa.me/${phone}?text=${encodeURIComponent(`SAKR — ${o.number}`)}`} target="_blank" rel="noreferrer" className={adminButton}>{t("whatsapp")}</a>
+        </div>
       </div>
+
+      <OrderTools number={o.number} note={o.adminNote ?? ""} refunded={!!o.refunded} deliveryDate={new Date(o.deliveryDate).toISOString().slice(0, 10)} />
 
       {!closed && (
         <section className="flex flex-wrap gap-2">

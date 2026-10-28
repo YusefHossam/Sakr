@@ -53,6 +53,7 @@ const ESSENTIALS_EGY_TYPES = {
 const TITLE_BRANDS = [
   [/moncler/i, "Moncler"],
   [/chrome ?hearts/i, "Chrome Hearts"],
+  [/casablanca/i, "Casablanca"],
   [/maison margiela|margiela/i, "Maison Margiela"],
   [/palm ?angels/i, "Palm Angels"],
   [/\bbape\b|babe baby milo|bathing ape/i, "BAPE"],
@@ -108,6 +109,14 @@ const SOURCES = [
   ...[["Balenciaga", "balenciaga"], ["Lanvin", "lanvin"], ["Asics", "asics"], ["Rick Owens", "rick-owens"], ["Rick Owens", "rick-owens-drkshdw"]]
     .map(([brand, c]) => sg(c, { brand, forceBrand: true, allow: ["footwear"] })),
   { brand: "Gucci", kind: "shopify", base: "https://creme321.com", collection: "gucci", currency: "USD", shoesOnly: true },
+
+  // Round 12: more depth for brands the user asked to be fuller.
+  sg("casablanca", { brand: "Casablanca", forceBrand: true, vendors: ["CASABLANCA"] }),
+  sg("palm-angels", { brand: "Palm Angels", forceBrand: true, vendors: ["PALM ANGELS"] }),
+  sg("stussy", { brand: "Stussy", forceBrand: true, vendors: ["STUSSY"] }),
+  sg("the-north-face", { brand: "The North Face", forceBrand: true, vendors: ["THE NORTH FACE"] }),
+  { brand: "Casablanca", kind: "shopify", base: "https://casablancaparis.com", currency: "USD", remoteImages: true },
+  { brand: "Stussy", kind: "shopify", base: "https://www.stussy.com", currency: "USD", remoteImages: true },
 
   // Brands added in round 11 (clothes and shoes via Stadium Goods, Zara straight from its Egypt storefront).
   sg("moncler", { brand: "Moncler", forceBrand: true, vendors: ["MONCLER"] }),
@@ -360,7 +369,7 @@ function normalize(src, raw) {
     const type = raw.rawType.trim().toLowerCase();
     brand = type in src.brandByType ? src.brandByType[type] : TITLE_BRANDS.find(([re]) => re.test(raw.title))?.[1] ?? null;
     // The shop files other labels (e.g. Casablanca) under Fog essentials; only genuine Essentials stays.
-    if (brand === "Essentials" && !/essentials|fear of god|\bfog\b/i.test(raw.title)) brand = null;
+    if (brand === "Essentials" && !/essentials|fear of god|\bfog\b/i.test(raw.title)) brand = TITLE_BRANDS.find(([re]) => re.test(raw.title))?.[1] ?? null;
     if (!brand) return null;
   } else if (src.brandByTitle) {
     brand = src.brandByTitle.find(([re]) => re.test(raw.title))?.[1] ?? null;

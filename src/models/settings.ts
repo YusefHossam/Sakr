@@ -24,6 +24,12 @@ const settingsSchema = new Schema(
     },
     transferInstapay: { type: String, default: "sakr@instapay" },
     transferWallet: { type: String, default: "01000000000" },
+    // Thin bar above the header, and extra banners that lead the home carousel.
+    announcement: { text: { type: String, default: "" }, active: { type: Boolean, default: false } },
+    banners: {
+      type: [{ title: String, text: { type: String, default: "" }, href: { type: String, default: "/shop" }, image: { type: String, default: "" }, active: { type: Boolean, default: true } }],
+      default: [],
+    },
     drop: {
       locked: { type: Boolean, default: false },
       password: { type: String, default: "" },

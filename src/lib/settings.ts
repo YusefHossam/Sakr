@@ -18,6 +18,8 @@ export type StoreSettings = {
   transferInstapay: string;
   transferWallet: string;
   drop: { locked: boolean; password: string; name: string; opensAt: string | null; vipEarlyHours: number };
+  announcement: { text: string; active: boolean };
+  banners: { title: string; text: string; href: string; image: string; active: boolean }[];
 };
 
 /** Store settings with defaults filled in (creates the document on first use). */
@@ -51,6 +53,8 @@ export async function getSettings(): Promise<StoreSettings> {
       opensAt: doc.drop?.opensAt ? new Date(doc.drop.opensAt).toISOString() : null,
       vipEarlyHours: doc.drop?.vipEarlyHours ?? 3,
     },
+    announcement: { text: doc.announcement?.text ?? "", active: doc.announcement?.active ?? false },
+    banners: (doc.banners ?? []).map((b) => ({ title: b.title ?? "", text: b.text ?? "", href: b.href ?? "/shop", image: b.image ?? "", active: b.active ?? true })),
   };
 }
 
