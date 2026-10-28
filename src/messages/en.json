@@ -33,7 +33,10 @@
     "boxers": "Boxers",
     "headwear": "Caps & hats",
     "bags": "Bags",
-    "belts": "Belts"
+    "belts": "Belts",
+    "masks": "Masks",
+    "watches": "Watches",
+    "perfumes": "Perfumes"
   },
   "intro": {
     "enter": "Enter",

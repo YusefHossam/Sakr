@@ -72,6 +72,9 @@ const ACCESSORY_KINDS: Record<string, Lang> = {
   headwear: { en: "cap or hat", ar: "كاب" },
   bags: { en: "bag", ar: "شنطة" },
   belts: { en: "belt", ar: "حزام" },
+  masks: { en: "mask or balaclava", ar: "ماسك" },
+  watches: { en: "watch", ar: "ساعة" },
+  perfumes: { en: "fragrance", ar: "برفيوم" },
 };
 
 const CARE: Record<string, Lang> = {

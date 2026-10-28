@@ -24,7 +24,7 @@ export async function checkFit(form: FormData): Promise<FitCheckResult> {
   const data = Buffer.from(await photo.arrayBuffer()).toString("base64");
 
   const prompt = `You are a streetwear stylist for SAKR, a men's store in Cairo. Look at the outfit in this photo and answer as JSON:
-{"score": integer 1-10, "verdict": one short sentence, "tips": up to 3 short actionable tips, "add": up to 3 of ${JSON.stringify(CATEGORIES)} worth adding, "mood": one of "gang","clean","opium","old-money"}
+{"score": integer 1-10, "verdict": one short sentence, "tips": up to 3 short actionable tips, "add": up to 3 of ${JSON.stringify(CATEGORIES)} worth adding, "mood": one of "drip","clean","opium","old-money"}
 Write verdict and tips in ${locale === "ar" ? "Egyptian Arabic" : "English"}. Be honest but encouraging. If there is no clothing visible, use score 0 and say so.`;
   const body = JSON.stringify({
     contents: [{ role: "user", parts: [{ text: prompt }, { inline_data: { mime_type: photo.type, data } }] }],

@@ -9,7 +9,7 @@ slides category, clean hero, **full admin panel** (customers, catalog bulk tools
 ## Phase A: Look and feel
 - 1 Falcon 3D in the hero that looks toward the cursor
 - 3 Site theme follows Cairo time of day (grey by day, darker with red neon at night)
-- 6 Mood filter: Gang / Clean / Opium / **Old Money** (Zara, Polo, Ralph-style pieces) re-tints and re-filters the store
+- 6 Mood filter: Drip / Clean / Opium / **Old Money** (Zara, Polo, Ralph-style pieces) re-tints and re-filters the store
 - 43 Falcon cursor
 - 41 Page/image transitions (product image flies from card to product page)
 

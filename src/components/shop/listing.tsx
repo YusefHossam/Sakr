@@ -9,7 +9,7 @@ import type { Category } from "@/models/product";
 
 export type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-const ACCESSORY_TYPES = ["chains", "bracelets", "rings", "sunglasses", "socks", "boxers", "headwear", "bags", "belts"] as const;
+const ACCESSORY_TYPES = ["chains", "bracelets", "rings", "sunglasses", "socks", "boxers", "headwear", "bags", "belts", "masks", "watches", "perfumes"] as const;
 
 const querySchema = z.object({
   brand: z.string().regex(/^[a-z0-9-]+$/).max(60).optional().catch(undefined),

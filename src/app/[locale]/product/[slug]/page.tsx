@@ -7,10 +7,10 @@ import { BuyBox } from "@/components/product/buy-box";
 import { TrackAffinity } from "@/components/home/for-you";
 import { Gallery } from "@/components/product/gallery";
 import { FitNote } from "@/components/product/fit-note";
+import { GoesWith } from "@/components/product/goes-with";
 import { SellOutHint } from "@/components/product/sell-out-hint";
 import { LiveViewers } from "@/components/product/live-viewers";
 import { PersonalBits } from "@/components/product/personal";
-import { ProductCard } from "@/components/product/product-card";
 import { ProductTabs } from "@/components/product/product-tabs";
 import { RandomPicks } from "@/components/product/random-picks";
 import { ReviewForm } from "@/components/product/review-form";
@@ -110,15 +110,9 @@ async function ProductContent({ params }: Pick<PageProps<"/[locale]/product/[slu
         </div>
       </div>
 
-      {product.completeLook.length > 0 && (
-        <Section title={t("completeLook")} text={t("completeLookText")}>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3">
-            {product.completeLook.map((p) => (
-              <ProductCard key={p.slug} product={p} />
-            ))}
-          </div>
-        </Section>
-      )}
+      <Suspense fallback={null}>
+        <GoesWith slug={product.slug} />
+      </Suspense>
 
       <Section title={t("reviews")}>
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">

@@ -14,6 +14,9 @@ const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/
 // Approximate demo rates to EGP.
 const TO_EGP = { EGP: 1, USD: 48.5, GBP: 64, EUR: 52.5, AUD: 31.5 };
 
+const VENDOR_ALIASES = { "RICK OWENS DRKSHDW": "Rick Owens", "POLO RALPH LAUREN": "Polo Ralph Lauren", "CHROME HEARTS": "Chrome Hearts", "DENIM TEARS": "Denim Tears", "OFF-WHITE": "Off-White", "MM6 MAISON MARGIELA": "Maison Margiela", "GODSPEED NEW YORK": "Godspeed New York", "CASIO": "Casio", "SWATCH": "Swatch", "NIKE": "Nike", "AMIRI": "Amiri", "SUPREME": "Supreme", "SP5DER": "Sp5der", "BAPE": "BAPE", "KITH": "Kith", "TIMEX": "Timex" };
+const vendorBrand = (v) => VENDOR_ALIASES[String(v ?? "").toUpperCase()] ?? String(v ?? "").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+
 const SG_BRANDS = { NIKE: "Nike", JORDAN: "Jordan", "OFF-WHITE": "Off-White", "LOUIS VUITTON": "Louis Vuitton", DIOR: "Dior", GUCCI: "Gucci" };
 const sg = (collection, opts) => ({ kind: "shopify", base: "https://www.stadiumgoods.com", collection, currency: "EGP", byModel: true, ...opts });
 
@@ -46,8 +49,8 @@ const ESSENTIALS_EGY_TYPES = {
   "saint laurent": "Saint Laurent",
   "play boy": "Playboy",
   mcqueen: "Alexander McQueen",
-  perfume: null,
-  "body mist": null,
+  perfume: "Fusion",
+  "body mist": "Fusion",
 };
 // Order matters: the first match names the brand.
 const TITLE_BRANDS = [
@@ -110,6 +113,24 @@ const SOURCES = [
     .map(([brand, c]) => sg(c, { brand, forceBrand: true, allow: ["footwear"] })),
   { brand: "Gucci", kind: "shopify", base: "https://creme321.com", collection: "gucci", currency: "USD", shoesOnly: true },
 
+  // Round 13: the pieces the owner builds fits around, plus masks, watches, boxers and perfumes.
+  // keep: true means the model is never trimmed by the per-brand curation (every colourway stays).
+  { brand: "Balenciaga", kind: "sgsearch", base: "https://www.stadiumgoods.com", currency: "EGP", byModel: true, forceBrand: true, vendors: ["BALENCIAGA"], allow: ["footwear"], keep: true,
+    match: /\btrack(\.2)?\b.*\b(sneakers?|trainers?)\b|\b(sneakers?|trainers?)\b.*\btrack(\.2)?\b|^track(\.2)?\s*"/i,
+    queries: ["balenciaga track sneaker","balenciaga track sneaker black","balenciaga track sneaker white","balenciaga track sneaker grey","balenciaga track sneaker blue","balenciaga track sneaker green","balenciaga track sneaker red","balenciaga track sneaker brown","balenciaga track sneaker beige","balenciaga track sneaker pink","balenciaga track sneaker orange","balenciaga track sneaker silver","balenciaga track sneaker navy","balenciaga track sneaker yellow","balenciaga track sneaker track.2","balenciaga track sneaker track trainer","balenciaga track sneaker track led","balenciaga track sneaker track mens","balenciaga track sneaker track mesh","balenciaga track sneaker track leather"] },
+  { brand: "Lanvin", kind: "sgsearch", base: "https://www.stadiumgoods.com", currency: "EGP", byModel: true, forceBrand: true, vendors: ["LANVIN"], allow: ["footwear"], keep: true,
+    match: /\bcurb\b/i,
+    queries: ["lanvin curb","lanvin curb black","lanvin curb white","lanvin curb grey","lanvin curb blue","lanvin curb green","lanvin curb red","lanvin curb brown","lanvin curb beige","lanvin curb pink","lanvin curb orange","lanvin curb silver","lanvin curb navy","lanvin curb yellow","lanvin curb curb xl","lanvin curb curb lite","lanvin curb curb sneakers","lanvin curb curb leather","lanvin curb curb nylon","lanvin curb curb suede","lanvin curb curb studs","lanvin curb curb mens"] },
+  { brand: "Masks", kind: "sgsearch", base: "https://www.stadiumgoods.com", currency: "EGP", byModel: true, brandFromVendor: true, allow: ["accessories"], keep: true,
+    match: /balaclava|ski.?mask|face.?mask|facemask/i,
+    queries: ["balaclava", "ski mask", "sp5der balaclava", "supreme balaclava", "new era balaclava", "lightweight balaclava", "windstopper facemask", "fleece balaclava", "mohawk balaclava", "balaclava black", "balaclava red", "balaclava white", "facemask"] },
+  sg("watches", { brand: "Watches", brandFromVendor: true, allow: ["accessories"], keep: true }),
+  sg("g-shock-watches", { brand: "Watches", brandFromVendor: true, allow: ["accessories"], keep: true }),
+  sg("swatch", { brand: "Watches", brandFromVendor: true, allow: ["accessories"], keep: true }),
+  sg("mens-underwear", { brand: "Underwear", brandFromVendor: true, allow: ["accessories"] }),
+  { brand: "PSD", kind: "shopify", base: "https://psdunderwear.com", currency: "EGP", remoteImages: true, force: { category: "accessories", sub: "boxers" },
+    titleSkip: /bralette|thong|boy ?short|bikini|cheeky|hipster|scoop|\bbra\b|women|girl|test|bundle|gift|sample|sticker|\bbag\b|tank|camisole|legging/i },
+
   // Round 12: more depth for brands the user asked to be fuller.
   sg("casablanca", { brand: "Casablanca", forceBrand: true, vendors: ["CASABLANCA"] }),
   sg("palm-angels", { brand: "Palm Angels", forceBrand: true, vendors: ["PALM ANGELS"] }),
@@ -144,14 +165,14 @@ const SOURCES = [
       ["man-bermudas-l592", "shorts"],
       ["man-tracksuits-l17522", "tracksuits"],
       ["man-sneakers-l7460", "footwear"],
-      ["man-accessories-socks-l555", "accessories"], ["man-underwear-l875", "accessories"], ["man-accessories-l537", null],
+      ["man-accessories-socks-l555", "accessories"], ["man-accessories-perfumes-l551", "accessories"], ["man-underwear-l875", "accessories"], ["man-accessories-l537", null],
     ],
   },
 ];
 
 const KIDS = /\b(GS|PS|TD|BG|kids?|toddlers?|infants?|baby|preschool|grade school)\b/i;
 
-const EXCLUDE = /\b(women'?s?|woman|ladies|girls?|wmns|dress(es)?|skirts?|blouses?|pinafore|bras?|heels?|bodysuit|corset|flats|eau de|parfum|perfume|fragrance|vinyl|record|bookstand|gift ?card|candle|ashtray|lighter|home)\b|\(W\)/i;
+const EXCLUDE = /\b(children'?s?|kids?|boys?|juniors?|youth|toddlers?|women'?s?|woman|ladies|girls?|wmns|dress(es)?|skirts?|blouses?|pinafore|bras?|heels?|bodysuit|corset|flats|vinyl|record|bookstand|gift ?card|candle|ashtray|lighter|home)\b|\(W\)/i;
 
 // Slides and shoes are decided before the clothing rules, so "High-Top Sneakers" is never a top and a slide is
 // never a shoe. Order matters: first match wins.
@@ -162,7 +183,7 @@ const CLOTHING = /\b(hoodies?|t-?shirts?|tees?|jackets?|coats?|puffers?|pants|tr
 const CATEGORY_RULES = [
   ["slides", SLIDES],
   ["footwear", SHOES],
-  ["accessories", /(caps?|hats?|beanies?|backpacks?|bags?|wallets?|belts?)/i],
+  ["accessories!", /\b(caps?|hats?|beanies?|backpacks?|bags?|wallets?|belts?|balaclavas?|ski ?masks?|face ?masks?|facemasks?|watch(es)?|perfumes?|parfum|cologne|body mist)\b/i],
   ["sweatpants", /\b(sweat ?pants?|joggers?|track ?pants?|tracksuit bottoms?)\b/i],
   ["hoodies", /\b(hoodies?|hooded|zip[- ]?up|zip hoodie)\b/i],
   ["crewnecks", /\b(crew ?necks?|sweatshirts?|sweaters?|knit(wear)?|jumpers?|cardigans?)\b/i],
@@ -172,10 +193,13 @@ const CATEGORY_RULES = [
   ["shorts", /\b(shorts?)\b/i],
   ["tracksuits", /\b(tracksuits?|short set)\b/i],
   ["footwear", /\b(sneakers?|trainers?|shoes?|boots?|slides?|sandals?|loafers?)\b/i],
-  ["accessories", /\b(chains?|necklaces?|pendants?|bracelets?|rings?|earrings?|jewel(le)?ry|sunglasses|eyewear|glasses|socks?|boxers?|briefs?|underwear|hats?|caps?|beanies?|headwear|bandanas?|durags?|bags?|backpacks?|wallets?|purses?|pouch|belts?|keychains?|scarf|scarves|gloves|accessor(y|ies))\b/i],
+  ["accessories", /\b(chains?|necklaces?|pendants?|bracelets?|rings?|earrings?|jewel(le)?ry|sunglasses|eyewear|glasses|socks?|boxers?|briefs?|underwear|hats?|caps?|beanies?|headwear|bandanas?|durags?|bags?|backpacks?|wallets?|purses?|pouch|belts?|keychains?|scarf|scarves|gloves|balaclavas?|masks?|watch(es)?|perfumes?|parfum|cologne|fragrances?|eau de|body mist|accessor(y|ies))\b/i],
 ];
 
 const ACCESSORY_TYPES = [
+  ["masks", /\b(balaclavas?|ski ?masks?|face ?masks?|facemasks?|masks?)\b/i],
+  ["watches", /\b(watch(es)?|chronograph)\b/i],
+  ["perfumes", /\b(perfumes?|parfum|cologne|fragrances?|eau de|body mist)\b/i],
   ["chains", /\b(chains?|necklaces?|pendants?)\b/i],
   ["bracelets", /\b(bracelets?)\b/i],
   ["rings", /\b(rings?|earrings?)\b/i],
@@ -209,9 +233,9 @@ function categorize(text) {
   text = text.replace(HIGH_LOW_TOP, " ");
   // "Sneaker print tee" is a tee: a clothing word beats a shoe word.
   const clothed = CLOTHING.test(text);
-  const hit = CATEGORY_RULES.find(([name, re]) => !(clothed && (name === "slides" || name === "footwear")) && re.test(text));
+  const hit = CATEGORY_RULES.find(([name, re]) => !(clothed && (name === "slides" || name === "footwear" || name === "accessories!")) && re.test(text));
   if (!hit) return null;
-  const category = hit[0];
+  const category = hit[0].replace("!", "");
   const sub = category === "accessories" ? ACCESSORY_TYPES.find(([, re]) => re.test(text))?.[0] ?? "other" : null;
   return { category, sub };
 }
@@ -232,7 +256,11 @@ async function fetchShopify(src) {
     products.push(...batch);
     await sleep(700);
   }
-  return products.map((p) => {
+  return products.map((p) => shopifyRaw(src, p));
+}
+
+function shopifyRaw(src, p) {
+  {
     const optionIndex = (re) => p.options?.findIndex((o) => re.test(o.name)) ?? -1;
     const sizeIdx = optionIndex(/size|waist/i);
     const colorIdx = optionIndex(/colou?r/i);
@@ -259,7 +287,7 @@ async function fetchShopify(src) {
       })),
       images: (p.images ?? []).map((i) => shopifyImage(i.src)),
     };
-  });
+  }
 }
 
 async function fetchWoo(src) {
@@ -290,6 +318,25 @@ async function fetchWoo(src) {
       images: (p.images ?? []).map((i) => i.src),
     };
   });
+}
+
+// Shopify's predictive search returns only ten hits per query, so a few query variants (colours, finishes) are run and
+// every matching product is then fetched whole. Used for models that sit outside the collections we pull.
+async function fetchShopifySearch(src) {
+  const handles = new Map();
+  for (const q of src.queries) {
+    const data = await getJson(src.base + "/search/suggest.json?q=" + encodeURIComponent(q) + "&resources[type]=product&resources[limit]=10");
+    for (const p of data?.resources?.results?.products ?? []) if (src.match.test(p.title) && !handles.has(p.handle)) handles.set(p.handle, p.title);
+    await sleep(400);
+  }
+  const out = [];
+  for (const handle of handles.keys()) {
+    const data = await getJson(src.base + "/products/" + handle + ".json");
+    if (data?.product) out.push(shopifyRaw(src, data.product));
+    await sleep(350);
+  }
+  console.log("  search " + src.brand + " (" + src.match + "): " + handles.size + " products");
+  return out;
 }
 
 // Zara's storefront JSON: prices come in cents, photos are on static.zara.net, and sizes are not in the listing.
@@ -339,7 +386,7 @@ function normalize(src, raw) {
   const text = `${raw.title} ${raw.rawType} ${raw.tags.join(" ")}`;
   if (EXCLUDE.test(text) || /CDG GIRL|TEIBAN KICHU \(CDG GIRL\)/i.test(raw.vendor ?? "")) return null;
   if (!raw.images.length || !raw.price) return null;
-  if (src.titleSkip?.test(raw.title)) return null;
+  if (src.titleSkip?.test(`${raw.title} ${raw.rawType}`)) return null;
   if (src.menSku) {
     if (!src.menSku.test(raw.title)) return null;
     raw.title = raw.title.split("|").pop().trim().toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
@@ -356,6 +403,7 @@ function normalize(src, raw) {
   if (src.byModel && src.allow?.length === 1 && ["footwear", "slides"].includes(src.allow[0])) {
     cat = { category: SLIDES.test(raw.title) ? "slides" : "footwear", sub: null };
   }
+  if (src.force) cat = { category: src.force.category, sub: src.force.sub ?? null };
   if (raw.zaraCategory) cat = { category: raw.zaraCategory, sub: raw.zaraCategory === "accessories" ? categorize(text)?.sub ?? "other" : null };
   if (!cat) return null;
   if (src.shoesOnly && cat.category !== "footwear") return null;
@@ -364,7 +412,7 @@ function normalize(src, raw) {
   if (src.jeansOnly && !isFitJean && !(src.alsoFootwear && cat.category === "footwear")) return null;
 
   let brand = src.brand;
-  if (src.byModel) brand = src.forceBrand ? src.brand : SG_BRANDS[vendor] ?? src.brand;
+  if (src.byModel) brand = src.forceBrand ? src.brand : src.brandFromVendor ? vendorBrand(raw.vendor) : SG_BRANDS[vendor] ?? src.brand;
   else if (src.brandByType) {
     const type = raw.rawType.trim().toLowerCase();
     brand = type in src.brandByType ? src.brandByType[type] : TITLE_BRANDS.find(([re]) => re.test(raw.title))?.[1] ?? null;
@@ -392,6 +440,7 @@ function normalize(src, raw) {
     colorway,
     publishedAt: raw.publishedAt ?? null,
     remoteImages: src.byModel || src.remoteImages ? true : undefined,
+    keep: src.keep ? true : undefined,
     source: src.base,
     category: cat.category,
     subcategory: cat.sub,
@@ -413,7 +462,7 @@ const wanted = (src) => !ONLY.length || ONLY.some((t) => `${src.brand} ${src.col
 const catalog = [];
 for (const src of SOURCES.filter(wanted)) {
   try {
-    const fetchers = { woo: fetchWoo, zara: fetchZara, shopify: fetchShopify };
+    const fetchers = { woo: fetchWoo, zara: fetchZara, shopify: fetchShopify, sgsearch: fetchShopifySearch };
     const raw = await fetchers[src.kind](src);
     const items = raw.map((r) => normalize(src, r)).filter(Boolean);
     catalog.push(...items);
@@ -435,7 +484,8 @@ let existing = [];
 if (MERGE) {
   const rescraped = new Set(SOURCES.filter(wanted).filter((s) => !s.byModel).map((s) => s.base));
   const all = JSON.parse(await readFile(OUT, "utf8")).products;
-  existing = all.filter((p) => !rescraped.has(p.source));
+  const kidsTitle = /\b(children'?s?|kids?|boys?|juniors?|toddlers?)\b/i;
+  existing = all.filter((p) => !rescraped.has(p.source) && !kidsTitle.test(p.title));
   let fixed = 0;
   for (const p of existing) {
     const t = p.title.replace(HIGH_LOW_TOP, " ");
@@ -463,8 +513,11 @@ const existingGroups = countBy(existing.filter((p) => !p.modelKey), groupKeyOf);
 // Model-grouped products: keep the most-stocked models per brand/category, each with its newest colorways.
 const MODELS_PER_BUCKET = 20;
 const COLORWAYS_PER_MODEL = 150;
+// keep: true models (priority pieces) skip the per-brand trimming below.
+const keptAll = catalog.filter((p) => p.keep);
+const trimmable = catalog.filter((p) => !p.keep);
 const modelBuckets = new Map();
-for (const p of catalog.filter((p) => p.modelKey)) {
+for (const p of trimmable.filter((p) => p.modelKey)) {
   const bucketKey = modelKeyOf(p);
   if (!modelBuckets.has(bucketKey)) modelBuckets.set(bucketKey, new Map());
   const models = modelBuckets.get(bucketKey);
@@ -483,18 +536,21 @@ const curatedModels = [...modelBuckets.entries()].flatMap(([bucketKey, models]) 
 // Everything else: the best-photographed items per brand/category (accessories per type).
 const MAX_PER_GROUP = 20;
 const MAX_PER_ACCESSORY_TYPE = 8;
+// Brands the owner asked to be deeper than the default (boxers, fragrances).
+const ACCESSORY_CAPS = { PSD: 40, Fusion: 20, Zara: 12 };
+const capFor = (key) => (key.includes("|acc|") ? ACCESSORY_CAPS[key.split("|")[0]] ?? MAX_PER_ACCESSORY_TYPE : MAX_PER_GROUP);
 const groups = new Map();
-for (const p of catalog.filter((p) => !p.modelKey)) {
+for (const p of trimmable.filter((p) => !p.modelKey)) {
   if (!groups.has(groupKeyOf(p))) groups.set(groupKeyOf(p), []);
   groups.get(groupKeyOf(p)).push(p);
 }
 const score = (p) => Math.min(p.images.length, 4) * 2 + (p.variants.some((v) => v.available) ? 1 : 0) + (p.sizes.length ? 1 : 0);
 const curated = [...groups.entries()].flatMap(([key, items]) =>
-  items.sort((a, b) => score(b) - score(a)).slice(0, Math.max(0, (key.includes("|acc|") ? MAX_PER_ACCESSORY_TYPE : MAX_PER_GROUP) - (existingGroups.get(key) ?? 0))),
+  items.sort((a, b) => score(b) - score(a)).slice(0, Math.max(0, capFor(key) - (existingGroups.get(key) ?? 0))),
 );
 console.log(`Curated ${curated.length + curatedModels.length} of ${catalog.length} products (${curatedModels.length} as model colorways)`);
 catalog.length = 0;
-catalog.push(...existing, ...curated, ...curatedModels);
+catalog.push(...existing, ...keptAll, ...curated, ...curatedModels);
 
 // De-duplicate slugs.
 const seen = new Map();

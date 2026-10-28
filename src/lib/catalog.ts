@@ -4,6 +4,8 @@ import { connectDB } from "./db";
 import { LAST_PIECES_MAX, promoFor, variantPrice, type Promo } from "./pricing";
 import { getSettings } from "./settings";
 import { normalizeQuery } from "./search-normalize";
+import { buildOutfits, moodsOf, pairScore, slotOf, type Outfit, type ReasonKey, type Slot, type StyleItem } from "./style";
+import { MOODS, type Mood } from "./moods";
 import { SETTINGS_TAG } from "./tags";
 import { Brand } from "@/models/brand";
 import { CATEGORIES, Product, type Category } from "@/models/product";
@@ -369,4 +371,85 @@ export async function getHeroImages(limit = 36): Promise<string[]> {
     { $limit: limit },
   ]);
   return docs.map((d) => d.image);
+}
+
+
+// ---------- Style: what goes with what ----------
+
+const STYLE_FIELDS = "slug title brand brandSlug category subcategory model fit colors price images variants";
+type StyleDoc = Omit<StyleItem, "image"> & { images?: string[]; variants?: { stock: number }[]; modelKey?: string | null; description?: string };
+const toStyle = (d: StyleDoc): StyleItem => ({ slug: d.slug, title: d.title, brand: d.brand, brandSlug: d.brandSlug, category: d.category, subcategory: d.subcategory ?? null, model: d.model ?? null, fit: d.fit ?? null, colors: d.colors ?? [], price: d.price, image: d.images?.[0] ?? null });
+
+/** Pieces to pair with a given one: which categories are worth looking at. */
+const TARGETS: Record<Slot, Slot[]> = { top: ["bottom", "shoes", "outer"], bottom: ["top", "shoes"], shoes: ["bottom", "top"], outer: ["top", "bottom", "shoes"], acc: ["top", "shoes"], set: ["shoes", "acc"] };
+const SLOT_CATEGORIES: Record<Slot, string[]> = { top: ["hoodies", "crewnecks", "tees"], bottom: ["pants", "sweatpants", "shorts"], shoes: ["footwear"], outer: ["jackets"], acc: ["accessories"], set: ["tracksuits"] };
+
+export type GoesWith = { card: ProductCard; why: ReasonKey[]; score: number };
+
+/** The best pieces to wear with this one, chosen by the style engine rather than at random. */
+export async function getGoesWith(slug: string): Promise<GoesWith[]> {
+  "use cache";
+  cacheTag(CATALOG_TAG, SETTINGS_TAG);
+  cacheLife("hours");
+  await connectDB();
+  const doc = await Product.findOne({ slug, active: true }).select(STYLE_FIELDS).lean<StyleDoc>();
+  if (!doc) return [];
+  const anchor = toStyle(doc);
+  const slot = slotOf(anchor.category);
+  if (!slot) return [];
+
+  const moods = moodsOf(anchor.brandSlug);
+  const brandPool = moods.length ? [...new Set(moods.flatMap((m) => MOODS[m].brands))] : null;
+  const picks: GoesWith[] = [];
+  const stocked = { variants: { $elemMatch: { stock: { $gt: 0 } } }, "images.0": { $exists: true }, active: true };
+
+  for (const target of TARGETS[slot]) {
+    const categories = SLOT_CATEGORIES[target];
+    const base = { ...stocked, category: { $in: categories }, ...(brandPool ? { brandSlug: { $in: brandPool } } : {}) };
+    const queries: Promise<StyleDoc[]>[] = [Product.aggregate<StyleDoc>([{ $match: base }, { $sample: { size: 140 } }, { $project: Object.fromEntries(STYLE_FIELDS.split(" ").map((f) => [f, 1])) }])];
+    // The owner's pairings must always be reachable: flared / skinny denim finds Track and Curb, and they find the denim.
+    const leg = anchor.fit === "flared" || anchor.fit === "skinny";
+    if (target === "shoes" && leg) queries.push(Product.find({ ...stocked, category: "footwear", brandSlug: { $in: ["balenciaga", "lanvin"] }, title: /\b(track|curb)\b/i }).select(STYLE_FIELDS).limit(30).lean<StyleDoc[]>());
+    if (target === "bottom" && /\b(track|curb)\b/i.test(anchor.title) && ["balenciaga", "lanvin"].includes(anchor.brandSlug))
+      queries.push(Product.find({ ...stocked, category: "pants", fit: { $in: ["flared", "skinny"] } }).select(STYLE_FIELDS).limit(40).lean<StyleDoc[]>());
+    const pool = (await Promise.all(queries)).flat();
+    const seen = new Set<string>();
+    const scored = pool
+      .filter((d) => !seen.has(d.slug) && seen.add(d.slug))
+      .map((d) => ({ doc: d, pair: pairScore(anchor, toStyle(d)) }))
+      .filter((x) => x.pair.score > 0)
+      .sort((a, b) => b.pair.score - a.pair.score);
+    const take = target === "outer" ? 1 : 2;
+    const fresh: typeof scored = [];
+    for (const x of scored) {
+      // One piece per brand+model, so a row of colourways of the same shoe does not fill the section.
+      if (!fresh.some((f) => (f.doc.model ?? f.doc.slug) === (x.doc.model ?? x.doc.slug) && f.doc.brandSlug === x.doc.brandSlug)) fresh.push(x);
+      if (fresh.length >= take) break;
+    }
+    const cards = await toCards(fresh.map((f) => f.doc as unknown as CardSource));
+    fresh.forEach((f, i) => picks.push({ card: cards[i], why: f.pair.why, score: f.pair.score }));
+  }
+  return picks;
+}
+
+export type Fit = { outfit: Outfit; cards: ProductCard[] };
+
+/** Ready-made fits for a mood: whole outfits the engine thinks work, refreshed daily. */
+export async function getFits(mood: Mood, day: string, count = 6): Promise<Fit[]> {
+  "use cache";
+  cacheTag(CATALOG_TAG, SETTINGS_TAG);
+  cacheLife("hours");
+  await connectDB();
+  const m = MOODS[mood];
+  const base = { active: true, "images.0": { $exists: true }, variants: { $elemMatch: { stock: { $gt: 3 } } }, brandSlug: { $in: [...m.brands] }, category: { $nin: [...m.exclude] } };
+  const pool = (
+    await Product.aggregate<StyleDoc>([{ $match: base }, { $sample: { size: 900 } }, { $project: Object.fromEntries(STYLE_FIELDS.split(" ").map((f) => [f, 1])) }])
+  ).map(toStyle);
+  const outfits = buildOutfits(pool, { count, seed: `${mood}:${day}`, mood });
+  const docs = new Map<string, StyleDoc>();
+  const slugs = outfits.flatMap((o) => o.items.map((i) => i.slug));
+  for (const d of await Product.find({ slug: { $in: slugs } }).select(CARD_FIELDS).lean<StyleDoc[]>()) docs.set(d.slug, d);
+  return Promise.all(
+    outfits.map(async (outfit) => ({ outfit, cards: await toCards(outfit.items.map((i) => docs.get(i.slug)).filter((d): d is StyleDoc => !!d) as unknown as CardSource[]) })),
+  );
 }

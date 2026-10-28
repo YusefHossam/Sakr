@@ -5,6 +5,7 @@ import { getLocale } from "next-intl/server";
 import { MoodChips } from "@/components/mood/mood-chips";
 import { MoodTint } from "@/components/mood/mood-tint";
 import { ListingSkeleton, ShopListing } from "@/components/shop/listing";
+import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/shop/page-header";
 import { isMood, MOOD_KEYS, MOODS } from "@/lib/moods";
 
@@ -35,7 +36,10 @@ async function Content({ params, searchParams }: Pick<PageProps<"/[locale]/moods
     <>
       <MoodTint mood={mood} />
       <PageHeader eyebrow={locale === "ar" ? "المود" : "MOOD"} title={MOODS[mood][locale]} text={MOODS[mood].tagline[locale]} />
-      <div className="mb-8"><MoodChips active={mood} /></div>
+      <div className="mb-8 flex flex-wrap items-center gap-4">
+        <MoodChips active={mood} />
+        <Link href={`/fits/${mood}`} className="text-sm text-bone underline underline-offset-4">{locale === "ar" ? "شوف لوكات كاملة" : "See whole fits"} →</Link>
+      </div>
       <ShopListing basePath={`/moods/${mood}`} mood={mood} searchParams={searchParams} />
     </>
   );

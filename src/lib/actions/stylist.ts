@@ -3,7 +3,9 @@
 import { z } from "zod";
 import { connectDB } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
+import type { Mood } from "@/lib/moods";
 import { promoFor, variantPrice } from "@/lib/pricing";
+import { buildOutfits, pairScore, REASON_TEXT, type StyleItem } from "@/lib/style";
 import { Product } from "@/models/product";
 
 export type StylistItem = { slug: string; title: string; brand: string; category: string; price: number; image: string | null };
@@ -43,7 +45,15 @@ function parseBudget(prompt: string): number | null {
   return n >= 500 ? n : null;
 }
 
-type Candidate = StylistItem & { slot: keyof typeof SLOTS; score: number };
+type Candidate = StylistItem & { slot: keyof typeof SLOTS; score: number; style: StyleItem };
+
+const MOOD_WORDS: [RegExp, Mood][] = [
+  [/old ?money|اولد موني|أولد موني|كلاسيك|classic|polo|بولو|zara|زارا/i, "old-money"],
+  [/opium|اوبيوم|أوبيوم|goth|جوث|dark|rick|ريك/i, "opium"],
+  [/clean|minimal|كلين|نضيف|بسيط/i, "clean"],
+  [/drip|دريب|ستريت|street|corteiz|trapstar|travis|ترافيس/i, "drip"],
+];
+const moodFromPrompt = (prompt: string): Mood | null => MOOD_WORDS.find(([re]) => re.test(prompt))?.[1] ?? null;
 
 async function candidates(prompt: string): Promise<Candidate[]> {
   await connectDB();
@@ -59,39 +69,39 @@ async function candidates(prompt: string): Promise<Candidate[]> {
     .sort({ publishedAt: -1 })
     .limit(300)
     // Only what the picker needs: the payload crosses the network to Atlas on every request.
-    .select({ slug: 1, title: 1, brand: 1, brandSlug: 1, category: 1, price: 1, images: { $slice: 1 }, "variants.stock": 1 })
+    .select({ slug: 1, title: 1, brand: 1, brandSlug: 1, category: 1, subcategory: 1, model: 1, fit: 1, colors: 1, price: 1, images: { $slice: 1 }, "variants.stock": 1 })
     .lean();
   return docs.flatMap((d) => {
     const slot = (Object.keys(SLOTS) as (keyof typeof SLOTS)[]).find((k) => (SLOTS[k] as readonly string[]).includes(d.category));
     if (!slot) return [];
     const best = Math.min(...d.variants.filter((v) => v.stock > 0).map((v) => variantPrice(d.price, v.stock, promoFor(d, promos))));
     const score = (BLACK.test(prompt) && /black|noir|ebony|triple black/i.test(d.title) ? 3 : 0) + Math.random();
-    return [{ slug: d.slug, title: d.title, brand: d.brand, category: d.category, price: best, image: d.images[0] ?? null, slot, score }];
+    const style: StyleItem = { slug: d.slug, title: d.title, brand: d.brand, brandSlug: d.brandSlug, category: d.category, subcategory: d.subcategory ?? null, model: d.model ?? null, fit: d.fit ?? null, colors: d.colors ?? [], price: best, image: d.images[0] ?? null };
+    return [{ slug: d.slug, title: d.title, brand: d.brand, category: d.category, price: best, image: d.images[0] ?? null, slot, score, style }];
   });
 }
 
-/** House rules: one top + bottom + shoes (+ outerwear/accessory if the budget allows), cheapest-first within budget. */
-function ruleOutfits(pool: Candidate[], budget: number | null): Outfit[] {
-  const bySlot = (slot: keyof typeof SLOTS) => pool.filter((c) => c.slot === slot).sort((a, b) => b.score - a.score);
-  const used = new Set<string>();
-  const outfits: Outfit[] = [];
-  for (let n = 0; n < 3; n++) {
-    const pick: Candidate[] = [];
-    let spent = 0;
-    for (const slot of ["shoes", "top", "bottom", "outer", "accessory"] as const) {
-      const left = budget ? budget - spent : Infinity;
-      const optional = slot === "outer" || slot === "accessory";
-      const item = bySlot(slot).find((c) => !used.has(c.slug) && c.price <= (optional ? left : left * (slot === "shoes" ? 0.55 : 0.7)));
-      if (item) {
-        pick.push(item);
-        used.add(item.slug);
-        spent += item.price;
-      }
-    }
-    if (pick.length >= 3) outfits.push({ name: "", why: "", items: pick, total: spent });
-  }
-  return outfits;
+/** Fits from the style engine: each outfit is built around a shoe, with a bottom and top that suit it and the owner's picks surfaced. */
+function ruleOutfits(pool: Candidate[], budget: number | null, prompt: string, locale: "ar" | "en"): Outfit[] {
+  const bySlug = new Map(pool.map((c) => [c.slug, c]));
+  const bias = new Map(pool.map((c) => [c.slug, c.score]));
+  const built = buildOutfits(
+    pool.map((c) => c.style),
+    { count: 3, seed: `${prompt}:${Math.random()}`, budget, mood: moodFromPrompt(prompt), bias: (p) => bias.get(p.slug) ?? 0 },
+  );
+  return built.flatMap((o) => {
+    const items = o.items.map((i) => bySlug.get(i.slug)).filter((c): c is Candidate => !!c);
+    const why = o.why.map((k) => REASON_TEXT[k][locale]).filter(Boolean).slice(0, 2).join(" · ");
+    return items.length >= 3 ? [{ name: "", why, items, total: o.total }] : [];
+  });
 }
+
+/** An AI-picked outfit is kept only if its pieces actually work together. */
+const coherent = (items: Candidate[]) => {
+  let sum = 0;
+  for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) sum += pairScore(items[i].style, items[j].style).score;
+  return sum >= 0;
+};
 
 const promptSchema = z.string().trim().min(2).max(200);
 
@@ -154,7 +164,7 @@ Reply as JSON: {"outfits":[{"name":"","why":"","slugs":["..."]}]}`,
         const outfits = (json.outfits ?? []).flatMap((o) => {
           const items = (o.slugs ?? []).map((s) => bySlug.get(s)).filter((c): c is Candidate => !!c);
           const total = items.reduce((s, i) => s + i.price, 0);
-          if (items.length < 2 || (budget && total > budget * 1.05)) return [];
+          if (items.length < 2 || (budget && total > budget * 1.05) || !coherent(items)) return [];
           return [{ name: String(o.name ?? "").slice(0, 60), why: String(o.why ?? "").slice(0, 160), items, total }];
         });
         if (outfits.length) return { ok: true, outfits: outfits.map(strip), source: "gemini" };
@@ -163,7 +173,7 @@ Reply as JSON: {"outfits":[{"name":"","why":"","slugs":["..."]}]}`,
       }
     }
   }
-  return { ok: true, outfits: ruleOutfits(pool, budget).map(strip), source: "rules" };
+  return { ok: true, outfits: ruleOutfits(pool, budget, prompt, locale).map(strip), source: "rules" };
 }
 
 const strip = (o: Outfit): Outfit => ({

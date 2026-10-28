@@ -1,8 +1,8 @@
 // Client-safe. A mood is a taste: it picks brands (and which kinds of pieces) and tints the whole store.
 export const MOODS = {
-  gang: {
-    ar: "جانج",
-    en: "Gang",
+  drip: {
+    ar: "دريب",
+    en: "Drip",
     tagline: { ar: "ستريت تقيل. اللبس اللي بيمشي قدامك.", en: "Heavy street. The kind that walks in before you." },
     brands: ["corteiz", "trapstar", "chrome-hearts", "denim-tears", "rhude", "heron-preston", "palm-angels", "cactus-jack", "bape", "sprayground"],
     exclude: [] as string[],
