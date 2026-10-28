@@ -6,6 +6,7 @@ import path from "node:path";
 import mongoose from "mongoose";
 import { Product, CATEGORIES } from "../src/models/product.ts";
 import { Brand } from "../src/models/brand.ts";
+import { describeProduct } from "../src/lib/describe.ts";
 
 process.loadEnvFile(".env.local");
 
@@ -77,10 +78,16 @@ const catalog: { products: RawProduct[] } = JSON.parse(
   await readFile(path.resolve(import.meta.dirname, "../data/catalog.json"), "utf8"),
 );
 
+// English text keeps the source page's own details; Arabic is written from the product data.
+const describe = (p: RawProduct) => {
+  const text = describeProduct({ slug: p.slug, brand: p.brand, brandSlug: slugify(p.brand), title: p.title, category: p.category, subcategory: p.subcategory, model: p.model, colorway: p.colorway, colors: p.colors, sizes: p.sizes, description: p.description });
+  return { description: text.en, descriptionAr: text.ar };
+};
+
 const docs = catalog.products.map((p) => ({
   slug: p.slug,
   title: p.title,
-  description: p.description,
+  ...describe(p),
   brand: p.brand,
   brandSlug: slugify(p.brand),
   category: p.category,

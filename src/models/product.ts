@@ -18,6 +18,7 @@ const productSchema = new Schema(
     slug: { type: String, required: true, unique: true },
     title: { type: String, required: true },
     description: { type: String, default: "" },
+    descriptionAr: { type: String, default: "" },
     brand: { type: String, required: true },
     brandSlug: { type: String, required: true },
     category: { type: String, required: true, enum: CATEGORIES },

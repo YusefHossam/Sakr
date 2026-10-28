@@ -3,6 +3,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { connectDB } from "./db";
 import { LAST_PIECES_MAX, promoFor, variantPrice, type Promo } from "./pricing";
 import { getSettings } from "./settings";
+import { normalizeQuery } from "./search-normalize";
 import { SETTINGS_TAG } from "./tags";
 import { Brand } from "@/models/brand";
 import { CATEGORIES, Product, type Category } from "@/models/product";
@@ -183,7 +184,11 @@ export async function getListing(query: ListingQuery): Promise<Listing> {
   if (query.brands?.length) base.brandSlug = { $in: [...query.brands] };
   if (query.type) base.subcategory = query.type;
   if (query.sale) base.variants = { $elemMatch: { stock: { $gte: 1, $lte: LAST_PIECES_MAX } } };
-  if (query.q) base.$text = { $search: query.q };
+  if (query.q) {
+    // "7oody" or "كوتشي نايك" also search the English words the catalog is indexed with.
+    const english = normalizeQuery(query.q);
+    base.$text = { $search: english && english !== query.q.toLowerCase() ? `${english} ${query.q}` : query.q };
+  }
   const filter = query.brand ? { ...base, brandSlug: query.brand } : base;
 
   const page = Math.max(1, query.page ?? 1);
@@ -241,6 +246,7 @@ export type ProductDetail = {
   modelKey: string | null;
   colorway: string | null;
   description: string;
+  descriptionAr: string;
   price: number;
   images: string[];
   colors: string[];
@@ -257,6 +263,7 @@ type DetailSource = Omit<CardSource, "variants"> & {
   subcategory?: string | null;
   modelKey?: string | null;
   description?: string;
+  descriptionAr?: string;
   colors?: string[];
   variants?: { size: string | null; color: string | null; stock: number }[];
 };
@@ -282,7 +289,7 @@ export async function getProduct(slug: string): Promise<ProductDetail | null> {
   cacheLife("minutes");
   await connectDB();
   const p = await Product.findOne({ slug, active: true })
-    .select("slug title brand brandSlug category subcategory model modelKey colorway description price images colors variants")
+    .select("slug title brand brandSlug category subcategory model modelKey colorway description descriptionAr price images colors variants")
     .lean<DetailSource>();
   if (!p) return null;
 
@@ -321,6 +328,7 @@ export async function getProduct(slug: string): Promise<ProductDetail | null> {
     modelKey: p.modelKey ?? null,
     colorway: p.colorway ?? null,
     description: p.description ?? "",
+    descriptionAr: p.descriptionAr ?? "",
     price: p.price,
     images: p.images ?? [],
     colors: p.colors ?? [],

@@ -26,6 +26,7 @@ export async function Footer() {
         { href: "/track", label: t("footer.trackOrder") },
         { href: "/size-finder", label: t("lab.sizeFinder") },
         { href: "/stylist", label: t("lab.stylist") },
+        { href: "/fit-check", label: t("lab.fitCheck") },
         { href: "/wall", label: t("lab.wall") },
         { href: "/contact", label: t("footer.contact") },
       ],

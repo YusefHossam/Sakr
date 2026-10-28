@@ -1,11 +1,13 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Section } from "@/components/home/section";
 import { BuyBox } from "@/components/product/buy-box";
 import { TrackAffinity } from "@/components/home/for-you";
 import { Gallery } from "@/components/product/gallery";
+import { FitNote } from "@/components/product/fit-note";
+import { SellOutHint } from "@/components/product/sell-out-hint";
 import { LiveViewers } from "@/components/product/live-viewers";
 import { PersonalBits } from "@/components/product/personal";
 import { ProductCard } from "@/components/product/product-card";
@@ -38,7 +40,7 @@ async function ProductContent({ params }: Pick<PageProps<"/[locale]/product/[slu
   const { slug } = await params;
   const product = await getProduct(slug);
   if (!product) notFound();
-  const [t, tc, reviews] = await Promise.all([getTranslations("product"), getTranslations("categories"), getApprovedReviews(slug)]);
+  const [t, tc, reviews, locale] = await Promise.all([getTranslations("product"), getTranslations("categories"), getApprovedReviews(slug), getLocale()]);
   const avg = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
 
   return (
@@ -71,6 +73,9 @@ async function ProductContent({ params }: Pick<PageProps<"/[locale]/product/[slu
             )}
           </div>
           <LiveViewers slug={product.slug} />
+          <Suspense fallback={null}>
+            <SellOutHint slug={product.slug} stock={product.variants.reduce((s, v) => s + v.stock, 0)} />
+          </Suspense>
 
           {product.colorways.length > 1 && (
             <div className="flex flex-col gap-2">
@@ -97,10 +102,11 @@ async function ProductContent({ params }: Pick<PageProps<"/[locale]/product/[slu
           )}
 
           <BuyBox product={product} />
+          <FitNote brandSlug={product.brandSlug} category={product.category} />
           <Suspense fallback={null}>
-            <PersonalBits category={product.category} image={product.images[0] ?? null} title={product.title} />
+            <PersonalBits category={product.category} subcategory={product.subcategory} image={product.images[0] ?? null} title={product.title} />
           </Suspense>
-          <ProductTabs category={product.category} description={product.description} />
+          <ProductTabs category={product.category} description={locale === "ar" ? product.descriptionAr || product.description : product.description} />
         </div>
       </div>
 

@@ -11,7 +11,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "seed:catalog": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed-catalog.ts",
     "create-admin": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-admin.ts",
-    "seed:extras": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed-extras.ts"
+    "seed:extras": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed-extras.ts",
+    "generate:descriptions": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/generate-descriptions.ts"
   },
   "dependencies": {
     "@gradio/client": "^1.19.1",

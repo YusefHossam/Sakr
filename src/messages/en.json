@@ -548,7 +548,9 @@
     "wallText": "Copped something? Spray your name for the whole block to see.",
     "tryOn": "Try it on me",
     "tryOnText": "Your photo + this piece = you wearing it.",
-    "open": "Open"
+    "open": "Open",
+    "fitCheck": "Fit Check",
+    "fitCheckText": "Photograph your fit; the AI rates it and suggests pieces."
   },
   "sizes": {
     "title": "Find my size",
