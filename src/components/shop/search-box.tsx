@@ -17,6 +17,19 @@ export function SearchBox({ initial }: { initial: string }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const box = useRef<HTMLDivElement>(null);
+  const field = useRef<HTMLInputElement>(null);
+
+  // Words typed before the page finished loading are in the field but not in state yet: pick them up.
+  useEffect(() => {
+    const typed = field.current?.value ?? "";
+    if (typed && typed !== initial) {
+      const t = setTimeout(() => {
+        setQ(typed);
+        setOpen(true);
+      }, 0);
+      return () => clearTimeout(t);
+    }
+  }, [initial]);
 
   useEffect(() => {
     const term = q.trim();
@@ -70,6 +83,7 @@ export function SearchBox({ initial }: { initial: string }) {
       >
         <label htmlFor="q" className="sr-only">{ar ? "ابحث" : "Search"}</label>
         <input
+          ref={field}
           id="q"
           name="q"
           type="search"

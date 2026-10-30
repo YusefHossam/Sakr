@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { getLocale } from "next-intl/server";
 import { BadgeGrid } from "@/components/social/badge-grid";
 import { Link } from "@/i18n/navigation";
@@ -21,6 +22,7 @@ export default function ProfilePage({ params }: PageProps<"/[locale]/u/[handle]"
 
 async function Content({ params }: Pick<PageProps<"/[locale]/u/[handle]">, "params">) {
   const { handle } = await params;
+  await connection(); // live data per request (orders, votes, crew)
   const profile = await getPublicProfile(handle);
   if (!profile) notFound();
   const lang = (await getLocale()) === "ar" ? "ar" : "en";

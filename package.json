@@ -12,7 +12,8 @@
     "seed:catalog": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed-catalog.ts",
     "create-admin": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-admin.ts",
     "seed:extras": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed-extras.ts",
-    "generate:descriptions": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/generate-descriptions.ts"
+    "generate:descriptions": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/generate-descriptions.ts",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@gradio/client": "^1.19.1",
@@ -33,6 +34,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@tailwindcss/turbopack": "^4",
     "@types/leaflet": "^1.9.22",
     "@types/node": "^20",
