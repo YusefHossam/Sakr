@@ -34,15 +34,20 @@ function verticalExtent(mask: Mask): { top: number; bottom: number } | null {
   return top < 0 ? null : { top, bottom };
 }
 
-/** Width of the continuous body run through `cx` on row `y` (ignores arms hanging apart). */
-function runWidth(mask: Mask, y: number, cx: number): { x1: number; x2: number } | null {
+/**
+ * Width of the continuous body run through `cx` on row `y` (ignores arms hanging apart). `maxHalf` stops the run at
+ * a plausible torso edge, so arms held out or an open jacket touching the body are not counted as chest.
+ */
+function runWidth(mask: Mask, y: number, cx: number, maxHalf = Infinity): { x1: number; x2: number } | null {
   const row = Math.round(Math.min(Math.max(y, 0), mask.height - 1)) * mask.width;
   let x = Math.round(cx);
   if (mask.data[row + x] <= THRESHOLD) return null;
   let x1 = x;
   let x2 = x;
-  while (x1 > 0 && mask.data[row + x1 - 1] > THRESHOLD) x1--;
-  while (x2 < mask.width - 1 && mask.data[row + x2 + 1] > THRESHOLD) x2++;
+  const lo = Math.max(0, Math.round(cx - maxHalf));
+  const hi = Math.min(mask.width - 1, Math.round(cx + maxHalf));
+  while (x1 > lo && mask.data[row + x1 - 1] > THRESHOLD) x1--;
+  while (x2 < hi && mask.data[row + x2 + 1] > THRESHOLD) x2++;
   x = x2 - x1;
   return x > 2 ? { x1, x2 } : null;
 }
@@ -80,9 +85,12 @@ export function measure(front: View, heightCm: number, weightKg: number | null, 
   const cx = (ls.x + rs.x + lh.x + rh.x) / 4;
   const rows = { chest: shoulderY + (hipY - shoulderY) * 0.25, waist: shoulderY + (hipY - shoulderY) * 0.72, hips: hipY + 4 };
 
+  // A torso is never much wider than the shoulder joints: this caps each row's half-width.
+  const shoulderHalf = Math.abs(ls.x - rs.x) / 2;
+  const reach = { chest: 1.25, waist: 1.15, hips: 1.3 };
   const widths: Partial<Record<keyof typeof rows, { cm: number; x1: number; x2: number }>> = {};
   for (const key of Object.keys(rows) as (keyof typeof rows)[]) {
-    const run = runWidth(front.mask, rows[key], cx);
+    const run = runWidth(front.mask, rows[key], cx, shoulderHalf * reach[key]);
     if (!run) return null;
     let cm = (run.x2 - run.x1) * cmPerPx;
     if (back) {
@@ -109,10 +117,12 @@ export function measure(front: View, heightCm: number, weightKg: number | null, 
     return widths[key]!.cm * ratio[key] * build;
   };
 
-  const chestCm = ellipse(widths.chest!.cm, depth("chest"));
-  const waistCm = ellipse(widths.waist!.cm, depth("waist"));
-  const hipsCm = ellipse(widths.hips!.cm, depth("hips"));
   const shouldersCm = Math.hypot(ls.x - rs.x, ls.y - rs.y) * cmPerPx * 1.18;
+  // Keep circumferences inside human proportions to the shoulders (loose clothes and poses otherwise inflate them).
+  const within = (v: number, lo: number, hi: number) => Math.min(hi * shouldersCm, Math.max(lo * shouldersCm, v));
+  const chestCm = within(ellipse(widths.chest!.cm, depth("chest")), 1.95, 2.7);
+  const waistCm = within(ellipse(widths.waist!.cm, depth("waist")), 1.6, 2.6);
+  const hipsCm = within(ellipse(widths.hips!.cm, depth("hips")), 1.95, 2.7);
   const inseamCm = (((la.y + ra.y) / 2 - hipY) * cmPerPx) * 1.05;
 
   return {

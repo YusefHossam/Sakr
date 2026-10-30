@@ -104,6 +104,7 @@ export function ArTryOn({ image, kind }: { image: string; kind: Kind }) {
           ctx.drawImage(el, 0, 0, W, H);
           ctx.restore();
           const face = landmarker.detectForVideo(el, performance.now()).faceLandmarks[0];
+          cv.dataset.face = face ? "tracked" : "searching"; // lets tests (and devtools) see whether a face is found
           if (face) {
             const p = (i: number) => ({ x: (1 - face[i].x) * W, y: face[i].y * H });
             const eyeA = p(33), eyeB = p(263);
