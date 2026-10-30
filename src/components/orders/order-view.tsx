@@ -1,4 +1,5 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { GOVERNORATES } from "@/lib/shipping";
 import { Price } from "@/components/product/price";
 import type { OrderSummary } from "@/lib/order-queries";
 import { TrackMapLoader } from "./track-map-loader";
@@ -12,10 +13,39 @@ export async function OrderView({ order, children }: { order: OrderSummary; chil
   const tc = await getTranslations("checkout");
   const reached = (s: string) => order.history.find((h) => h.status === s);
   const currentIndex = STEPS.indexOf(order.status as (typeof STEPS)[number]);
+  const ar = (await getLocale()) === "ar";
+  const L = (a: string, e: string) => (ar ? a : e);
+  const gov = GOVERNORATES[order.address.governorate];
+  const place = [order.address.city, gov ? (ar ? gov.ar : gov.en) : order.address.governorate].filter(Boolean).join(ar ? "، " : ", ");
+  const method = order.paymentMethod === "cod" ? tc("cod") : order.paymentMethod === "transfer" ? tc("transfer") : tc("card");
+  const rows: [string, React.ReactNode][] = [
+    [L("الاسم", "Name"), <span key="n" dir="auto">{order.contact.name}</span>],
+    [L("الموبايل", "Phone"), <span key="p" dir="ltr">{order.contact.phone}{order.contact.phone2 && ` · ${order.contact.phone2}`}</span>],
+    [L("العنوان", "Address"), <span key="a" className="flex flex-col" dir="auto">{order.address.lines[0] && <span>{order.address.lines[0]}</span>}<span>{place}</span>{order.address.lines.slice(1).map((l) => <span key={l} className="text-steel">{l}</span>)}</span>],
+    [L("الدفع", "Payment"), <span key="m">{method}{order.paymentPlan === "deposit" ? ` · ${L("عربون ٥٠٪", "50% deposit")}` : ""}</span>],
+    [L("التوصيل المتوقع", "Expected delivery"), <span key="d" dir="ltr">{order.deliveryDate}</span>],
+  ];
 
   return (
     <div className="flex flex-col gap-10">
       {children}
+      {/* What was ordered, where it goes and how it is paid: first thing on the page. */}
+      <section aria-label={t("deliveryDetails")} className="flex flex-col gap-4 border border-bone/40 bg-smoke p-5">
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <p className="street-heading text-2xl">{t("deliveryDetails")}</p>
+          <div className="flex items-baseline gap-2 text-sm text-steel">
+            {L("المطلوب", "Total")}: <Price price={order.total} />
+          </div>
+        </div>
+        <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-[auto_1fr]">
+          {rows.map(([k, v]) => (
+            <div key={k} className="contents">
+              <dt className="text-xs tracking-[0.15em] text-dust uppercase sm:pt-0.5">{k}</dt>
+              <dd className="text-bone">{v}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
       <section aria-label={t("status")} className="flex flex-col gap-6">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
           <p className="street-heading text-3xl">{t(`statuses.${order.status}`)}</p>
@@ -73,13 +103,6 @@ export async function OrderView({ order, children }: { order: OrderSummary; chil
           <div className="flex justify-between"><dt className="text-steel">{tc("shipping")}</dt><dd><Price price={order.shipping} /></dd></div>
           <div className="flex justify-between border-t border-ash pt-2"><dt className="text-bone">{tc("total")}</dt><dd><Price price={order.total} /></dd></div>
         </dl>
-        <div className="flex h-fit flex-col gap-2 border border-ash p-5 text-sm lg:col-start-2">
-          <p className="street-heading text-xl">{t("deliveryDetails")}</p>
-          <p className="text-bone" dir="auto">{order.contact.name}</p>
-          <p className="text-steel" dir="ltr">{order.contact.phone}{order.contact.phone2 && ` · ${order.contact.phone2}`}</p>
-          {order.address.lines.map((l) => <p key={l} className="text-steel" dir="auto">{l}</p>)}
-          <p className="text-xs text-dust">{order.address.country} · {t("expected")}: <span dir="ltr">{order.deliveryDate}</span></p>
-        </div>
       </section>
     </div>
   );

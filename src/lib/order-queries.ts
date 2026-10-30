@@ -25,7 +25,8 @@ export type OrderSummary = {
   preorderShipsAt: string | null;
   walletUsed: number;
   contact: { name: string; phone: string; phone2: string };
-  address: { lines: string[]; country: string };
+  address: { lines: string[]; city: string; governorate: string; country: string };
+  paymentPlan: string;
 };
 
 export function toSummary(o: OrderDoc & { createdAt?: Date }): OrderSummary {
@@ -52,11 +53,13 @@ export function toSummary(o: OrderDoc & { createdAt?: Date }): OrderSummary {
     preorderShipsAt: o.preorder?.enabled ? (o.preorder.shipsAt ? new Date(o.preorder.shipsAt).toISOString().slice(0, 10) : "") : null,
     walletUsed: o.walletUsed ?? 0,
     contact: { name: o.contact!.name, phone: o.contact!.phone, phone2: o.contact!.phone2 ?? "" },
+    paymentPlan: o.payment!.plan ?? "full",
     address: {
+      city: o.address!.city,
+      governorate: o.address!.governorate ?? "",
       country: o.address!.country,
       lines: [
         [o.address!.street, o.address!.building && `#${o.address!.building}`, o.address!.floor && `F${o.address!.floor}`, o.address!.apartment && `Apt ${o.address!.apartment}`].filter(Boolean).join(", "),
-        [o.address!.city, o.address!.governorate].filter(Boolean).join(", "),
         o.address!.landmark ?? "",
       ].filter(Boolean),
     },
