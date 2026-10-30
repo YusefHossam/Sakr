@@ -9,6 +9,7 @@ import { RegionMenu } from "./region-menu";
 
 const TOP_CATEGORIES = ["hoodies", "crewnecks", "jackets", "pants", "sweatpants", "tees", "shorts", "footwear", "slides", "accessories"] as const;
 const ACCESSORY_TYPES = ["chains", "bracelets", "rings", "sunglasses", "socks", "boxers", "headwear", "bags", "belts", "masks", "watches", "perfumes"] as const;
+const SLIDE_TYPES = ["slides", "slippers", "clogs"] as const;
 
 type MenuKey = (typeof TOP_CATEGORIES)[number] | "brands";
 
@@ -130,9 +131,9 @@ export function NavBar({ categories, brands, cartBadge }: { categories: NavCateg
               )}
             </div>
             <div className="grid grid-cols-4 gap-x-8 gap-y-2 xl:grid-cols-5">
-              {open === "accessories" &&
-                ACCESSORY_TYPES.map((type) => (
-                  <Link key={type} href={`/shop/accessories?type=${type}`} className="py-1 text-sm text-bone hover:text-chrome">
+              {(open === "accessories" || open === "slides") &&
+                (open === "accessories" ? ACCESSORY_TYPES : SLIDE_TYPES).map((type) => (
+                  <Link key={type} href={`/shop/${open}?type=${type}`} className="py-1 text-sm text-bone hover:text-chrome">
                     {t(`accessories.${type}`)}
                   </Link>
                 ))}
@@ -185,7 +186,7 @@ export function NavBar({ categories, brands, cartBadge }: { categories: NavCateg
                               {b.name}
                             </Link>
                           ))
-                        : (key === "accessories" ? ACCESSORY_TYPES.map((type) => ({ href: `/shop/accessories?type=${type}`, label: t(`accessories.${type}`) })) : [])
+                        : (key === "accessories" || key === "slides" ? (key === "accessories" ? ACCESSORY_TYPES : SLIDE_TYPES).map((type) => ({ href: `/shop/${key}?type=${type}`, label: t(`accessories.${type}`) })) : [])
                             .concat(brandsFor(key).map((b) => ({ href: `/shop/${key}?brand=${b.slug}`, label: b.name })))
                             .map((l) => (
                               <Link key={l.href} href={l.href} className="py-1 text-sm text-steel">

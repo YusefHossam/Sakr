@@ -1,15 +1,17 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { SocialIcon } from "./brand-icons";
 import { JoinForm } from "./join-form";
 import { PaymentIcons } from "./payment-icons";
 import tracks from "../../../public/music/tracks.json";
 
 const SOCIALS = [
-  { label: "Instagram", href: "https://instagram.com", d: "M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm5 5a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm5.5-1.5h.01" },
-  { label: "TikTok", href: "https://tiktok.com", d: "M15 3c.4 2.5 2 4 4.5 4.2V10c-1.7 0-3.2-.5-4.5-1.4V15a6 6 0 1 1-6-6v2.9A3.1 3.1 0 1 0 12 15V3h3z" },
-  { label: "Snapchat", href: "https://snapchat.com", d: "M12 3c3 0 5 2.2 5 5v2.2l1.6-.5c.6.2.6.9 0 1.2l-1.8.9c.5 1.6 1.7 2.8 3.2 3.3-.3.8-1.5 1-2.6 1.2-.2.6-.3 1.2-1 1.2-1 0-1.8-.5-3.4.6-.7.5-1.4.9-2 .9s-1.3-.4-2-.9c-1.6-1.1-2.4-.6-3.4-.6-.7 0-.8-.6-1-1.2-1.1-.2-2.3-.4-2.6-1.2 1.5-.5 2.7-1.7 3.2-3.3l-1.8-.9c-.6-.3-.6-1 0-1.2l1.6.5V8c0-2.8 2-5 5-5z" },
-  { label: "X", href: "https://x.com", d: "M4 4l16 16M20 4 4 20" },
-];
+  { label: "WhatsApp", name: "whatsapp", href: "https://wa.me/201000000000" },
+  { label: "Instagram", name: "instagram", href: "https://instagram.com" },
+  { label: "Snapchat", name: "snapchat", href: "https://snapchat.com" },
+  { label: "TikTok", name: "tiktok", href: "https://tiktok.com" },
+  { label: "X", name: "x", href: "https://x.com" },
+] as const;
 
 export async function Footer() {
   const t = await getTranslations();
@@ -70,11 +72,9 @@ export async function Footer() {
                   target="_blank"
                   rel="noreferrer"
                   aria-label={s.label}
-                  className="grid size-11 place-items-center rounded-full border border-iron text-steel transition-colors hover:border-bone hover:text-chrome"
+                  className="grid size-11 place-items-center rounded-full border border-iron text-steel transition-colors hover:border-bone hover:bg-smoke"
                 >
-                  <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d={s.d} />
-                  </svg>
+                  <SocialIcon name={s.name} className="size-6" />
                 </a>
               </li>
             ))}
@@ -118,6 +118,14 @@ export async function Footer() {
                 · <a href={tr.license} target="_blank" rel="noreferrer" className="underline">license</a>
               </li>
             ))}
+            <li>
+              <a href="https://commons.wikimedia.org/wiki/File:Buteo_jamaicensis_-_Red-tailed_Hawk_XC71575.mp3" target="_blank" rel="noreferrer" className="hover:text-steel">Red-tailed Hawk call — Jonathon Jongsma</a>{" "}
+              · <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noreferrer" className="underline">CC BY-SA 3.0</a>
+            </li>
+            <li>
+              <a href="https://mixkit.co/free-stock-video/urban-man/" target="_blank" rel="noreferrer" className="hover:text-steel">Hero footage — Mixkit</a>{" "}
+              · <a href="https://mixkit.co/license/#videoFree" target="_blank" rel="noreferrer" className="underline">Mixkit license</a>
+            </li>
           </ul>
         </details>
         <div className="flex items-center gap-3">

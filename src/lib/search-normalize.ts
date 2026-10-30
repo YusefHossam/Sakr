@@ -32,6 +32,30 @@ const WORDS: Record<string, string> = {
   black: "black", اسود: "black", أسود: "black", aswad: "black", white: "white", ابيض: "white", أبيض: "white", abyad: "white", red: "red", احمر: "red", أحمر: "red", ahmar: "red", blue: "blue", ازرق: "blue", أزرق: "blue", azra2: "blue", green: "green", اخضر: "green", أخضر: "green", grey: "grey", gray: "grey", رمادي: "grey", brown: "brown", بني: "brown", pink: "pink", وردي: "pink",
 };
 
+// More ways people actually type: Arabic spellings, Franco-Arab (Arabic in Latin letters) and common misspellings.
+const EXTRA: Record<string, string> = {
+  // brands
+  هارت: "hearts", هارتز: "hearts", hartz: "hearts", harts: "hearts", hearts: "hearts", kroom: "chrome", krom: "chrome", chrom: "chrome", كروم: "chrome", كرووم: "chrome",
+  كورتيس: "corteiz", ترابستر: "trapstar", بالنسياغا: "balenciaga", بلنسياجا: "balenciaga", بالانسياجا: "balenciaga", لانفان: "lanvin", لانفين: "lanvin", قوتشي: "gucci", جوتشى: "gucci",
+  سوبريم: "supreme", سبريم: "supreme", اوف: "off", ستيوسي: "stussy", ستوسى: "stussy", اسيكس: "asics", بوما: "puma", بيوما: "puma", ريبوك: "reebok", لاكوست: "lacoste", لاكوستي: "lacoste",
+  اوكلي: "oakley", اوكلى: "oakley", كاسيو: "casio", سواتش: "swatch", تيمكس: "timex", بلايبوي: "playboy", ديزل: "diesel", جويارد: "goyard", ماركيلا: "margiela", مارجيلا: "margiela",
+  kith: "kith", كيث: "kith", bape: "bape", بيب: "bape", arcteryx: "arcteryx", ارك: "arcteryx", سبايدر: "sp5der", spider: "sp5der", psd: "psd", بي: "", اس: "", دي: "",
+  // kinds
+  nadarat: "sunglasses", nadarah: "sunglasses", nazarat: "sunglasses", nadara: "sunglasses", نظارات: "sunglasses", نضاره: "sunglasses", "نظاره": "sunglasses", sunglass: "sunglasses", shades: "sunglasses", عويينات: "sunglasses",
+  watch: "watch", watches: "watch", sa3a: "watch", saa3a: "watch", sa3at: "watch", saa3at: "watch", ساعة: "watch", ساعه: "watch", ساعات: "watch",
+  salsala: "chain", selsela: "chain", salasel: "chain", سلسله: "chain", chains: "chain", necklace: "chain", قلادة: "chain", عقد: "chain",
+  khatem: "ring", rings: "ring", خواتم: "ring", خاتم: "ring", aswera: "bracelet", asawer: "bracelet", bracelets: "bracelet", اسورة: "bracelet", اسوره: "bracelet", اساور: "bracelet", سوار: "bracelet",
+  slipper: "slipper", slippers: "slipper", shebsheb: "slide", shabsheb: "slide", شباشب: "slide", سلبر: "slipper", سليبر: "slipper", سليبرز: "slipper", اسلبرات: "slipper", اسليبرات: "slipper", sliper: "slipper", slipers: "slipper", clog: "crocs", clogs: "crocs", crocs: "crocs", croc: "crocs", كروكس: "crocs", كروكز: "crocs",
+  boxers: "boxer", بوكسرات: "boxer", بوكسرز: "boxer", boxr: "boxer", underwear: "boxer", brief: "boxer", سليب: "boxer", ملابس: "", داخلية: "boxer",
+  mask: "mask", masks: "mask", ماسك: "mask", ماسكات: "mask", قناع: "mask",
+  perfume: "perfume", perfumes: "perfume", fragrance: "perfume", cologne: "perfume", "3etr": "perfume", atr: "perfume", عطر: "perfume", برفان: "perfume", برفيوم: "perfume", عطور: "perfume", برفانات: "perfume",
+  caps: "cap", kabat: "cap", tar2a: "beanie", taqia: "beanie", beanies: "beanie", hats: "hat", شنطه: "bag", shonat: "bag", bags: "bag", حقيبة: "bag", backpacks: "backpack", belts: "belt", hezam: "belt", احزمة: "belt", احزمه: "belt",
+  gazma: "shoes", gezma: "shoes", جزم: "shoes", koshy: "sneakers", kotsh: "sneakers", كوتشيات: "sneakers", trainers: "sneakers", sneakerz: "sneakers",
+  hoodies: "hoodie", jackets: "jacket", pantalons: "pants", pant: "pants", trousers: "pants", tshirts: "t-shirt", shirts: "t-shirt", shirt: "t-shirt", تيشرتات: "t-shirt", قميص: "t-shirt", cargo: "cargo", كارجو: "cargo", flare: "flared", flared: "flared", فلير: "flared", skinny: "skinny", سكيني: "skinny", baggy: "baggy", باجي: "baggy", wide: "baggy",
+  // colours
+  asfar: "yellow", اصفر: "yellow", أصفر: "yellow", yellow: "yellow", akhdar: "green", akhdr: "green", rommadi: "grey", ramady: "grey", bonny: "brown", bunni: "brown", kohly: "navy", كحلي: "navy", navy: "navy", beige: "beige", بيج: "beige", orange: "orange", برتقالي: "orange", purple: "purple", بنفسجي: "purple", banafsegy: "purple", cream: "cream", كريمي: "cream", offwhite: "off white", silver: "silver", فضي: "silver", gold: "gold", دهبي: "gold", ذهبي: "gold", dahaby: "gold", fedy: "silver",
+};
+
 const ARABIC_MARKS = /[ً-ٰٟـ]/g;
 
 /** Lowercase, strip Arabic diacritics and unify letter variants so "أسود" and "اسود" compare equal. */
@@ -45,7 +69,50 @@ function fold(token: string): string {
     .replace(/^[^\p{L}\p{N}-]+|[^\p{L}\p{N}-]+$/gu, "");
 }
 
-const FOLDED = new Map(Object.entries(WORDS).map(([k, v]) => [fold(k), v]));
+const FOLDED = new Map(Object.entries({ ...WORDS, ...EXTRA }).map(([k, v]) => [fold(k), v]));
+const VOCAB = [...FOLDED.keys()].filter((k) => k.length >= 4);
+
+function distance(a: string, b: string, max: number): number {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prev = cur;
+  }
+  return prev[b.length];
+}
+
+/** Canonical English word for one typed word, forgiving a typo or two ("hodie", "sunglases", "كروم"). Null when unknown. */
+export function canonicalWord(raw: string): string | null {
+  const token = fold(raw);
+  if (!token) return null;
+  const exact = FOLDED.get(token);
+  if (exact !== undefined) return exact || null;
+  if (token.length < 4) return token;
+  const allow = token.length >= 8 ? 2 : 1;
+  let best: string | null = null;
+  let bestD = allow + 1;
+  for (const k of VOCAB) {
+    const d = distance(token, k, allow);
+    if (d < bestD) {
+      bestD = d;
+      best = k;
+    }
+  }
+  if (best) return FOLDED.get(best) || null;
+  return token;
+}
+
+/** Every word of a query as canonical English, with typos forgiven. */
+export function canonicalTokens(q: string): string[] {
+  const out: string[] = [];
+  for (const raw of q.split(/\s+/)) {
+    const c = canonicalWord(raw);
+    if (c) out.push(...c.split(" "));
+  }
+  return [...new Set(out)];
+}
 
 /** English search terms for a free-text query. Unknown words pass through untouched. */
 export function normalizeQuery(q: string): string {

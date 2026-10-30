@@ -84,6 +84,9 @@ const describe = (p: RawProduct) => {
   return { description: text.en, descriptionAr: text.ar };
 };
 
+// Slides split three ways so slippers and Crocs each get their own section.
+const slideType = (title: string) => (/\b(crocs?|clogs?)\b/i.test(title) ? "clogs" : /\b(slippers?|tasman|tazz|scuff|mules?|house shoe)\b/i.test(title) ? "slippers" : "slides");
+
 const docs = catalog.products.map((p) => ({
   slug: p.slug,
   title: p.title,
@@ -91,7 +94,7 @@ const docs = catalog.products.map((p) => ({
   brand: p.brand,
   brandSlug: slugify(p.brand),
   category: p.category,
-  subcategory: p.subcategory,
+  subcategory: p.category === "slides" ? slideType(p.title) : p.subcategory,
   fit: p.fit,
   model: p.model,
   modelKey: p.modelKey,

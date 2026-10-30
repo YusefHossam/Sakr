@@ -44,6 +44,16 @@ slides category, clean hero, **full admin panel** (customers, catalog bulk tools
 - 50 Design-system page with every SAKR component
 - 15-style items skipped on purpose: 2, 4, 13, 15, 18, 37
 
+## Polish round (2026-10-30)
+- Payment and social icons in their brand colours (Visa, Mastercard, Amex, Apple Pay, Google Pay, PayPal, InstaPay, Vodafone Cash, Fawry, Meeza; WhatsApp, Instagram, Snapchat, TikTok, X)
+- Order page shows the delivery details (name, phones, address, expected date)
+- Real falcon scream (red-tailed hawk recording, CC BY-SA) with a sub hit, replacing the synthesized one
+- Search understands Arabic, Franco and English with typo tolerance; live suggestions (brands, sections, products)
+- Catalog round 13: PSD boxers (cap 220), Crocs, slides and slippers of every brand, Chrome Hearts and other jewelry, Miansai, King Ice, more watches, sunglasses, boxers of every brand
+- Slides split into Slides / Slippers / Crocs
+- Street-style videos (Mixkit) behind the home logo
+- New cursor: chrome ring and dot, red over clickables
+
 ## Later
 - 36 Ramadan / Eid theme (not now)
 - Deploy (Vercel + Atlas), image compression (870 MB), Gemini/HF/Paymob keys

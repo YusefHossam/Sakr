@@ -27,7 +27,7 @@ const plex = IBM_Plex_Sans_Arabic({
   weight: ["400", "500", "700"],
   display: "swap",
 });
-const anton = Anton({ variable: "--font-anton", subsets: ["latin"], weight: "400", display: "swap" });
+const anton = Anton({ variable: "--font-anton", subsets: ["latin"], weight: "400", display: "block" });
 const gothic = UnifrakturMaguntia({ variable: "--font-gothic-face", subsets: ["latin"], weight: "400", display: "block" });
 
 export const viewport: Viewport = {

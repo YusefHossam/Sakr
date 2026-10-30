@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { ListingSkeleton, ShopListing, type SearchParams } from "@/components/shop/listing";
+import { SearchBox } from "@/components/shop/search-box";
 import { PageHeader } from "@/components/shop/page-header";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -27,23 +28,7 @@ async function SearchResults({ searchParams }: { searchParams: SearchParams }) {
   const q = (Array.isArray(raw) ? raw[0] : raw)?.trim().slice(0, 80) ?? "";
   return (
     <div className="flex flex-col gap-8">
-      <form action="" role="search" className="flex gap-2">
-        <label htmlFor="q" className="sr-only">
-          {t("searchPlaceholder")}
-        </label>
-        <input
-          id="q"
-          name="q"
-          type="search"
-          defaultValue={q}
-          autoFocus
-          placeholder={t("searchPlaceholder")}
-          className="flex-1 border border-ash bg-smoke px-4 py-3.5 text-bone placeholder:text-dust focus:border-steel focus:outline-none"
-        />
-        <button type="submit" className="border border-bone/70 px-6 font-display tracking-[0.3em] text-bone uppercase hover:bg-bone hover:text-ink">
-          {t("searchButton")}
-        </button>
-      </form>
+      <SearchBox initial={q} />
       {q ? (
         <>
           <p className="street-heading text-2xl" dir="auto">{t("searchResults", { q })}</p>

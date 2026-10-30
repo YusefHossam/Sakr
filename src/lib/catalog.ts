@@ -3,7 +3,8 @@ import { cacheLife, cacheTag } from "next/cache";
 import { connectDB } from "./db";
 import { LAST_PIECES_MAX, promoFor, variantPrice, type Promo } from "./pricing";
 import { getSettings } from "./settings";
-import { normalizeQuery } from "./search-normalize";
+import { canonicalTokens, normalizeQuery } from "./search-normalize";
+import { intentFilter, resolveIntent, typeLabel, type Intent } from "./search-intent";
 import { buildOutfits, moodsOf, pairScore, slotOf, type Outfit, type ReasonKey, type Slot, type StyleItem } from "./style";
 import { MOODS, type Mood } from "./moods";
 import { SETTINGS_TAG } from "./tags";
@@ -186,10 +187,18 @@ export async function getListing(query: ListingQuery): Promise<Listing> {
   if (query.brands?.length) base.brandSlug = { $in: [...query.brands] };
   if (query.type) base.subcategory = query.type;
   if (query.sale) base.variants = { $elemMatch: { stock: { $gte: 1, $lte: LAST_PIECES_MAX } } };
+  let textSearch = false;
   if (query.q) {
-    // "7oody" or "كوتشي نايك" also search the English words the catalog is indexed with.
-    const english = normalizeQuery(query.q);
-    base.$text = { $search: english && english !== query.q.toLowerCase() ? `${english} ${query.q}` : query.q };
+    // Brand + kind + colour in any language ("نضارات كروم هارت", "nadarat chrome hearts") become real filters.
+    const { brands } = await getNavData();
+    const structured = intentFilter(resolveIntent(query.q, brands));
+    if (structured && (await Product.countDocuments({ ...base, ...structured })) > 0) Object.assign(base, structured);
+    else {
+      // Otherwise a text search over the English words the catalog is indexed with.
+      const english = canonicalTokens(query.q).join(" ") || normalizeQuery(query.q);
+      base.$text = { $search: english && english !== query.q.toLowerCase() ? `${english} ${query.q}` : query.q };
+      textSearch = true;
+    }
   }
   const filter = query.brand ? { ...base, brandSlug: query.brand } : base;
 
@@ -199,7 +208,7 @@ export async function getListing(query: ListingQuery): Promise<Listing> {
       ? { price: 1 }
       : query.sort === "price-desc"
         ? { price: -1 }
-        : query.q
+        : textSearch
           ? { score: { $meta: "textScore" } }
           : { publishedAt: -1, _id: 1 };
 
@@ -385,6 +394,7 @@ export async function getHeroImages(limit = 36): Promise<string[]> {
 // ---------- Style: what goes with what ----------
 
 const STYLE_FIELDS = "slug title brand brandSlug category subcategory model fit colors price images variants";
+const STYLE_LITE = "slug title brand brandSlug category subcategory model fit colors price";
 type StyleDoc = Omit<StyleItem, "image"> & { images?: string[]; variants?: { stock: number }[]; modelKey?: string | null; description?: string };
 const toStyle = (d: StyleDoc): StyleItem => ({ slug: d.slug, title: d.title, brand: d.brand, brandSlug: d.brandSlug, category: d.category, subcategory: d.subcategory ?? null, model: d.model ?? null, fit: d.fit ?? null, colors: d.colors ?? [], price: d.price, image: d.images?.[0] ?? null });
 
@@ -411,32 +421,40 @@ export async function getGoesWith(slug: string): Promise<GoesWith[]> {
   const picks: GoesWith[] = [];
   const stocked = { variants: { $elemMatch: { stock: { $gt: 0 } } }, "images.0": { $exists: true }, active: true };
 
-  for (const target of TARGETS[slot]) {
-    const categories = SLOT_CATEGORIES[target];
-    const base = { ...stocked, category: { $in: categories }, ...(brandPool ? { brandSlug: { $in: brandPool } } : {}) };
-    const queries: Promise<StyleDoc[]>[] = [Product.aggregate<StyleDoc>([{ $match: base }, { $sample: { size: 140 } }, { $project: Object.fromEntries(STYLE_FIELDS.split(" ").map((f) => [f, 1])) }])];
-    // The owner's pairings must always be reachable: flared / skinny denim finds Track and Curb, and they find the denim.
-    const leg = anchor.fit === "flared" || anchor.fit === "skinny";
-    if (target === "shoes" && leg) queries.push(Product.find({ ...stocked, category: "footwear", brandSlug: { $in: ["balenciaga", "lanvin"] }, title: /\b(track|curb)\b/i }).select(STYLE_FIELDS).limit(30).lean<StyleDoc[]>());
-    if (target === "bottom" && /\b(track|curb)\b/i.test(anchor.title) && ["balenciaga", "lanvin"].includes(anchor.brandSlug))
-      queries.push(Product.find({ ...stocked, category: "pants", fit: { $in: ["flared", "skinny"] } }).select(STYLE_FIELDS).limit(40).lean<StyleDoc[]>());
-    const pool = (await Promise.all(queries)).flat();
-    const seen = new Set<string>();
-    const scored = pool
-      .filter((d) => !seen.has(d.slug) && seen.add(d.slug))
-      .map((d) => ({ doc: d, pair: pairScore(anchor, toStyle(d)) }))
-      .filter((x) => x.pair.score > 0)
-      .sort((a, b) => b.pair.score - a.pair.score);
-    const take = target === "outer" ? 1 : 2;
-    const fresh: typeof scored = [];
-    for (const x of scored) {
-      // One piece per brand+model, so a row of colourways of the same shoe does not fill the section.
-      if (!fresh.some((f) => (f.doc.model ?? f.doc.slug) === (x.doc.model ?? x.doc.slug) && f.doc.brandSlug === x.doc.brandSlug)) fresh.push(x);
-      if (fresh.length >= take) break;
-    }
-    const cards = await toCards(fresh.map((f) => f.doc as unknown as CardSource));
-    fresh.forEach((f, i) => picks.push({ card: cards[i], why: f.pair.why, score: f.pair.score }));
-  }
+  // Scoring needs only these light fields; the few winners are fetched in full afterwards (much less to transfer).
+  const lite = Object.fromEntries(STYLE_LITE.split(" ").map((f) => [f, 1]));
+  const perTarget = await Promise.all(
+    TARGETS[slot].map(async (target) => {
+      const categories = SLOT_CATEGORIES[target];
+      const base = { ...stocked, category: { $in: categories }, ...(brandPool ? { brandSlug: { $in: brandPool } } : {}) };
+      const queries: Promise<StyleDoc[]>[] = [Product.aggregate<StyleDoc>([{ $match: base }, { $sample: { size: 90 } }, { $project: lite }])];
+      // The owner's pairings must always be reachable: flared / skinny denim finds Track and Curb, and they find the denim.
+      const leg = anchor.fit === "flared" || anchor.fit === "skinny";
+      if (target === "shoes" && leg) queries.push(Product.find({ ...stocked, category: "footwear", brandSlug: { $in: ["balenciaga", "lanvin"] }, title: /\b(track|curb)\b/i }).select(STYLE_LITE).limit(30).lean<StyleDoc[]>());
+      if (target === "bottom" && /\b(track|curb)\b/i.test(anchor.title) && ["balenciaga", "lanvin"].includes(anchor.brandSlug))
+        queries.push(Product.find({ ...stocked, category: "pants", fit: { $in: ["flared", "skinny"] } }).select(STYLE_LITE).limit(40).lean<StyleDoc[]>());
+      const pool = (await Promise.all(queries)).flat();
+      const seen = new Set<string>();
+      const scored = pool
+        .filter((d) => !seen.has(d.slug) && seen.add(d.slug))
+        .map((d) => ({ doc: d, pair: pairScore(anchor, toStyle(d)) }))
+        .filter((x) => x.pair.score > 0)
+        .sort((x, y) => y.pair.score - x.pair.score);
+      const take = target === "outer" ? 1 : 2;
+      const fresh: typeof scored = [];
+      for (const x of scored) {
+        // One piece per brand+model, so a row of colourways of the same shoe does not fill the section.
+        if (!fresh.some((f) => (f.doc.model ?? f.doc.slug) === (x.doc.model ?? x.doc.slug) && f.doc.brandSlug === x.doc.brandSlug)) fresh.push(x);
+        if (fresh.length >= take) break;
+      }
+      return fresh;
+    }),
+  );
+  const chosen = perTarget.flat();
+  const full = new Map((await Product.find({ slug: { $in: chosen.map((c) => c.doc.slug) } }).select(CARD_FIELDS).lean<CardSource[]>()).map((d) => [d.slug, d]));
+  const kept = chosen.filter((c) => full.has(c.doc.slug));
+  const cards = await toCards(kept.map((c) => full.get(c.doc.slug)!));
+  kept.forEach((c, i) => picks.push({ card: cards[i], why: c.pair.why, score: c.pair.score }));
   return picks;
 }
 
@@ -451,7 +469,7 @@ export async function getFits(mood: Mood, day: string, count = 6): Promise<Fit[]
   const m = MOODS[mood];
   const base = { active: true, "images.0": { $exists: true }, variants: { $elemMatch: { stock: { $gt: 3 } } }, brandSlug: { $in: [...m.brands] }, category: { $nin: [...m.exclude] } };
   const pool = (
-    await Product.aggregate<StyleDoc>([{ $match: base }, { $sample: { size: 900 } }, { $project: Object.fromEntries(STYLE_FIELDS.split(" ").map((f) => [f, 1])) }])
+    await Product.aggregate<StyleDoc>([{ $match: base }, { $sample: { size: 900 } }, { $project: Object.fromEntries(STYLE_LITE.split(" ").map((f) => [f, 1])) }])
   ).map(toStyle);
   const outfits = buildOutfits(pool, { count, seed: `${mood}:${day}`, mood });
   const docs = new Map<string, StyleDoc>();
@@ -469,4 +487,51 @@ export async function getCardsBySlugs(slugs: string[]): Promise<ProductCard[]> {
   const cards = await toCards(docs);
   const order = new Map(slugs.map((x, i) => [x, i]));
   return cards.sort((a, b) => (order.get(a.slug) ?? 0) - (order.get(b.slug) ?? 0));
+}
+
+export type Suggestions = {
+  brands: { name: string; slug: string }[];
+  types: { label: { ar: string; en: string }; href: string }[];
+  products: ProductCard[];
+};
+
+/** Live search suggestions: what the query seems to mean (brands, kinds) plus a few matching products. */
+export async function getSuggestions(q: string): Promise<Suggestions> {
+  await connectDB();
+  const { brands } = await getNavData();
+  const intent: Intent = resolveIntent(q, brands);
+  const lower = q.trim().toLowerCase();
+  const typed = canonicalTokens(q);
+  const last = typed[typed.length - 1] ?? lower;
+
+  // Brands: recognised by the intent, or the last typed word is the start of a brand name.
+  const picked = new Map<string, { name: string; slug: string }>();
+  for (const slug of intent.brandSlugs) {
+    const b = brands.find((x) => x.slug === slug);
+    if (b) picked.set(slug, { name: b.name, slug });
+  }
+  if (last.length >= 2)
+    for (const b of brands) if (b.name.toLowerCase().split(/[^a-z0-9]+/).some((w) => w.startsWith(last))) picked.set(b.slug, { name: b.name, slug: b.slug });
+
+  const types = intent.types.map((t) => ({
+    label: typeLabel(t),
+    href: t.subcategory ? `/shop/${t.category}?type=${t.subcategory}` : `/shop/${t.category}`,
+  }));
+
+  const filter = intentFilter(intent);
+  let docs: CardSource[] = [];
+  if (filter) docs = await Product.find({ active: true, ...filter }).sort({ publishedAt: -1 }).limit(6).select(CARD_FIELDS).lean<CardSource[]>();
+  if (!docs.length && q.trim().length >= 2) {
+    const english = typed.join(" ");
+    docs = await Product.find({ active: true, $text: { $search: english || q } }, { score: { $meta: "textScore" } })
+      .sort({ score: { $meta: "textScore" } })
+      .limit(6)
+      .select(CARD_FIELDS)
+      .lean<CardSource[]>();
+  }
+  // A half-typed brand ("chr") still shows that brand's latest pieces.
+  if (!docs.length && picked.size) {
+    docs = await Product.find({ active: true, brandSlug: { $in: [...picked.keys()] } }).sort({ publishedAt: -1 }).limit(6).select(CARD_FIELDS).lean<CardSource[]>();
+  }
+  return { brands: [...picked.values()].slice(0, 4), types: types.slice(0, 3), products: await toCards(docs) };
 }

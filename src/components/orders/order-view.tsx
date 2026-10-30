@@ -73,6 +73,13 @@ export async function OrderView({ order, children }: { order: OrderSummary; chil
           <div className="flex justify-between"><dt className="text-steel">{tc("shipping")}</dt><dd><Price price={order.shipping} /></dd></div>
           <div className="flex justify-between border-t border-ash pt-2"><dt className="text-bone">{tc("total")}</dt><dd><Price price={order.total} /></dd></div>
         </dl>
+        <div className="flex h-fit flex-col gap-2 border border-ash p-5 text-sm lg:col-start-2">
+          <p className="street-heading text-xl">{t("deliveryDetails")}</p>
+          <p className="text-bone" dir="auto">{order.contact.name}</p>
+          <p className="text-steel" dir="ltr">{order.contact.phone}{order.contact.phone2 && ` · ${order.contact.phone2}`}</p>
+          {order.address.lines.map((l) => <p key={l} className="text-steel" dir="auto">{l}</p>)}
+          <p className="text-xs text-dust">{order.address.country} · {t("expected")}: <span dir="ltr">{order.deliveryDate}</span></p>
+        </div>
       </section>
     </div>
   );

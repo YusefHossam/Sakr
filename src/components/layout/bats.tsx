@@ -29,7 +29,7 @@ export function Bats({ count = 7 }: { count?: number }) {
     };
     resize();
 
-    const bats: Bat[] = Array.from({ length: count }, () => ({
+    const bats: Bat[] = Array.from({ length: innerWidth < 768 ? Math.min(3, count) : count }, () => ({
       x: Math.random() * width,
       y: Math.random() * height * 0.7,
       vx: (Math.random() < 0.5 ? -1 : 1) * (0.4 + Math.random() * 0.8),
@@ -46,7 +46,13 @@ export function Bats({ count = 7 }: { count?: number }) {
     };
 
     let frame = 0;
+    let skip = false;
     const tick = () => {
+      skip = !skip;
+      if (skip) {
+        frame = requestAnimationFrame(tick);
+        return;
+      }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, width, height);
       for (const b of bats) {
@@ -61,9 +67,9 @@ export function Bats({ count = 7 }: { count?: number }) {
         }
         b.vx = Math.max(-4, Math.min(4, b.vx * 0.985 + (Math.sign(b.vx) || 1) * 0.01));
         b.vy = Math.max(-3, Math.min(3, b.vy * 0.97 + Math.sin(b.phase * 0.3) * 0.03));
-        b.x += b.vx;
-        b.y += b.vy;
-        b.phase += b.speed;
+        b.x += b.vx * 2; // drawn every other frame, so each step covers two
+        b.y += b.vy * 2;
+        b.phase += b.speed * 2;
         if (b.x < -80) b.x = width + 60;
         if (b.x > width + 80) b.x = -60;
         if (b.y < -60) b.y = height * 0.6;

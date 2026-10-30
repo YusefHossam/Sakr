@@ -36,7 +36,10 @@
     "belts": "أحزمة",
     "masks": "ماسكات",
     "watches": "ساعات",
-    "perfumes": "برفيومات"
+    "perfumes": "برفيومات",
+    "slides": "سلايدز",
+    "slippers": "سليبرز",
+    "clogs": "كروكس"
   },
   "intro": {
     "enter": "ادخل",
@@ -299,6 +302,8 @@
   },
   "order": {
     "title": "طلب {number}",
+    "deliveryDetails": "بيانات التوصيل",
+    "expected": "المتوقع",
     "thanks": "تمام. طلبك اتسجل.",
     "bigOrderCoupon": "اشتريت بأكتر من ١٠,٠٠٠ جنيه — مستنيك كوبون ٢٠٪ في كوبوناتي.",
     "status": "الحالة",

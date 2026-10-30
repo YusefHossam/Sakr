@@ -36,7 +36,10 @@
     "belts": "Belts",
     "masks": "Masks",
     "watches": "Watches",
-    "perfumes": "Perfumes"
+    "perfumes": "Perfumes",
+    "slides": "Slides",
+    "slippers": "Slippers",
+    "clogs": "Crocs & clogs"
   },
   "intro": {
     "enter": "Enter",
@@ -299,6 +302,8 @@
   },
   "order": {
     "title": "Order {number}",
+    "deliveryDetails": "Delivery details",
+    "expected": "Expected",
     "thanks": "Locked in. Your order is placed.",
     "bigOrderCoupon": "You spent over 10,000 EGP — a 20% coupon is waiting in My coupons.",
     "status": "Status",

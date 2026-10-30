@@ -131,6 +131,30 @@ const SOURCES = [
   { brand: "PSD", kind: "shopify", base: "https://psdunderwear.com", currency: "EGP", remoteImages: true, force: { category: "accessories", sub: "boxers" },
     titleSkip: /bralette|thong|boy ?short|bikini|cheeky|hipster|scoop|\bbra\b|women|girl|test|bundle|gift|sample|sticker|\bbag\b|tank|camisole|legging/i },
 
+  // Round 13: Crocs, slides and slippers of every brand, jewelry, watches, sunglasses and boxers of every brand.
+  { brand: "Crocs", kind: "sgsearch", base: "https://www.stadiumgoods.com", currency: "EGP", byModel: true, forceBrand: true, vendors: ["CROCS"], allow: ["slides"], keep: true,
+    match: /clog|crocs|slide|sandal|mule|slipper/i,
+    queries: ["crocs", "crocs classic clog", "crocs echo clog", "crocs literide", "crocs bape", "crocs salehe bembury", "crocs pollex", "crocs balenciaga", "crocs black", "crocs white", "crocs all-terrain", "crocs marvel", "crocs mule", "crocs slide", "crocs bayaband", "crocs sandal", "crocs lined", "crocs camo", "crocs stomp", "crocs cozzzy", "crocs mega crush", "crocs duet max", "crocs classic slide", "crocs brown", "crocs green", "crocs blue", "crocs red", "crocs grey"] },
+  { brand: "Slides", kind: "sgsearch", base: "https://www.stadiumgoods.com", currency: "EGP", byModel: true, brandFromVendor: true, allow: ["slides"], keep: true,
+    match: /slide|slipper|sandal|mule|clog|flip|adilette|yeezy foam|slip-on/i,
+    queries: ["slide", "slides", "yeezy slide", "nike slide", "nike victori one slide", "nike calm slide", "jordan slide", "jordan hydro", "adidas adilette", "adidas slide", "puma slide", "supreme slide", "off-white slide", "gucci slide", "balenciaga slide", "stussy slide", "bape slide", "chrome hearts slide", "slipper", "ugg slipper", "ugg tasman", "ugg scuff", "birkenstock", "fear of god slide", "asics slide", "reebok slide", "lacoste slide", "yeezy foam runner", "sandal", "pool slide", "rubber slide", "black slide", "white slide"] },
+  { brand: "Jewelry", kind: "sgsearch", base: "https://www.stadiumgoods.com", currency: "EGP", byModel: true, brandFromVendor: true, allow: ["accessories"], keep: true,
+    match: /\b(chain|necklace|pendant|bracelet|rings?|earrings?|cuban)\b/i,
+    queries: ["chain necklace", "cuban chain", "bracelet", "ring", "pendant", "chrome hearts ring", "chrome hearts bracelet", "chrome hearts chain", "chrome hearts pendant", "chrome hearts cross pendant", "chrome hearts paper chain", "chrome hearts necklace", "gold chain", "silver chain", "iced chain", "tennis chain", "rope chain", "dog tag", "cross pendant", "cuban link", "vintage frames company chain", "bead bracelet", "cuff bracelet", "signet ring", "band ring", "silver ring", "gold ring", "gold bracelet", "silver bracelet", "heart pendant", "ball chain"] },
+  { brand: "Watches", kind: "sgsearch", base: "https://www.stadiumgoods.com", currency: "EGP", byModel: true, brandFromVendor: true, allow: ["accessories"], keep: true,
+    match: /watch|chronograph/i,
+    queries: ["watch", "casio watch", "g-shock", "g-shock black", "g-shock gold", "casio vintage", "casio digital watch", "casio analog", "casio edifice", "timex watch", "swatch watch", "swatch moonswatch", "digital watch", "analog watch", "vintage watch", "smart watch", "seiko watch", "citizen watch", "black watch", "gold watch", "silver watch", "steel watch", "nike watch", "supreme watch", "bape watch", "oakley watch", "baby-g", "g-shock x"] },
+  { brand: "Sunglasses", kind: "sgsearch", base: "https://www.stadiumgoods.com", currency: "EGP", byModel: true, brandFromVendor: true, allow: ["accessories"], keep: true,
+    match: /sunglasses|eyewear|\bglasses\b/i,
+    queries: ["sunglasses", "oakley sunglasses", "nike sunglasses", "chrome hearts sunglasses", "chrome hearts glasses", "supreme sunglasses", "gentle monster", "polarized sunglasses", "aviator sunglasses", "wrap sunglasses", "shield sunglasses", "rimless sunglasses", "black sunglasses", "gold sunglasses", "oakley frogskins", "oakley holbrook", "oakley sutro", "oakley encoder", "oakley radar", "oakley eyepatch", "dior sunglasses", "gucci sunglasses", "balenciaga sunglasses", "off-white sunglasses", "palm angels sunglasses", "ray-ban", "puma sunglasses", "adidas sunglasses", "sport sunglasses", "round sunglasses"] },
+  { brand: "Boxers", kind: "sgsearch", base: "https://www.stadiumgoods.com", currency: "EGP", byModel: true, brandFromVendor: true, allow: ["accessories"], keep: true,
+    match: /boxer|brief|underwear|trunk/i,
+    queries: ["boxer", "boxers", "boxer briefs", "underwear", "calvin klein boxer", "supreme boxer", "supreme boxer briefs", "chrome hearts boxer", "bape boxer", "fear of god boxer", "diesel boxer", "ralph lauren boxer", "nike boxer", "jordan boxer", "off-white boxer", "palm angels boxer", "amiri boxer", "essentials boxer", "trunks", "briefs", "2 pack boxer", "3 pack boxer", "black boxer"] },
+  { brand: "Miansai", kind: "shopify", base: "https://miansai.com", currency: "USD", remoteImages: true,
+    titleSkip: /women|\bwomen'?s\b|earring|gift ?card|anklet|hoop|stud|dainty/i },
+  { brand: "King Ice", kind: "shopify", base: "https://kingice.com", currency: "USD", remoteImages: true,
+    titleSkip: /women|gift ?card|earring|stud|kids|anklet|pendant for her/i },
+
   // Round 12: more depth for brands the user asked to be fuller.
   sg("casablanca", { brand: "Casablanca", forceBrand: true, vendors: ["CASABLANCA"] }),
   sg("palm-angels", { brand: "Palm Angels", forceBrand: true, vendors: ["PALM ANGELS"] }),
@@ -214,11 +238,15 @@ const ACCESSORY_TYPES = [
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function getJson(url) {
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    const res = await fetch(url, { headers: { "user-agent": UA, accept: "application/json" } });
-    if (res.ok) return res.json();
-    if (res.status === 404) return null;
-    await sleep(1500 * attempt);
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    try {
+      const res = await fetch(url, { headers: { "user-agent": UA, accept: "application/json" } });
+      if (res.ok) return res.json();
+      if (res.status === 404) return null;
+    } catch {
+      // a dropped connection is retried like any other failure
+    }
+    await sleep(2500 * attempt);
   }
   throw new Error(`Failed: ${url}`);
 }
@@ -331,8 +359,12 @@ async function fetchShopifySearch(src) {
   }
   const out = [];
   for (const handle of handles.keys()) {
-    const data = await getJson(src.base + "/products/" + handle + ".json");
-    if (data?.product) out.push(shopifyRaw(src, data.product));
+    try {
+      const data = await getJson(src.base + "/products/" + handle + ".json");
+      if (data?.product) out.push(shopifyRaw(src, data.product));
+    } catch (err) {
+      console.warn("  skipped " + handle + ": " + err.message); // one bad product must not drop the whole source
+    }
     await sleep(350);
   }
   console.log("  search " + src.brand + " (" + src.match + "): " + handles.size + " products");
@@ -537,7 +569,7 @@ const curatedModels = [...modelBuckets.entries()].flatMap(([bucketKey, models]) 
 const MAX_PER_GROUP = 20;
 const MAX_PER_ACCESSORY_TYPE = 8;
 // Brands the owner asked to be deeper than the default (boxers, fragrances).
-const ACCESSORY_CAPS = { PSD: 40, Fusion: 20, Zara: 12 };
+const ACCESSORY_CAPS = { PSD: 220, Fusion: 20, Zara: 12, Miansai: 30, "King Ice": 30 };
 const capFor = (key) => (key.includes("|acc|") ? ACCESSORY_CAPS[key.split("|")[0]] ?? MAX_PER_ACCESSORY_TYPE : MAX_PER_GROUP);
 const groups = new Map();
 for (const p of trimmable.filter((p) => !p.modelKey)) {

@@ -2,6 +2,7 @@ import { ViewTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { ProductCard as Card } from "@/lib/catalog";
+import { sized } from "@/lib/img";
 import { LAST_PIECES_DISCOUNT } from "@/lib/pricing";
 import { Price } from "./price";
 
@@ -16,9 +17,11 @@ export function ProductCard({ product, priority = false, transition = false }: {
         {product.image && (
           // eslint-disable-next-line @next/next/no-img-element -- remote CDN images, already resized
           <img
-            src={product.image}
+            src={sized(product.image, 480) ?? undefined}
             alt={product.title}
             loading={priority ? "eager" : "lazy"}
+            decoding="async"
+            fetchPriority={priority ? "high" : "low"}
             className="size-full object-contain p-4 mix-blend-multiply grayscale-[30%] transition duration-500 group-hover:scale-105 group-hover:grayscale-0"
           />
         )}

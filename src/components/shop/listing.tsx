@@ -10,10 +10,12 @@ import type { Category } from "@/models/product";
 export type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 const ACCESSORY_TYPES = ["chains", "bracelets", "rings", "sunglasses", "socks", "boxers", "headwear", "bags", "belts", "masks", "watches", "perfumes"] as const;
+const SLIDE_TYPES = ["slides", "slippers", "clogs"] as const;
+const TYPES_FOR: Partial<Record<Category, readonly string[]>> = { accessories: ACCESSORY_TYPES, slides: SLIDE_TYPES };
 
 const querySchema = z.object({
   brand: z.string().regex(/^[a-z0-9-]+$/).max(60).optional().catch(undefined),
-  type: z.enum(ACCESSORY_TYPES).optional().catch(undefined),
+  type: z.enum([...ACCESSORY_TYPES, ...SLIDE_TYPES]).optional().catch(undefined),
   sale: z.literal("last-pieces").optional().catch(undefined),
   q: z.string().trim().min(1).max(80).optional().catch(undefined),
   sort: z.enum(SORTS).optional().catch(undefined),
@@ -40,7 +42,7 @@ export async function ShopListing({ basePath, searchParams, category, brand, moo
     brand: brand ?? parsed.brand,
     brands: mood ? MOODS[mood].brands : undefined,
     excludeCategories: mood ? MOODS[mood].exclude : undefined,
-    type: category === "accessories" ? parsed.type : undefined,
+    type: category && TYPES_FOR[category]?.includes(parsed.type ?? "") ? parsed.type : undefined,
     sale: parsed.sale === "last-pieces",
     q: parsed.q,
     sort: parsed.sort,
@@ -85,8 +87,8 @@ export async function ShopListing({ basePath, searchParams, category, brand, moo
           <Link href={href({ sale: current.sale ? undefined : "last-pieces" })} className={`${chip(!!current.sale)} ${current.sale ? "" : "border-blood/60 text-blood"}`}>
             {t("lastPiecesOnly")}
           </Link>
-          {category === "accessories" &&
-            ACCESSORY_TYPES.map((type) => (
+          {category &&
+            (TYPES_FOR[category] ?? []).map((type) => (
               <Link key={type} href={href({ type: current.type === type ? undefined : type })} className={chip(current.type === type)}>
                 {ta(type)}
               </Link>

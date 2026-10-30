@@ -28,7 +28,7 @@ export function Intro() {
   function enter() {
     unlockAudio();
     music.start();
-    playScreech(0.12);
+    playScreech(1);
     try {
       sessionStorage.setItem(INTRO_KEY, "1");
     } catch {}
