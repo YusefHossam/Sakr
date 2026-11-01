@@ -9,6 +9,11 @@ const CASES: { q: string; brand?: string; section?: RegExp; product: RegExp }[] 
   { q: "بوكسرات psd", brand: "PSD", section: /Boxers|بوكسرات/, product: /./ },
   { q: "hodie corteiz", brand: "Corteiz", section: /Hoodies|هوديز/, product: /./ },
   { q: "كروكس", brand: "Crocs", product: /clog|crocs/i },
+  { q: "اسكارف lv", brand: "Louis Vuitton", section: /Scarves|سكارفات/, product: /scarf|stole|shawl|bandeau/i },
+  { q: "شنط لويس فيتون", brand: "Louis Vuitton", section: /Bags|شنط/, product: /./ },
+  { q: "بالمان", brand: "Balmain", product: /./ },
+  { q: "اسكرفات", section: /Scarves|سكارفات/, product: /scarf|stole|shawl/i },
+  { q: "ساعات الماظ", section: /Watches|ساعات/, product: /./ },
 ];
 
 for (const c of CASES) {

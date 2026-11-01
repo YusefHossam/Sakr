@@ -88,3 +88,43 @@ export function CurrencyMenu() {
     </div>
   );
 }
+
+const THEME_KEY = "sakr_theme";
+
+/** Light / dark switch. The inline head script applies the saved choice before paint, so there is no flash. */
+export function ThemeToggle() {
+  const locale = useLocale();
+  const [light, setLight] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setLight(document.documentElement.dataset.theme === "light"), 0);
+    return () => clearTimeout(t);
+  }, []);
+
+  const toggle = () => {
+    const next = !light;
+    setLight(next);
+    if (next) document.documentElement.dataset.theme = "light";
+    else delete document.documentElement.dataset.theme;
+    try {
+      if (next) localStorage.setItem(THEME_KEY, "light");
+      else localStorage.removeItem(THEME_KEY);
+    } catch {}
+  };
+
+  const label = light ? (locale === "ar" ? "الوضع الغامق" : "Dark mode") : locale === "ar" ? "الوضع الفاتح" : "Light mode";
+  return (
+    <button type="button" onClick={toggle} aria-label={label} aria-pressed={light} title={label} className={`${pill} size-8 justify-center px-0`}>
+      <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        {light ? (
+          <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />
+        ) : (
+          <>
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+          </>
+        )}
+      </svg>
+    </button>
+  );
+}

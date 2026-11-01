@@ -20,6 +20,7 @@ const ACCESSORY: [string, Label][] = [
   ["boxers", { ar: "بوكسرات", en: "Boxers" }],
   ["socks", { ar: "شرابات", en: "Socks" }],
   ["bags", { ar: "شنط", en: "Bags" }],
+  ["scarves", { ar: "سكارفات", en: "Scarves" }],
   ["belts", { ar: "أحزمة", en: "Belts" }],
   ["masks", { ar: "ماسكات", en: "Masks" }],
   ["perfumes", { ar: "برفانات", en: "Perfumes" }],

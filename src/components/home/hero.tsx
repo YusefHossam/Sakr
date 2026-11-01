@@ -15,7 +15,7 @@ export async function Hero({ images }: { images: string[] }) {
     <section className="relative isolate -mt-[76px] lg:-mt-[118px] flex min-h-[100svh] items-center justify-center overflow-hidden">
       <HeroWall images={images} />
       <HeroVideo />
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,transparent_0%,#000_75%)]" aria-hidden="true" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,transparent_0%,var(--color-ink)_75%)]" aria-hidden="true" />
       <div className="absolute inset-x-0 bottom-0 -z-10 h-1/3 bg-gradient-to-t from-ink to-transparent" aria-hidden="true" />
       <div className="smoke-layer -z-10" aria-hidden="true" />
 

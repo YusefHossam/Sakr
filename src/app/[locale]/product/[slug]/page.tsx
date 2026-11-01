@@ -107,7 +107,7 @@ async function ProductContent({ params }: Pick<PageProps<"/[locale]/product/[slu
           <Suspense fallback={null}>
             <PersonalBits category={product.category} subcategory={product.subcategory} image={product.images[0] ?? null} title={product.title} />
           </Suspense>
-          <ProductTabs category={product.category} description={locale === "ar" ? product.descriptionAr || product.description : product.description} />
+          <ProductTabs category={product.category} subcategory={product.subcategory} title={product.title} brandSlug={product.brandSlug} description={locale === "ar" ? product.descriptionAr || product.description : product.description} />
         </div>
       </div>
 

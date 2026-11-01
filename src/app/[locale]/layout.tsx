@@ -48,7 +48,7 @@ export async function generateMetadata(): Promise<Metadata> {
 const skipIntroScript = `try{if(sessionStorage.getItem(${JSON.stringify(INTRO_KEY)}))document.documentElement.dataset.entered="1"}catch(e){}`;
 
 // Runs before first paint: Cairo day/night, and the mood the visitor picked last time.
-const themeScript = `try{var h=+new Intl.DateTimeFormat("en-US",{hour:"numeric",hourCycle:"h23",timeZone:"Africa/Cairo"}).format(new Date());document.documentElement.dataset.time=h>=19||h<6?"night":"day";var m=localStorage.getItem(${JSON.stringify(MOOD_STORAGE_KEY)});if(m)document.documentElement.dataset.mood=m}catch(e){}`;
+const themeScript = `try{var h=+new Intl.DateTimeFormat("en-US",{hour:"numeric",hourCycle:"h23",timeZone:"Africa/Cairo"}).format(new Date());document.documentElement.dataset.time=h>=19||h<6?"night":"day";var m=localStorage.getItem(${JSON.stringify(MOOD_STORAGE_KEY)});if(m)document.documentElement.dataset.mood=m;var t=localStorage.getItem("sakr_theme");if(t==="light")document.documentElement.dataset.theme=t}catch(e){}`;
 
 export default async function LocaleLayout({ children }: LayoutProps<"/[locale]">) {
   const locale = await rootLocale();

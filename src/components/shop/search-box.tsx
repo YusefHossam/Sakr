@@ -97,7 +97,8 @@ export function SearchBox({ initial }: { initial: string }) {
             setQ(e.target.value);
             setOpen(true);
           }}
-          onFocus={() => setOpen(true)}
+          // Arriving on a results page focuses the field; suggestions open only once you change the text.
+          onFocus={() => setOpen(q.trim() !== initial.trim())}
           onKeyDown={(e) => {
             if (e.key === "ArrowDown") {
               e.preventDefault();

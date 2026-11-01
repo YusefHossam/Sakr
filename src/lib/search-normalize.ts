@@ -39,7 +39,7 @@ const EXTRA: Record<string, string> = {
   كورتيس: "corteiz", ترابستر: "trapstar", بالنسياغا: "balenciaga", بلنسياجا: "balenciaga", بالانسياجا: "balenciaga", لانفان: "lanvin", لانفين: "lanvin", قوتشي: "gucci", جوتشى: "gucci",
   سوبريم: "supreme", سبريم: "supreme", اوف: "off", ستيوسي: "stussy", ستوسى: "stussy", اسيكس: "asics", بوما: "puma", بيوما: "puma", ريبوك: "reebok", لاكوست: "lacoste", لاكوستي: "lacoste",
   اوكلي: "oakley", اوكلى: "oakley", كاسيو: "casio", سواتش: "swatch", تيمكس: "timex", بلايبوي: "playboy", ديزل: "diesel", جويارد: "goyard", ماركيلا: "margiela", مارجيلا: "margiela",
-  kith: "kith", كيث: "kith", bape: "bape", بيب: "bape", arcteryx: "arcteryx", ارك: "arcteryx", سبايدر: "sp5der", spider: "sp5der", psd: "psd", بي: "", اس: "", دي: "",
+  kith: "kith", كيث: "kith", فيليب: "philipp", فليب: "philipp", philip: "philipp", philipp: "philipp", بلين: "plein", plein: "plein", دسكوارد: "dsquared2", ديسكويرد: "dsquared2", دسكويرد: "dsquared2", dsquared: "dsquared2", d2: "dsquared2", بالمان: "balmain", بلمان: "balmain", فيرزاتشي: "versace", فرزاتشي: "versace", فيرساتشي: "versace", فرساتشي: "versace", lv: "louis vuitton", ميدوسا: "medusa", كيبول: "keepall", keepall: "keepall", bape: "bape", بيب: "bape", arcteryx: "arcteryx", ارك: "arcteryx", سبايدر: "sp5der", spider: "sp5der", psd: "psd", بي: "", اس: "", دي: "",
   // kinds
   nadarat: "sunglasses", nadarah: "sunglasses", nazarat: "sunglasses", nadara: "sunglasses", نظارات: "sunglasses", نضاره: "sunglasses", "نظاره": "sunglasses", sunglass: "sunglasses", shades: "sunglasses", عويينات: "sunglasses",
   watch: "watch", watches: "watch", sa3a: "watch", saa3a: "watch", sa3at: "watch", saa3at: "watch", ساعة: "watch", ساعه: "watch", ساعات: "watch",
@@ -47,6 +47,7 @@ const EXTRA: Record<string, string> = {
   khatem: "ring", rings: "ring", خواتم: "ring", خاتم: "ring", aswera: "bracelet", asawer: "bracelet", bracelets: "bracelet", اسورة: "bracelet", اسوره: "bracelet", اساور: "bracelet", سوار: "bracelet",
   slipper: "slipper", slippers: "slipper", shebsheb: "slide", shabsheb: "slide", شباشب: "slide", سلبر: "slipper", سليبر: "slipper", سليبرز: "slipper", اسلبرات: "slipper", اسليبرات: "slipper", sliper: "slipper", slipers: "slipper", clog: "crocs", clogs: "crocs", crocs: "crocs", croc: "crocs", كروكس: "crocs", كروكز: "crocs",
   boxers: "boxer", بوكسرات: "boxer", بوكسرز: "boxer", boxr: "boxer", underwear: "boxer", brief: "boxer", سليب: "boxer", ملابس: "", داخلية: "boxer",
+  scarf: "scarf", scarves: "scarf", shawl: "scarf", stole: "scarf", سكارف: "scarf", سكارفات: "scarf", اسكارف: "scarf", اسكرف: "scarf", اسكرفات: "scarf", اسكارفات: "scarf", شال: "scarf", كوفية: "scarf", وشاح: "scarf", "iced": "iced", ايسد: "iced", متلجة: "iced", مرصعة: "iced", الماظ: "iced", ألماظ: "iced", diamond: "iced",
   mask: "mask", masks: "mask", ماسك: "mask", ماسكات: "mask", قناع: "mask",
   perfume: "perfume", perfumes: "perfume", fragrance: "perfume", cologne: "perfume", "3etr": "perfume", atr: "perfume", عطر: "perfume", برفان: "perfume", برفيوم: "perfume", عطور: "perfume", برفانات: "perfume",
   caps: "cap", kabat: "cap", tar2a: "beanie", taqia: "beanie", beanies: "beanie", hats: "hat", شنطه: "bag", shonat: "bag", bags: "bag", حقيبة: "bag", backpacks: "backpack", belts: "belt", hezam: "belt", احزمة: "belt", احزمه: "belt",

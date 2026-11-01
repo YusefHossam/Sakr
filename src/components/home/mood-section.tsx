@@ -8,7 +8,7 @@ export async function MoodSection() {
   const locale = (await getLocale()) === "ar" ? "ar" : "en";
   return (
     <Section title={locale === "ar" ? "اختار مودك" : "Pick your mood"} text={locale === "ar" ? "اختار ستايلك والموقع كله يتلوّن ويتفلتر عليه." : "Choose a taste and the whole store re-tints and re-filters."}>
-      <ul className="grid border-s border-t border-ash sm:grid-cols-2 lg:grid-cols-4">
+      <ul className="grid border-s border-t border-ash sm:grid-cols-2 lg:grid-cols-3">
         {MOOD_KEYS.map((m) => (
           <li key={m} className="border-e border-b border-ash">
             <Link href={`/moods/${m}`} className="group flex h-full min-h-44 flex-col justify-between gap-6 p-6 transition-colors hover:bg-smoke">

@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { SECTION_DEF, SECTIONS, type Section } from "@/lib/sections";
 import { Logo } from "./logo";
-import { CurrencyMenu, LanguageSwitch } from "./region-menu";
+import { CurrencyMenu, LanguageSwitch, ThemeToggle } from "./region-menu";
 
 type MenuKey = Section;
 
@@ -73,6 +73,7 @@ export function NavBar({ cartBadge }: { cartBadge?: React.ReactNode }) {
             <Icon d={ICONS.search} />
           </Link>
           <div className="hidden items-center gap-2 sm:flex">
+            <ThemeToggle />
             <LanguageSwitch />
             <CurrencyMenu />
           </div>
@@ -149,6 +150,7 @@ export function NavBar({ cartBadge }: { cartBadge?: React.ReactNode }) {
               </button>
             </div>
             <div className="mb-4 flex items-center gap-2 sm:hidden">
+              <ThemeToggle />
               <LanguageSwitch />
               <CurrencyMenu />
             </div>

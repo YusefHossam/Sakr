@@ -56,7 +56,7 @@ test("product breadcrumb goes to the section, brand is plain text", async ({ pag
 });
 
 // Fits follow recipes: every fit names its formula and has 3 to 5 pieces.
-for (const mood of ["drip", "clean", "opium", "old-money"]) {
+for (const mood of ["drip", "clean", "opium", "old-money", "streetwear", "casual"]) {
   test(`fits for ${mood} follow a named formula`, async ({ page }) => {
     await prepare(page);
     await page.goto(`/en/fits/${mood}`);

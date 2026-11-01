@@ -29,6 +29,20 @@ export const MOODS = {
     // No hoodies, joggers or slides in this look.
     exclude: ["hoodies", "sweatpants", "tracksuits", "slides"],
   },
+  streetwear: {
+    ar: "ستريت وير",
+    en: "Streetwear",
+    tagline: { ar: "هودي وباجي وكوتشي. لبس الشارع الأصلي.", en: "Hoodies, baggy fits, big sneakers. Street, straight up." },
+    brands: ["corteiz", "trapstar", "stussy", "supreme", "bape", "aape", "kith", "sp5der", "palm-angels", "essentials", "the-north-face", "nike", "jordan", "godspeed-new-york", "denim-tears", "pleasures"],
+    exclude: ["slides"],
+  },
+  casual: {
+    ar: "كاجوال",
+    en: "Casual",
+    tagline: { ar: "بسيط ومريح ويليق في أي مشوار.", en: "Simple, easy, right for any day out." },
+    brands: ["zara", "polo-ralph-lauren", "lacoste", "ami", "adidas", "nike", "stussy", "essentials", "the-north-face", "casablanca", "kith"],
+    exclude: ["slides", "tracksuits"],
+  },
 } as const;
 
 export type Mood = keyof typeof MOODS;

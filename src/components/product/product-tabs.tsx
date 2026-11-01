@@ -1,14 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { careFor } from "@/lib/care";
 import { sizeChartFor, washingKey } from "@/lib/size-charts";
 import type { Category } from "@/models/product";
 
 const TABS = ["tabSizeChart", "tabDetails", "tabWashing", "tabDelivery"] as const;
 
-export function ProductTabs({ category, description }: { category: Category; description: string }) {
+type Props = { category: Category; subcategory?: string | null; title?: string; brandSlug?: string; description: string };
+
+export function ProductTabs({ category, subcategory = null, title = "", brandSlug = "", description }: Props) {
   const t = useTranslations("product");
+  const lang = useLocale() === "ar" ? "ar" : "en";
+  // Jewellery, watches, leather, scarves and glasses get a care and cleaning guide instead of the washing label.
+  const care = careFor(subcategory, title, brandSlug, lang);
   const [tab, setTab] = useState<(typeof TABS)[number]>("tabDetails");
   const chart = sizeChartFor(category);
   const tabs = TABS.filter((k) => k !== "tabSizeChart" || chart);
@@ -29,7 +35,7 @@ export function ProductTabs({ category, description }: { category: Category; des
               tab === k ? "border-bone text-bone" : "border-transparent text-dust hover:text-steel"
             }`}
           >
-            {t(k)}
+            {k === "tabWashing" && care ? (lang === "ar" ? "العناية والتنضيف" : "Care & cleaning") : t(k)}
           </button>
         ))}
       </div>
@@ -62,7 +68,7 @@ export function ProductTabs({ category, description }: { category: Category; des
         {tab === "tabDetails" && <p dir="auto" className="whitespace-pre-line">{description || t("noDetails")}</p>}
         {tab === "tabWashing" && (
           <ul className="flex flex-col gap-2">
-            {t(washingKey(category)).split(" · ").map((line) => (
+            {(care ?? t(washingKey(category)).split(" · ")).map((line) => (
               <li key={line} className="flex gap-2"><span aria-hidden="true">—</span>{line}</li>
             ))}
           </ul>

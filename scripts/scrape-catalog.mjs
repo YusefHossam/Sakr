@@ -166,6 +166,22 @@ const SOURCES = [
     match: /leather|biker/i,
     queries: ["leather jacket", "biker jacket", "leather bomber", "chrome hearts leather jacket", "rick owens leather jacket", "amiri leather jacket", "black leather jacket", "suede jacket"] },
 
+  // Round 15: Louis Vuitton scarves and bags; Philipp Plein and the other loud luxury houses.
+  { brand: "Louis Vuitton", kind: "sgsearch", base: "https://www.stadiumgoods.com", currency: "EGP", byModel: true, forceBrand: true, vendors: ["LOUIS VUITTON"], allow: ["accessories"], keep: true,
+    match: /scarf|stole|shawl|bandeau|bag|keepall|pochette|messenger|backpack|duffle|tote|sling|wallet|trunk|pouch|belt|bandana|beanie|cap/i,
+    queries: ["louis vuitton scarf", "louis vuitton monogram scarf", "louis vuitton wool scarf", "louis vuitton silk scarf", "louis vuitton bandana", "louis vuitton stole", "lv scarf", "louis vuitton bag", "louis vuitton keepall", "louis vuitton keepall bandouliere", "louis vuitton pochette", "louis vuitton messenger", "louis vuitton backpack", "louis vuitton christopher", "louis vuitton avenue sling", "louis vuitton duffle", "louis vuitton trio messenger", "louis vuitton district", "louis vuitton s lock", "louis vuitton wallet", "louis vuitton belt", "louis vuitton monogram eclipse", "louis vuitton damier graphite", "louis vuitton taiga", "louis vuitton murakami", "lv bag", "lv keepall", "lv messenger"] },
+  { brand: "Philipp Plein", kind: "sgsearch", base: "https://www.stadiumgoods.com", currency: "EGP", byModel: true, forceBrand: true, vendors: ["PHILIPP PLEIN"], keep: true,
+    match: /./, queries: ["philipp plein","philipp plein hoodie","philipp plein t-shirt","philipp plein tee","philipp plein sweatshirt","philipp plein jacket","philipp plein jeans","philipp plein pants","philipp plein shorts","philipp plein shirt","philipp plein sneakers","philipp plein boots","philipp plein cap","philipp plein belt","philipp plein black","philipp plein white","philipp plein logo","philipp plein skull"] },
+  { brand: "Dsquared2", kind: "sgsearch", base: "https://www.stadiumgoods.com", currency: "EGP", byModel: true, forceBrand: true, vendors: ["DSQUARED2"], keep: true,
+    match: /./, queries: ["dsquared2","dsquared2 hoodie","dsquared2 t-shirt","dsquared2 tee","dsquared2 sweatshirt","dsquared2 jacket","dsquared2 jeans","dsquared2 pants","dsquared2 shorts","dsquared2 shirt","dsquared2 sneakers","dsquared2 boots","dsquared2 cap","dsquared2 belt","dsquared2 black","dsquared2 white","dsquared2 logo"] },
+  { brand: "Balmain", kind: "sgsearch", base: "https://www.stadiumgoods.com", currency: "EGP", byModel: true, forceBrand: true, vendors: ["BALMAIN"], keep: true,
+    match: /./, queries: ["balmain","balmain hoodie","balmain t-shirt","balmain tee","balmain sweatshirt","balmain jacket","balmain jeans","balmain pants","balmain shorts","balmain shirt","balmain sneakers","balmain boots","balmain cap","balmain belt","balmain black","balmain white","balmain logo"] },
+  { brand: "Versace", kind: "sgsearch", base: "https://www.stadiumgoods.com", currency: "EGP", byModel: true, forceBrand: true, vendors: ["VERSACE"], keep: true,
+    match: /./, queries: ["versace","versace hoodie","versace t-shirt","versace tee","versace sweatshirt","versace jacket","versace jeans","versace pants","versace shorts","versace shirt","versace sneakers","versace boots","versace cap","versace belt","versace black","versace white","versace logo","versace medusa","versace baroque","versace chain reaction","versace slide"] },
+
+  { brand: "Scarves", kind: "sgsearch", base: "https://www.stadiumgoods.com", currency: "EGP", byModel: true, brandFromVendor: true, allow: ["accessories"], keep: true,
+    match: /\b(scarf|scarves|stole|shawl|muffler)\b/i,
+    queries: ["scarf", "wool scarf", "cashmere scarf", "silk scarf", "monogram scarf", "logo scarf", "burberry scarf", "burberry check scarf", "gucci scarf", "gucci gg scarf", "dior scarf", "dior oblique scarf", "balenciaga scarf", "acne studios scarf", "fendi scarf", "prada scarf", "saint laurent scarf", "chrome hearts scarf", "moncler scarf", "polo ralph lauren scarf", "amiri scarf", "versace scarf", "givenchy scarf", "black scarf", "grey scarf", "check scarf"] },
   // Round 12: more depth for brands the user asked to be fuller.
   sg("casablanca", { brand: "Casablanca", forceBrand: true, vendors: ["CASABLANCA"] }),
   sg("palm-angels", { brand: "Palm Angels", forceBrand: true, vendors: ["PALM ANGELS"] }),
@@ -236,6 +252,7 @@ const CATEGORY_RULES = [
 ];
 
 const ACCESSORY_TYPES = [
+  ["scarves", /\b(scarf|scarves|shawl|stole|muffler|snood)\b/i],
   ["masks", /\b(balaclavas?|ski ?masks?|face ?masks?|facemasks?|masks?)\b/i],
   ["watches", /\b(watch(es)?|chronograph)\b/i],
   ["perfumes", /\b(perfumes?|parfum|cologne|fragrances?|eau de|body mist)\b/i],
@@ -584,7 +601,7 @@ const curatedModels = [...modelBuckets.entries()].flatMap(([bucketKey, models]) 
 const MAX_PER_GROUP = 20;
 const MAX_PER_ACCESSORY_TYPE = 8;
 // Brands the owner asked to be deeper than the default (boxers, fragrances).
-const ACCESSORY_CAPS = { PSD: 220, Fusion: 20, Zara: 12, Miansai: 30, "King Ice": 30 };
+const ACCESSORY_CAPS = { PSD: 220, Fusion: 20, Zara: 12, Miansai: 30, "King Ice": 70 };
 // Zara carries the old-money basics (knit polos, chinos, trousers), so it gets deeper clothing groups.
 const GROUP_CAPS = { Zara: 70 };
 const capFor = (key) => (key.includes("|acc|") ? ACCESSORY_CAPS[key.split("|")[0]] ?? MAX_PER_ACCESSORY_TYPE : GROUP_CAPS[key.split("|")[0]] ?? MAX_PER_GROUP);

@@ -196,7 +196,46 @@ html[data-time="day"] {
 html[data-mood="drip"] { --color-chrome: #ffe9e9; --color-bone: #dcb6b6; --color-steel: #9d8181; --color-dust: #7d6666; --color-blood: #dc2626; }
 html[data-mood="clean"] { --color-chrome: #ffffff; --color-bone: #e4e4e4; --color-steel: #adadad; --color-dust: #808080; }
 html[data-mood="opium"] { --color-chrome: #e9e0ff; --color-bone: #b9a8e8; --color-steel: #8174a8; --color-dust: #685d89; --color-blood: #7c3aed; }
+html[data-mood="streetwear"] { --color-chrome: #e6f0ff; --color-bone: #b7c6dc; --color-steel: #8391a6; --color-dust: #66717f; --color-blood: #f97316; }
+html[data-mood="casual"] { --color-chrome: #f3efe6; --color-bone: #d6cfbf; --color-steel: #a39b8a; --color-dust: #7d7668; --color-blood: #2f6f4f; }
 html[data-mood="old-money"] { --color-chrome: #f1e9d6; --color-bone: #cfc1a1; --color-steel: #988e78; --color-dust: #7b725f; --color-blood: #8a6a35; }
+
+/* ---------- Light mode: set on <html> by the inline script, chosen with the sun/moon switch ---------- */
+/* Same token names, inverted: ink is the page, chrome the strongest text. Beats the time-of-day tints. */
+html[data-theme="light"],
+html[data-theme="light"][data-time] {
+  --color-ink: #f6f5f2;
+  --color-pitch: #efede8;
+  --color-smoke: #e8e6e0;
+  --color-ash: #d8d5ce;
+  --color-iron: #c2beb6;
+  --color-dust: #77736c;
+  --color-steel: #4f4c47;
+  --color-bone: #262422;
+  --color-chrome: #0b0b0b;
+  --color-blood: #b0121f;
+  --color-tile: #e4e2dc;
+  color-scheme: light;
+}
+html[data-theme="light"][data-mood="drip"] { --color-chrome: #2a0b0b; --color-bone: #4a2222; --color-steel: #6b4a4a; --color-dust: #8a6d6d; --color-blood: #c81e1e; }
+html[data-theme="light"][data-mood="clean"] { --color-chrome: #0b0b0b; --color-bone: #262626; --color-steel: #4f4f4f; --color-dust: #7a7a7a; }
+html[data-theme="light"][data-mood="opium"] { --color-chrome: #170b33; --color-bone: #33235e; --color-steel: #5b4a86; --color-dust: #7a6c9e; --color-blood: #6d28d9; }
+html[data-theme="light"][data-mood="old-money"] { --color-chrome: #2a2113; --color-bone: #4a3d25; --color-steel: #6b5f47; --color-dust: #8a7f66; --color-blood: #8a6a35; }
+html[data-theme="light"][data-mood="streetwear"] { --color-chrome: #0b1a33; --color-bone: #22344f; --color-steel: #4a5a72; --color-dust: #6d7a8c; --color-blood: #ea580c; }
+html[data-theme="light"][data-mood="casual"] { --color-chrome: #1f1c15; --color-bone: #3b362a; --color-steel: #5f5848; --color-dust: #827a68; --color-blood: #2f6f4f; }
+/* Dark chrome lettering on a light page. */
+html[data-theme="light"] .chrome-text {
+  background-image:
+    linear-gradient(110deg, transparent 42%, rgb(255 255 255 / 0.9) 50%, transparent 58%),
+    linear-gradient(180deg, #6b6b6b 0%, #1a1a1a 44%, #a8a8a8 50%, #2b2b2b 68%, #000 100%);
+}
+html[data-theme="light"] .grain::before { opacity: 0.035; }
+/* The VHS vignette darkens a black page nicely; on a light page it only needs a faint edge. */
+html[data-theme="light"] .vhs::after {
+  background:
+    repeating-linear-gradient(0deg, rgb(0 0 0 / 0.015) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at center, transparent 70%, rgb(0 0 0 / 0.08) 100%);
+}
 
 /* ---------- Falcon cursor (fine pointers only; touch and keyboard users are untouched) ---------- */
 @media (pointer: fine) {

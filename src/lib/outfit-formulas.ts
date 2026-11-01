@@ -34,9 +34,10 @@ const isTee = all(cat("tees"), not(isPolo), not(isShirt), not(has(/tank|vest|jer
 const isPlainTee = all(isTee, not(has(/graphic|print|logo|photo|slogan|x |travis|mcdonald|playstation|homecoming|series|wrestling|tour|band|cartoon|anime/)));
 const isHoodie = all(cat("hoodies"), not(has(/puffer|jacket|vest|coat|gilet|\bset\b/)));
 const isSweatshirt = all(cat("crewnecks"), not(isKnit), not(has(/shirt jacket|chore|overshirt|denim shirt|jacket|vest|\bset\b/)));
-const isJeans = all(cat("pants"), has(/jean|denim/));
+const notGear = not(has(/shirt|net\b|base ?layer|thermal|long ?john|underwear|sunglass|glasses|cap\b|hat\b|bag\b|belt\b|wallet|socks/));
+const isJeans = all(cat("pants"), notGear, has(/jean|denim/));
 const isCargo = all(cat("pants"), has(/cargo|parachute/));
-const isTrousers = all(cat("pants"), not(isJeans), not(isCargo), not(has(/sweat|jogg|track|nylon|parachute|sport|fleece|essentials|training|tricot|stripes|warm ?up|basketball|nba|dame|team|athletic|tiro|travel|soccer|football/)));
+const isTrousers = all(cat("pants"), notGear, not(isJeans), not(isCargo), not(has(/sweat|jogg|track|nylon|parachute|sport|fleece|essentials|training|tricot|stripes|warm ?up|basketball|nba|dame|team|athletic|tiro|travel|soccer|football/)));
 const isTailored = all(isTrousers, has(/chino|trouser|pleat|tailor|wool|linen|suit|slack|formal/));
 const isSweatpants = cat("sweatpants");
 const isShorts = all(cat("shorts"), not(has(/swim|basketball|mesh|running/)));
@@ -72,7 +73,7 @@ const family = (p: StyleItem) => {
   const t = `${p.title} ${(p.colors ?? []).join(" ")}`.toLowerCase();
   return FAMILY.find(([, re]) => re.test(t))?.[0] ?? null;
 };
-const LOUD = /\b(red|orange|yellow|pink|purple|neon|lime|fuchsia|magenta|turquoise|teal|multi|rainbow|camo|tie-?dye)\b/;
+const LOUD = /\b(red|orange|yellow|pink|purple|neon|lime|fuchsia|magenta|turquoise|teal|multi\w*|rainbow|camo|tie-?dye|floral|leopard|tiger)\b/;
 const loud = (p: StyleItem) => LOUD.test(`${p.title} ${(p.colors ?? []).join(" ")}`.toLowerCase());
 
 // ---------- The recipes ----------
@@ -80,9 +81,9 @@ const loud = (p: StyleItem) => LOUD.test(`${p.title} ${(p.colors ?? []).join(" "
 const FORMULAS: Formula[] = [
   // Drip
   { id: "drip-denim", mood: "drip", name: { ar: "تيشيرت جرافيك + جينز واسع + كوتشي تقيل", en: "Graphic tee + relaxed denim + statement sneaker" },
-    top: isTee, bottom: all(isJeans, leg("baggy", "straight", "flared")), shoes: all(fitShoe, any(shoe("chunky", "high", "regular"), isOwnerPick)), acc: ["chains", "headwear"], palette: "free" },
+    top: isTee, bottom: all(isJeans, leg("baggy", "straight", "flared")), shoes: all(fitShoe, any(shoe("chunky", "high", "regular"), isOwnerPick)), acc: ["chains", "headwear", "watches"], palette: "free" },
   { id: "drip-cargo", mood: "drip", name: { ar: "هودي + كارجو أو جينز واسع + كوتشي تقيل", en: "Hoodie + cargo or baggy denim + chunky sneaker" },
-    top: isHoodie, bottom: any(isCargo, all(isJeans, leg("baggy"))), shoes: all(fitShoe, any(shoe("chunky", "high"), isOwnerPick)), acc: ["headwear", "chains"], palette: "free" },
+    top: isHoodie, bottom: any(isCargo, all(isJeans, leg("baggy"))), shoes: all(fitShoe, any(shoe("chunky", "high"), isOwnerPick)), acc: ["headwear", "chains", "watches"], palette: "free" },
   { id: "drip-layer", mood: "drip", name: { ar: "تيشيرت + جاكيت فارسيتي أو جلد + جينز + كوتشي", en: "Tee + varsity or leather jacket + denim + sneaker" },
     top: isTee, bottom: all(any(isJeans, isCargo), leg("baggy", "straight", "flared")), shoes: all(fitShoe, any(shoe("chunky", "high", "low", "regular"), isOwnerPick)),
     outer: jacket(/varsity|bomber|leather|biker|denim|trucker|work jacket|coach/), palette: "free" },
@@ -112,17 +113,38 @@ const FORMULAS: Formula[] = [
     top: oldMoneyTop(isKnit), bottom: any(isTailored, isTrousers, all(isJeans, leg("straight"), dark)), shoes: all(fitShoe, oldMoneyShoe), acc: ["watches"], palette: "neutral" },
   { id: "om-oxford", mood: "old-money", name: { ar: "قميص أكسفورد + تشينو + لوفر", en: "Oxford shirt + chinos + loafers" },
     top: oldMoneyTop(isShirt), bottom: any(isTailored, isTrousers), shoes: all(fitShoe, oldMoneyShoe), acc: ["watches", "belts"], palette: "neutral" },
+  { id: "om-leather", mood: "old-money", name: { ar: "قميص أو كنزة + جاكيت جلد أو شامواه + بنطلون قماش + جزمة جلد", en: "Shirt or knit + leather or suede jacket + trousers + leather shoes" },
+    top: oldMoneyTop(any(isShirt, isKnit, isPolo)), bottom: any(isTailored, isTrousers), shoes: all(fitShoe, oldMoneyShoe),
+    outer: all(jacket(/leather|suede|shearling|harrington|car coat|blouson/), not(has(/biker|studded|varsity|puffer|graphic|logo|faux fur/))), acc: ["watches", "belts", "scarves"], palette: "neutral" },
+
+  // Streetwear
+  { id: "street-hoodie", mood: "streetwear", name: { ar: "هودي + بنطلون باجي + كوتشي تقيل", en: "Hoodie + baggy pants + big sneaker" },
+    top: isHoodie, bottom: any(isCargo, all(isJeans, leg("baggy")), all(isSweatpants, not(has(/slim|skinny|taper|tech fleece|jogger|track/)))), shoes: all(fitShoe, shoe("chunky", "high", "regular")), acc: ["headwear"], palette: "free" },
+  { id: "street-zip", mood: "streetwear", name: { ar: "زيب هودي + جينز باجي + جوردن أو دانك", en: "Zip hoodie + baggy jeans + Jordans or Dunks" },
+    top: all(isHoodie, has(/zip/)), bottom: all(isJeans, leg("baggy"), not(has(/slim|skinny|taper/))), shoes: all(fitShoe, has(/jordan|dunk|air force|af1|samba|campus|990|550|9060/)), acc: ["headwear", "chains", "watches"], palette: "free" },
+  { id: "street-tee", mood: "streetwear", name: { ar: "تيشيرت أوفرسايز + كارجو + كوتشي", en: "Oversized tee + cargo + sneaker" },
+    top: isTee, bottom: any(isCargo, all(isJeans, leg("baggy"))), shoes: all(fitShoe, shoe("chunky", "high", "low", "regular")), acc: ["headwear", "chains", "watches"], palette: "free" },
+
+  // Casual
+  { id: "casual-tee", mood: "casual", name: { ar: "تيشيرت أو بولو + جينز مستقيم + كوتشي نضيف", en: "Tee or polo + straight jeans + clean sneaker" },
+    top: any(isPlainTee, isPolo), bottom: all(isJeans, leg("straight"), not(has(/big|baggy|loose|carpenter|wide/))), shoes: all(fitShoe, shoe("low", "regular")), acc: ["watches", "headwear"], palette: "free" },
+  { id: "casual-shirt", mood: "casual", name: { ar: "قميص + تشينو + كوتشي أبيض", en: "Shirt + chinos + white sneaker" },
+    top: isShirt, bottom: any(isTailored, isTrousers), shoes: all(fitShoe, shoe("low"), has(/white|blanc|cream/)), acc: ["watches"], palette: "neutral" },
+  { id: "casual-layer", mood: "casual", name: { ar: "تيشيرت + أوفر شيرت أو جاكيت جينز + جينز + كوتشي", en: "Tee + overshirt or denim jacket + jeans + sneaker" },
+    top: isPlainTee, bottom: all(isJeans, leg("straight"), not(has(/big|baggy|carpenter|loose/))), shoes: all(fitShoe, shoe("low", "regular")),
+    outer: jacket(/overshirt|shacket|denim|trucker|chore|harrington|coach|field/), palette: "free" },
 ];
 
 // ---------- Filling a recipe ----------
 
+const JUNK = /\b(table|chair|helinox|mug|sticker|poster|lighter|keychain|towel|blanket|pillow|skate ?board|deck|net|cooler|umbrella|candle|incense|book)\b/i;
 const PACK = /\b(\d ?pk|\d-?pack|pack of|multipack|bundle)\b/i;
 
 function paletteOk(palette: Palette, picked: StyleItem[], p: StyleItem): boolean {
   const slot = slotOf(p.category);
   switch (palette) {
     case "neutral":
-      return slot === "acc" || isNeutral(p) || (!loud(p) && family(p) !== null && ["black", "grey", "white", "cream", "brown", "navy", "green"].includes(family(p)!));
+      return slot === "acc" || (!loud(p) && isNeutral(p)) || (!loud(p) && family(p) !== null && ["black", "grey", "white", "cream", "brown", "navy", "green"].includes(family(p)!));
     case "dark":
       // Silver jewellery and the owner's Curb/Track colourways are the only light allowed in an opium fit.
       return slot === "acc" || isOwnerPick(p) || dark(p);
@@ -156,7 +178,8 @@ type Opts = { count: number; seed: string; budget?: number | null; mood?: Mood |
 /** Whole fits that follow the mood's recipes. Each fit has 3 to 5 pieces, never two of the same brand more than twice. */
 export function buildOutfits(pool: StyleItem[], { count, seed, budget = null, mood = null, used = new Set(), bias = () => 0 }: Opts): Outfit[] {
   const formulas = FORMULAS.filter((f) => !mood || f.mood === mood);
-  const usable = pool.filter((p) => !PACK.test(p.title));
+  // Not clothing at all (tables, nets, stickers that sources file under tees or pants) never enters a fit.
+  const usable = pool.filter((p) => !PACK.test(p.title) && !JUNK.test(p.title));
   const outfits: Outfit[] = [];
   const start = Math.floor(hash(seed) * formulas.length);
 
@@ -187,7 +210,7 @@ export function buildOutfits(pool: StyleItem[], { count, seed, budget = null, mo
     if (f.outer && !choose(f.outer, "outer", (p) => pairScore(p, top).score + pairScore(p, bottom).score, 1)) continue;
     // One accessory, and only in about half the fits: restraint is part of every recipe.
     // Old money wears a plain dress watch, not a sports or novelty one; boxes and cases are never worn.
-    const wearable = (p: StyleItem) => !/\b(box|case|stand|pouch|strap only)\b/i.test(p.title) && ((f.mood !== "old-money" && f.mood !== "clean") || (!/g-?shock|camo|digital|off-white|proto|smart|kids|x |iced|diamond|bust|bling|baguette|arctic/i.test(p.title) && p.brandSlug !== "king-ice"));
+    const wearable = (p: StyleItem) => !/\b(box|case|stand|pouch|strap only)\b/i.test(p.title) && ((f.mood !== "old-money" && f.mood !== "clean" && f.mood !== "casual") || (!/g-?shock|camo|digital|off-white|proto|smart|kids|x |iced|diamond|bust|bling|baguette|arctic/i.test(p.title) && !["king-ice", "stussy", "supreme", "bape", "aape", "sp5der", "godspeed-new-york", "chrome-hearts", "off-white", "pleasures"].includes(p.brandSlug) && !/studded|hawaiian|8 ball|pink|neon|peanuts|snoopy|mickey|disney|marvel|cartoon|simpsons/i.test(p.title) && !["adidas", "nike", "jordan", "puma"].includes(p.brandSlug)));
     if (f.acc && hash(`${seed}:${n}:acc`) < 0.55) choose((p) => p.category === "accessories" && f.acc!.includes(p.subcategory ?? "") && wearable(p), "acc", (p) => pairScore(p, top).score, 1);
 
     let score = 0;

@@ -26,6 +26,7 @@ const TYPES: Record<string, TypeFilter> = {
   boxer: { category: "accessories", subcategory: "boxers" },
   mask: { category: "accessories", subcategory: "masks" },
   perfume: { category: "accessories", subcategory: "perfumes" },
+  scarf: { category: "accessories", subcategory: "scarves" },
   hoodie: { category: "hoodies" },
   jacket: { category: "jackets" },
   puffer: { category: "jackets" },
@@ -98,7 +99,11 @@ export function intentFilter(intent: Intent): Record<string, unknown> | null {
     const re = new RegExp(`\\b${escape(c)}`, "i");
     and.push({ $or: [{ title: re }, { colorway: re }, { colors: re }] });
   }
-  for (const w of intent.rest) and.push({ $or: [{ title: new RegExp(escape(w), "i") }, { model: new RegExp(escape(w), "i") }] });
+  for (const w of intent.rest) {
+    // "Iced" (الماظ / متلجة) means stones, whatever the product calls them.
+    if (w === "iced") and.push({ $or: [{ title: /iced|diamond|vvs|\bcz\b|arctic|bust ?down|moissanite|baguette|crystal|rhinestone/i }, { brandSlug: "king-ice" }] });
+    else and.push({ $or: [{ title: new RegExp(escape(w), "i") }, { model: new RegExp(escape(w), "i") }] });
+  }
   return { $and: and };
 }
 
@@ -110,7 +115,7 @@ const CATEGORY_LABELS: Record<string, { ar: string; en: string }> = {
 const SUB_LABELS: Record<string, { ar: string; en: string }> = {
   chains: { ar: "سلاسل", en: "Chains" }, bracelets: { ar: "أساور", en: "Bracelets" }, rings: { ar: "خواتم", en: "Rings" }, sunglasses: { ar: "نضارات", en: "Sunglasses" },
   socks: { ar: "شرابات", en: "Socks" }, boxers: { ar: "بوكسرات", en: "Boxers" }, headwear: { ar: "كابات وطواقي", en: "Headwear" }, bags: { ar: "شنط", en: "Bags" },
-  belts: { ar: "أحزمة", en: "Belts" }, slides: { ar: "سلايدز", en: "Slides" }, slippers: { ar: "سليبرز", en: "Slippers" }, clogs: { ar: "كروكس", en: "Crocs & clogs" }, masks: { ar: "ماسكات", en: "Masks" }, watches: { ar: "ساعات", en: "Watches" }, perfumes: { ar: "برفانات", en: "Perfumes" },
+  belts: { ar: "أحزمة", en: "Belts" }, scarves: { ar: "سكارفات", en: "Scarves" }, slides: { ar: "سلايدز", en: "Slides" }, slippers: { ar: "سليبرز", en: "Slippers" }, clogs: { ar: "كروكس", en: "Crocs & clogs" }, masks: { ar: "ماسكات", en: "Masks" }, watches: { ar: "ساعات", en: "Watches" }, perfumes: { ar: "برفانات", en: "Perfumes" },
 };
 
 export function typeLabel(t: TypeFilter): { ar: string; en: string } {
