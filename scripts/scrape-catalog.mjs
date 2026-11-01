@@ -155,6 +155,17 @@ const SOURCES = [
   { brand: "King Ice", kind: "shopify", base: "https://kingice.com", currency: "USD", remoteImages: true,
     titleSkip: /women|gift ?card|earring|stud|kids|anklet|pendant for her/i },
 
+  // Round 14: what the outfit formulas need: loafers and dress shoes (old money), boots, flares and leather (opium).
+  { brand: "Dress shoes", kind: "sgsearch", base: "https://www.stadiumgoods.com", currency: "EGP", byModel: true, brandFromVendor: true, allow: ["footwear"], keep: true,
+    match: /loafer|derby|oxford|moccasin|boat shoe|driver|penny|horsebit|chelsea|\bboots?\b/i,
+    queries: ["loafer", "loafers", "penny loafer", "horsebit loafer", "gucci loafer", "gucci horsebit", "prada loafer", "bode loafer", "suede loafer", "leather loafer", "tassel loafer", "derby shoe", "oxford shoe", "boat shoe", "driving loafer", "moccasin", "ralph lauren loafer", "church loafer", "rick owens boots", "chelsea boots", "leather boots", "combat boots", "black boots", "dr martens", "margiela tabi", "balenciaga boots"] },
+  { brand: "Flares", kind: "sgsearch", base: "https://www.stadiumgoods.com", currency: "EGP", byModel: true, brandFromVendor: true, allow: ["pants"], keep: true,
+    match: /flare|bootcut|boot cut/i,
+    queries: ["flare jeans", "flared jeans", "flare denim", "bootcut jeans", "amiri flare", "purple brand flare", "rick owens bolan", "flare pants", "black flare jeans", "stacked flare jeans"] },
+  { brand: "Leather", kind: "sgsearch", base: "https://www.stadiumgoods.com", currency: "EGP", byModel: true, brandFromVendor: true, allow: ["jackets"], keep: true,
+    match: /leather|biker/i,
+    queries: ["leather jacket", "biker jacket", "leather bomber", "chrome hearts leather jacket", "rick owens leather jacket", "amiri leather jacket", "black leather jacket", "suede jacket"] },
+
   // Round 12: more depth for brands the user asked to be fuller.
   sg("casablanca", { brand: "Casablanca", forceBrand: true, vendors: ["CASABLANCA"] }),
   sg("palm-angels", { brand: "Palm Angels", forceBrand: true, vendors: ["PALM ANGELS"] }),
@@ -186,6 +197,10 @@ const SOURCES = [
       ["man-jeans-l659", "pants"], ["man-trousers-l838", "pants"], ["man-trousers-cargo-l1780", "pants"],
       ["man-sweatpants-l19246", "sweatpants"], ["man-trousers-joggers-l849", "sweatpants"],
       ["man-tshirts-l855", "tees"], ["man-polos-l733", "tees"],
+      // Old money and opium staples (round 14): knit polos, shirts, quarter zips, chinos, tailored and pleated trousers, flares, leather.
+      ["man-polos-knitwear-l1701", "tees"], ["man-shirts-l737", "tees"], ["man-sweatshirts-quearter-zip-l18606", "crewnecks"],
+      ["man-trousers-chinos-l845", "pants"], ["man-trousers-pleated-l17323", "pants"], ["man-trousers-formal-l847", "pants"],
+      ["man-jeans-flare-l7976", "pants"], ["man-jeans-straight-l677", "pants"], ["man-jackets-faux-leather-l650", "jackets"],
       ["man-bermudas-l592", "shorts"],
       ["man-tracksuits-l17522", "tracksuits"],
       ["man-sneakers-l7460", "footwear"],
@@ -570,7 +585,9 @@ const MAX_PER_GROUP = 20;
 const MAX_PER_ACCESSORY_TYPE = 8;
 // Brands the owner asked to be deeper than the default (boxers, fragrances).
 const ACCESSORY_CAPS = { PSD: 220, Fusion: 20, Zara: 12, Miansai: 30, "King Ice": 30 };
-const capFor = (key) => (key.includes("|acc|") ? ACCESSORY_CAPS[key.split("|")[0]] ?? MAX_PER_ACCESSORY_TYPE : MAX_PER_GROUP);
+// Zara carries the old-money basics (knit polos, chinos, trousers), so it gets deeper clothing groups.
+const GROUP_CAPS = { Zara: 70 };
+const capFor = (key) => (key.includes("|acc|") ? ACCESSORY_CAPS[key.split("|")[0]] ?? MAX_PER_ACCESSORY_TYPE : GROUP_CAPS[key.split("|")[0]] ?? MAX_PER_GROUP);
 const groups = new Map();
 for (const p of trimmable.filter((p) => !p.modelKey)) {
   if (!groups.has(groupKeyOf(p))) groups.set(groupKeyOf(p), []);

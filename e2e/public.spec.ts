@@ -3,7 +3,7 @@ import { prepare } from "./helpers";
 
 // Every public page renders, in both languages, without a crash or an uncaught error.
 const PAGES = [
-  "/en", "/ar", "/en/shop/hoodies", "/en/shop/accessories?type=chains", "/en/shop/slides?type=clogs", "/en/shop/slides?type=slippers",
+  "/en", "/ar", "/en/shop/hoodies", "/en/shop/accessories?type=chains", "/en/shop/shoes?type=clogs", "/en/shop/shoes?type=slippers", "/en/shop/shoes?type=loafers", "/en/shop/pants?type=jeans",
   "/en/brands/psd", "/en/brands/chrome-hearts", "/en/search?q=chrome+hearts", "/ar/search?q=%D9%87%D9%88%D8%AF%D9%8A",
   "/en/moods/drip", "/en/fits/clean", "/en/duel", "/en/crew", "/en/live", "/en/status", "/en/design-system", "/en/wall",
   "/en/stylist", "/en/size-finder", "/en/fit-builder", "/en/mystery-box", "/en/track", "/en/cart", "/ar/login",
@@ -39,11 +39,14 @@ test("footer: payment and social icons in brand colours", async ({ page }) => {
   await expect(footer.getByRole("link", { name: "WhatsApp", exact: true }).locator('path[fill="#25D366"]')).toHaveCount(1);
 });
 
-test("custom cursor is the ring, red over links", async ({ page }) => {
+test("custom cursor is the chrome bat, blood-red over links", async ({ page }) => {
   await prepare(page);
   await page.goto("/en");
-  expect(await page.evaluate(() => getComputedStyle(document.body).cursor)).toContain("circle");
-  expect(await page.evaluate(() => getComputedStyle(document.querySelector("footer a")!).cursor)).toContain("dc2626");
+  const body = decodeURIComponent(await page.evaluate(() => getComputedStyle(document.body).cursor));
+  expect(body).toContain("M16 6 L17.5 3"); // the bat outline
+  expect(body).toContain("#8c8c8c"); // chrome gradient
+  const link = decodeURIComponent(await page.evaluate(() => getComputedStyle(document.querySelector("footer a")!).cursor));
+  expect(link).toContain("#9b111e"); // blood-red chrome
 });
 
 test("desktop hero plays street footage after load", async ({ page }) => {

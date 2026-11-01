@@ -64,7 +64,8 @@ async function Content({ params }: Pick<PageProps<"/[locale]/fits/[mood]">, "par
               </ul>
               <div className="flex flex-wrap items-end justify-between gap-3 border-t border-ash pt-3">
                 <ul className="flex flex-col gap-1 text-xs text-steel">
-                  {outfit.why.filter((k) => REASON_TEXT[k][lang]).slice(0, 3).map((k) => (
+                  <li className="text-sm text-bone">{outfit.formula[lang]}</li>
+                  {outfit.why.filter((k) => REASON_TEXT[k][lang]).slice(0, 2).map((k) => (
                     <li key={k} className={k.startsWith("pick") ? "text-bone" : ""}>· {REASON_TEXT[k][lang]}</li>
                   ))}
                 </ul>

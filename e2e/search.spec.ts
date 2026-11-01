@@ -48,5 +48,5 @@ test("arrow keys pick a suggestion", async ({ page }) => {
   await expect(page.getByRole("listbox")).toBeVisible();
   await box.press("ArrowDown");
   await box.press("Enter");
-  await expect(page).toHaveURL(/\/brands\/casio|\/product\/|\/shop\//);
+  await expect(page).toHaveURL(/\/search\?q=|\/product\/|\/shop\//);
 });

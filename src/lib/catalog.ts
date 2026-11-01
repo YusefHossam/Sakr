@@ -5,8 +5,10 @@ import { LAST_PIECES_MAX, promoFor, variantPrice, type Promo } from "./pricing";
 import { getSettings } from "./settings";
 import { canonicalTokens, normalizeQuery } from "./search-normalize";
 import { intentFilter, resolveIntent, typeLabel, type Intent } from "./search-intent";
-import { buildOutfits, moodsOf, pairScore, slotOf, type Outfit, type ReasonKey, type Slot, type StyleItem } from "./style";
+import { buildOutfits, type Outfit } from "./outfit-formulas";
+import { moodsOf, pairScore, slotOf, type ReasonKey, type Slot, type StyleItem } from "./style";
 import { MOODS, type Mood } from "./moods";
+import { SECTION_DEF, sectionHref, type Section } from "./sections";
 import { SETTINGS_TAG } from "./tags";
 import { Brand } from "@/models/brand";
 import { CATEGORIES, Product, type Category } from "@/models/product";
@@ -152,6 +154,9 @@ export const SORTS = ["new", "price-asc", "price-desc"] as const;
 export type Sort = (typeof SORTS)[number];
 
 export type ListingQuery = {
+  /** One of the seven shop sections, optionally narrowed by one of its types. */
+  section?: Section;
+  sectionType?: string;
   category?: Category;
   brand?: string;
   /** A mood: only these brands, and none of these categories. */
@@ -182,7 +187,15 @@ export async function getListing(query: ListingQuery): Promise<Listing> {
   await connectDB();
 
   const base: Record<string, unknown> = { active: true };
-  if (query.category) base.category = query.category;
+  const and: Record<string, unknown>[] = [];
+  if (query.section) {
+    const def = SECTION_DEF[query.section];
+    const type = def.types.find((x) => x.key === query.sectionType);
+    base.category = { $in: type?.categories ?? def.categories };
+    if (type?.subcategory) base.subcategory = type.subcategory;
+    if (type?.title) and.push({ title: new RegExp(type.title, "i") });
+    if (type?.notTitle) and.push({ title: { $not: new RegExp(type.notTitle, "i") } });
+  } else if (query.category) base.category = query.category;
   else if (query.excludeCategories?.length) base.category = { $nin: [...query.excludeCategories] };
   if (query.brands?.length) base.brandSlug = { $in: [...query.brands] };
   if (query.type) base.subcategory = query.type;
@@ -192,7 +205,8 @@ export async function getListing(query: ListingQuery): Promise<Listing> {
     // Brand + kind + colour in any language ("نضارات كروم هارت", "nadarat chrome hearts") become real filters.
     const { brands } = await getNavData();
     const structured = intentFilter(resolveIntent(query.q, brands));
-    if (structured && (await Product.countDocuments({ ...base, ...structured })) > 0) Object.assign(base, structured);
+    const withIntent = structured ? { ...base, $and: [...and, ...((structured.$and as Record<string, unknown>[]) ?? [])] } : null;
+    if (withIntent && (await Product.countDocuments(withIntent)) > 0) and.push(...((structured!.$and as Record<string, unknown>[]) ?? []));
     else {
       // Otherwise a text search over the English words the catalog is indexed with.
       const english = canonicalTokens(query.q).join(" ") || normalizeQuery(query.q);
@@ -200,6 +214,7 @@ export async function getListing(query: ListingQuery): Promise<Listing> {
       textSearch = true;
     }
   }
+  if (and.length) base.$and = and;
   const filter = query.brand ? { ...base, brandSlug: query.brand } : base;
 
   const page = Math.max(1, query.page ?? 1);
@@ -212,7 +227,7 @@ export async function getListing(query: ListingQuery): Promise<Listing> {
           ? { score: { $meta: "textScore" } }
           : { publishedAt: -1, _id: 1 };
 
-  const [docs, total, facet] = await Promise.all([
+  const [docs, total] = await Promise.all([
     Product.find(filter)
       .sort(sort)
       .skip((page - 1) * PAGE_SIZE)
@@ -220,11 +235,6 @@ export async function getListing(query: ListingQuery): Promise<Listing> {
       .select(CARD_FIELDS)
       .lean<CardSource[]>(),
     Product.countDocuments(filter),
-    Product.aggregate<{ _id: string; name: string; count: number }>([
-      { $match: base },
-      { $group: { _id: "$brandSlug", name: { $first: "$brand" }, count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-    ]),
   ]);
 
   return {
@@ -232,7 +242,7 @@ export async function getListing(query: ListingQuery): Promise<Listing> {
     total,
     page,
     pages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
-    brands: facet.map((b) => ({ slug: b._id, name: b.name, count: b.count })),
+    brands: [],
   };
 }
 
@@ -468,9 +478,19 @@ export async function getFits(mood: Mood, day: string, count = 6): Promise<Fit[]
   await connectDB();
   const m = MOODS[mood];
   const base = { active: true, "images.0": { $exists: true }, variants: { $elemMatch: { stock: { $gt: 3 } } }, brandSlug: { $in: [...m.brands] }, category: { $nin: [...m.exclude] } };
-  const pool = (
-    await Product.aggregate<StyleDoc>([{ $match: base }, { $sample: { size: 900 } }, { $project: Object.fromEntries(STYLE_LITE.split(" ").map((f) => [f, 1])) }])
-  ).map(toStyle);
+  // Clothes come from the mood's brands; shoes and accessories from any brand, so a recipe can always find
+  // its loafer, boot or watch.
+  const lite = Object.fromEntries(STYLE_LITE.split(" ").map((f) => [f, 1]));
+  const stocked = { active: true, "images.0": { $exists: true }, variants: { $elemMatch: { stock: { $gt: 3 } } } };
+  // Loafers, dress shoes and boots are few and some recipes depend on them, so all of them join the pool.
+  const dressy = new RegExp(["loafer", "derby", "oxford", "moccasin", "penny", "horsebit", "boots?", "tabi", "ramones"].join("|"), "i");
+  const [clothes, extras, special] = await Promise.all([
+    Product.aggregate<StyleDoc>([{ $match: { ...base, category: { $nin: [...m.exclude, "footwear", "slides", "accessories"] } } }, { $sample: { size: 900 } }, { $project: lite }]),
+    Product.aggregate<StyleDoc>([{ $match: { ...stocked, category: { $in: ["footwear", "accessories"] } } }, { $sample: { size: 600 } }, { $project: lite }]),
+    Product.find({ ...stocked, category: "footwear", title: dressy }).select(STYLE_LITE).limit(400).lean<StyleDoc[]>(),
+  ]);
+  const seen = new Set<string>();
+  const pool = [...clothes, ...extras, ...special].filter((d) => !seen.has(d.slug) && seen.add(d.slug)).map(toStyle);
   const outfits = buildOutfits(pool, { count, seed: `${mood}:${day}`, mood });
   const docs = new Map<string, StyleDoc>();
   const slugs = outfits.flatMap((o) => o.items.map((i) => i.slug));
@@ -515,7 +535,7 @@ export async function getSuggestions(q: string): Promise<Suggestions> {
 
   const types = intent.types.map((t) => ({
     label: typeLabel(t),
-    href: t.subcategory ? `/shop/${t.category}?type=${t.subcategory}` : `/shop/${t.category}`,
+    href: sectionHref(t.category, t.subcategory),
   }));
 
   const filter = intentFilter(intent);

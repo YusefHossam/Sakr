@@ -1,17 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import type { NavBrand, NavCategory } from "@/lib/catalog";
+import { SECTION_DEF, SECTIONS, type Section } from "@/lib/sections";
 import { Logo } from "./logo";
 import { RegionMenu } from "./region-menu";
 
-const TOP_CATEGORIES = ["hoodies", "crewnecks", "jackets", "pants", "sweatpants", "tees", "shorts", "footwear", "slides", "accessories"] as const;
-const ACCESSORY_TYPES = ["chains", "bracelets", "rings", "sunglasses", "socks", "boxers", "headwear", "bags", "belts", "masks", "watches", "perfumes"] as const;
-const SLIDE_TYPES = ["slides", "slippers", "clogs"] as const;
-
-type MenuKey = (typeof TOP_CATEGORIES)[number] | "brands";
+type MenuKey = Section;
 
 const Icon = ({ d, label }: { d: string; label?: string }) => (
   <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden={label ? undefined : true} role={label ? "img" : undefined} aria-label={label}>
@@ -27,8 +23,10 @@ const ICONS = {
   chevron: "m6 9 6 6 6-6",
 };
 
-export function NavBar({ categories, brands, cartBadge }: { categories: NavCategory[]; brands: NavBrand[]; cartBadge?: React.ReactNode }) {
+export function NavBar({ cartBadge }: { cartBadge?: React.ReactNode }) {
   const t = useTranslations();
+  const lang = useLocale() === "ar" ? "ar" : "en";
+  const name = (s: Section) => SECTION_DEF[s].label[lang];
   const [open, setOpen] = useState<MenuKey | null>(null);
   const [drawer, setDrawer] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -48,8 +46,6 @@ export function NavBar({ categories, brands, cartBadge }: { categories: NavCateg
     addEventListener("scroll", onScroll, { passive: true });
     return () => removeEventListener("scroll", onScroll);
   }, []);
-
-  const brandsFor = (c: string) => categories.find((x) => x.category === c)?.brands ?? [];
 
   return (
     <header
@@ -93,7 +89,7 @@ export function NavBar({ categories, brands, cartBadge }: { categories: NavCateg
       <div className="mx-auto hidden max-w-[1500px] px-8 pb-1 lg:block">
         <nav aria-label="Main" className="flex justify-center">
           <ul className="flex items-center gap-1 xl:gap-2">
-            {[...TOP_CATEGORIES, "brands" as const].map((key) => (
+            {SECTIONS.map((key) => (
               <li key={key}>
                 <button
                   type="button"
@@ -105,7 +101,7 @@ export function NavBar({ categories, brands, cartBadge }: { categories: NavCateg
                     open === key ? "text-chrome" : "text-steel hover:text-bone"
                   }`}
                 >
-                  {t(`categories.${key}`)}
+                  {name(key)}
                 </button>
               </li>
             ))}
@@ -123,32 +119,17 @@ export function NavBar({ categories, brands, cartBadge }: { categories: NavCateg
         <div className="absolute inset-x-0 top-full hidden border-b border-ash bg-ink/95 backdrop-blur-md lg:block" style={{ animation: "fade-up 0.2s ease both" }}>
           <div className="mx-auto grid max-w-[1500px] grid-cols-[220px_1fr] gap-10 px-8 py-8">
             <div className="flex flex-col gap-3">
-              <p className="street-heading text-4xl">{t(`categories.${open}`)}</p>
-              {open !== "brands" && (
-                <Link href={`/shop/${open}`} className="text-sm text-steel underline-offset-4 hover:text-chrome hover:underline">
-                  {t("header.allIn", { category: t(`categories.${open}`) })} →
-                </Link>
-              )}
+              <p className="street-heading text-4xl">{name(open)}</p>
+              <Link href={`/shop/${open}`} className="text-sm text-steel underline-offset-4 hover:text-chrome hover:underline">
+                {t("header.allIn", { category: name(open) })} →
+              </Link>
             </div>
             <div className="grid grid-cols-4 gap-x-8 gap-y-2 xl:grid-cols-5">
-              {(open === "accessories" || open === "slides") &&
-                (open === "accessories" ? ACCESSORY_TYPES : SLIDE_TYPES).map((type) => (
-                  <Link key={type} href={`/shop/${open}?type=${type}`} className="py-1 text-sm text-bone hover:text-chrome">
-                    {t(`accessories.${type}`)}
-                  </Link>
-                ))}
-              {open === "brands"
-                ? brands.map((b) => (
-                    <Link key={b.slug} href={`/brands/${b.slug}`} className="flex items-baseline justify-between gap-3 py-1 text-sm text-steel hover:text-chrome">
-                      <span>{b.name}</span>
-                      <span className="text-xs text-dust" dir="ltr">{b.productCount}</span>
-                    </Link>
-                  ))
-                : brandsFor(open).map((b) => (
-                    <Link key={b.slug} href={`/shop/${open}?brand=${b.slug}`} className="py-1 text-sm text-steel hover:text-chrome">
-                      {b.name}
-                    </Link>
-                  ))}
+              {SECTION_DEF[open].types.map((type) => (
+                <Link key={type.key} href={`/shop/${open}?type=${type.key}`} className="py-1 text-sm text-bone hover:text-chrome">
+                  {type.label[lang]}
+                </Link>
+              ))}
             </div>
           </div>
           <div className="barbed" aria-hidden="true" />
@@ -170,29 +151,22 @@ export function NavBar({ categories, brands, cartBadge }: { categories: NavCateg
               <RegionMenu />
             </div>
             <ul className="flex flex-col divide-y divide-ash">
-              {[...TOP_CATEGORIES, "brands" as const].map((key) => (
+              {SECTIONS.map((key) => (
                 <li key={key}>
                   <details className="group py-1">
                     <summary className="flex cursor-pointer list-none items-center justify-between py-2.5 font-display text-lg tracking-[0.12em] text-bone uppercase">
-                      {t(`categories.${key}`)}
+                      {name(key)}
                       <span className="text-dust transition-transform group-open:rotate-180">
                         <Icon d={ICONS.chevron} />
                       </span>
                     </summary>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1 pb-3">
-                      {key === "brands"
-                        ? brands.map((b) => (
-                            <Link key={b.slug} href={`/brands/${b.slug}`} className="py-1 text-sm text-steel">
-                              {b.name}
-                            </Link>
-                          ))
-                        : (key === "accessories" || key === "slides" ? (key === "accessories" ? ACCESSORY_TYPES : SLIDE_TYPES).map((type) => ({ href: `/shop/${key}?type=${type}`, label: t(`accessories.${type}`) })) : [])
-                            .concat(brandsFor(key).map((b) => ({ href: `/shop/${key}?brand=${b.slug}`, label: b.name })))
-                            .map((l) => (
-                              <Link key={l.href} href={l.href} className="py-1 text-sm text-steel">
-                                {l.label}
-                              </Link>
-                            ))}
+                      <Link href={`/shop/${key}`} className="col-span-2 py-1 text-sm text-bone">{t("header.allIn", { category: name(key) })}</Link>
+                      {SECTION_DEF[key].types.map((type) => (
+                        <Link key={type.key} href={`/shop/${key}?type=${type.key}`} className="py-1 text-sm text-steel">
+                          {type.label[lang]}
+                        </Link>
+                      ))}
                     </div>
                   </details>
                 </li>

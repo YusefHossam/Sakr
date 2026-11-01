@@ -5,7 +5,8 @@ import { connectDB } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import type { Mood } from "@/lib/moods";
 import { promoFor, variantPrice } from "@/lib/pricing";
-import { buildOutfits, pairScore, REASON_TEXT, type StyleItem } from "@/lib/style";
+import { buildOutfits } from "@/lib/outfit-formulas";
+import { pairScore, REASON_TEXT, type StyleItem } from "@/lib/style";
 import { Product } from "@/models/product";
 
 export type StylistItem = { slug: string; title: string; brand: string; category: string; price: number; image: string | null };
@@ -91,7 +92,7 @@ function ruleOutfits(pool: Candidate[], budget: number | null, prompt: string, l
   );
   return built.flatMap((o) => {
     const items = o.items.map((i) => bySlug.get(i.slug)).filter((c): c is Candidate => !!c);
-    const why = o.why.map((k) => REASON_TEXT[k][locale]).filter(Boolean).slice(0, 2).join(" · ");
+    const why = [o.formula[locale], ...o.why.map((k) => REASON_TEXT[k][locale]).filter(Boolean).slice(0, 1)].join(" · ");
     return items.length >= 3 ? [{ name: "", why, items, total: o.total }] : [];
   });
 }

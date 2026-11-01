@@ -1,21 +1,17 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { ProductCard } from "@/components/product/product-card";
 import { Link } from "@/i18n/navigation";
 import { getListing, SORTS, type Listing, type ListingQuery } from "@/lib/catalog";
 import type { Mood } from "@/lib/moods";
 import { MOODS } from "@/lib/moods";
-import type { Category } from "@/models/product";
+import { SECTION_DEF, type Section } from "@/lib/sections";
 
 export type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-const ACCESSORY_TYPES = ["chains", "bracelets", "rings", "sunglasses", "socks", "boxers", "headwear", "bags", "belts", "masks", "watches", "perfumes"] as const;
-const SLIDE_TYPES = ["slides", "slippers", "clogs"] as const;
-const TYPES_FOR: Partial<Record<Category, readonly string[]>> = { accessories: ACCESSORY_TYPES, slides: SLIDE_TYPES };
 
 const querySchema = z.object({
-  brand: z.string().regex(/^[a-z0-9-]+$/).max(60).optional().catch(undefined),
-  type: z.enum([...ACCESSORY_TYPES, ...SLIDE_TYPES]).optional().catch(undefined),
+  type: z.string().regex(/^[a-z]{2,20}$/).optional().catch(undefined),
   sale: z.literal("last-pieces").optional().catch(undefined),
   q: z.string().trim().min(1).max(80).optional().catch(undefined),
   sort: z.enum(SORTS).optional().catch(undefined),
@@ -25,37 +21,30 @@ const querySchema = z.object({
 type Props = {
   basePath: string;
   searchParams: SearchParams;
-  category?: Category;
-  /** Fixed brand (brand pages); hides the brand filter. */
-  brand?: string;
+  section?: Section;
   /** Mood pages: restricts the grid to the mood's brands and kinds of pieces. */
   mood?: Mood;
 };
 
 /** Product grid with brand/type/sale filters, sort and pagination, all driven by the URL. */
-export async function ShopListing({ basePath, searchParams, category, brand, mood }: Props) {
+export async function ShopListing({ basePath, searchParams, section, mood }: Props) {
   const raw = await searchParams;
   const flat = Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]));
   const parsed = querySchema.parse(flat);
   const query: ListingQuery = {
-    category,
-    brand: brand ?? parsed.brand,
+    section,
+    sectionType: section && SECTION_DEF[section].types.some((x) => x.key === parsed.type) ? parsed.type : undefined,
     brands: mood ? MOODS[mood].brands : undefined,
     excludeCategories: mood ? MOODS[mood].exclude : undefined,
-    type: category && TYPES_FOR[category]?.includes(parsed.type ?? "") ? parsed.type : undefined,
     sale: parsed.sale === "last-pieces",
     q: parsed.q,
     sort: parsed.sort,
     page: parsed.page,
   };
-  const [t, tc, ta, listing] = await Promise.all([
-    getTranslations("shop"),
-    getTranslations("categories"),
-    getTranslations("accessories"),
-    getListing(query),
-  ]);
+  const [t, locale, listing] = await Promise.all([getTranslations("shop"), getLocale(), getListing(query)]);
+  const lang = locale === "ar" ? "ar" : "en";
 
-  const current = { brand: brand ? undefined : parsed.brand, type: query.type, sale: parsed.sale, q: parsed.q, sort: parsed.sort };
+  const current = { type: query.sectionType, sale: parsed.sale, q: parsed.q, sort: parsed.sort };
   const href = (patch: Partial<Record<keyof typeof current | "page", string | number | undefined>>) => {
     const next = { ...current, page: undefined, ...patch } as Record<string, string | number | undefined>;
     const qs = new URLSearchParams(Object.entries(next).filter(([, v]) => v !== undefined && v !== "") as [string, string][]);
@@ -66,7 +55,7 @@ export async function ShopListing({ basePath, searchParams, category, brand, moo
     `whitespace-nowrap border px-3 py-1.5 text-xs tracking-wide transition-colors ${
       active ? "border-bone bg-bone text-ink" : "border-ash text-steel hover:border-dust hover:text-bone"
     }`;
-  const anyFilter = current.brand || current.type || current.sale || current.sort;
+  const anyFilter = current.type || current.sale || current.sort;
 
   return (
     <div className="flex flex-col gap-8">
@@ -87,26 +76,13 @@ export async function ShopListing({ basePath, searchParams, category, brand, moo
           <Link href={href({ sale: current.sale ? undefined : "last-pieces" })} className={`${chip(!!current.sale)} ${current.sale ? "" : "border-blood/60 text-blood"}`}>
             {t("lastPiecesOnly")}
           </Link>
-          {category &&
-            (TYPES_FOR[category] ?? []).map((type) => (
-              <Link key={type} href={href({ type: current.type === type ? undefined : type })} className={chip(current.type === type)}>
-                {ta(type)}
+          {section &&
+            SECTION_DEF[section].types.map((type) => (
+              <Link key={type.key} href={href({ type: current.type === type.key ? undefined : type.key })} className={chip(current.type === type.key)}>
+                {type.label[lang]}
               </Link>
             ))}
         </div>
-
-        {!brand && listing.brands.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto pb-1" dir="ltr">
-            <Link href={href({ brand: undefined })} className={chip(!current.brand)}>
-              {t("allBrands")}
-            </Link>
-            {listing.brands.map((b) => (
-              <Link key={b.slug} href={href({ brand: current.brand === b.slug ? undefined : b.slug })} className={chip(current.brand === b.slug)}>
-                {b.name} <span className="opacity-60">{b.count}</span>
-              </Link>
-            ))}
-          </div>
-        )}
 
         {anyFilter && (
           <Link href={basePath + (current.q ? `?q=${encodeURIComponent(current.q)}` : "")} className="self-start text-xs text-dust underline underline-offset-4 hover:text-bone">
@@ -126,7 +102,6 @@ export async function ShopListing({ basePath, searchParams, category, brand, moo
       )}
 
       <Pagination listing={listing} href={(page) => href({ page })} labels={{ prev: t("prev"), next: t("next"), page: t("page", { page: listing.page, pages: listing.pages }) }} />
-      {category && <span className="sr-only">{tc(category)}</span>}
     </div>
   );
 }

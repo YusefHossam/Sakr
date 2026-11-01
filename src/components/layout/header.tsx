@@ -1,15 +1,11 @@
 import { Suspense } from "react";
 import { getSession } from "@/lib/auth/session";
-import { getNavData } from "@/lib/catalog";
 import { cartCount } from "@/lib/shop-data";
 import { NavBar } from "./nav-bar";
 
-export async function Header() {
-  const { categories, brands } = await getNavData();
+export function Header() {
   return (
     <NavBar
-      categories={categories}
-      brands={brands}
       cartBadge={
         <Suspense fallback={null}>
           <CartBadge />

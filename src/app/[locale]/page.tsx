@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { AdCarousel, type AdSlide } from "@/components/home/ad-carousel";
 import { ColorwaySpotlight } from "@/components/home/colorway-spotlight";
 import { ForYou } from "@/components/home/for-you";
@@ -10,22 +10,19 @@ import { Section } from "@/components/home/section";
 import { ProductCard } from "@/components/product/product-card";
 import { Link } from "@/i18n/navigation";
 import { getSettings } from "@/lib/settings";
-import { getBrandImages, getHeroImages, getLastPieces, getModelSpotlight, getNavData, getNewIn } from "@/lib/catalog";
-
-const FEATURED_BRAND = "chrome-hearts";
+import { getHeroImages, getLastPieces, getModelSpotlight, getNewIn } from "@/lib/catalog";
+import { SECTION_DEF, SECTIONS } from "@/lib/sections";
 
 export default async function HomePage() {
-  const [t, heroImages, lastPieces, spotlight, newIn, nav, featuredImages, settings] = await Promise.all([
+  const [t, locale, heroImages, lastPieces, spotlight, newIn, settings] = await Promise.all([
     getTranslations("home"),
+    getLocale(),
     getHeroImages(),
     getLastPieces(8),
     getModelSpotlight(),
     getNewIn(12),
-    getNavData(),
-    getBrandImages(FEATURED_BRAND),
     getSettings(),
   ]);
-  const featured = nav.brands.find((b) => b.slug === FEATURED_BRAND);
 
   // Running promotions, discounts first (BR-61).
   // Banners set in Admin → Content lead the automatic ones.
@@ -53,17 +50,6 @@ export default async function HomePage() {
       images: spotlight.colorways.slice(0, 4).map((p) => p.image).filter((x): x is string => !!x),
     });
   }
-  if (featured) {
-    slides.push({
-      id: "brand",
-      eyebrow: t("brandsTitle"),
-      title: t("adBrandTitle", { brand: featured.name }),
-      text: t("adBrandText", { count: featured.productCount }),
-      href: `/brands/${featured.slug}`,
-      images: featuredImages,
-    });
-  }
-
   return (
     <>
       <Hero images={heroImages} />
@@ -95,16 +81,12 @@ export default async function HomePage() {
         </Section>
       )}
 
-      <Section title={t("brandsTitle")}>
-        <ul className="grid grid-cols-2 border-s border-t border-ash sm:grid-cols-3 lg:grid-cols-6">
-          {nav.brands.map((b) => (
-            <li key={b.slug} className="border-e border-b border-ash">
-              <Link
-                href={`/brands/${b.slug}`}
-                className="glitch-hover flex aspect-[4/3] flex-col items-center justify-center gap-1 p-4 text-center transition-colors hover:bg-smoke"
-              >
-                <span className="street-heading text-lg leading-tight md:text-xl" dir="ltr">{b.name}</span>
-                <span className="text-[11px] text-dust" dir="ltr">{b.productCount}</span>
+      <Section title={locale === "ar" ? "تسوّق حسب القسم" : "Shop by section"}>
+        <ul className="grid grid-cols-2 border-s border-t border-ash sm:grid-cols-4 lg:grid-cols-7">
+          {SECTIONS.map((s) => (
+            <li key={s} className="border-e border-b border-ash">
+              <Link href={`/shop/${s}`} className="glitch-hover flex aspect-[4/3] items-center justify-center p-4 text-center transition-colors hover:bg-smoke">
+                <span className="street-heading text-lg leading-tight md:text-xl">{SECTION_DEF[s].label[locale === "ar" ? "ar" : "en"]}</span>
               </Link>
             </li>
           ))}

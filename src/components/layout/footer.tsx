@@ -1,5 +1,6 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { SECTION_DEF, SECTIONS } from "@/lib/sections";
 import { SocialIcon } from "./brand-icons";
 import { JoinForm } from "./join-form";
 import { PaymentIcons } from "./payment-icons";
@@ -14,11 +15,11 @@ const SOCIALS = [
 ] as const;
 
 export async function Footer() {
-  const t = await getTranslations();
+  const [t, locale] = await Promise.all([getTranslations(), getLocale()]);
   const cols = [
     {
       title: t("footer.categories"),
-      links: (["hoodies", "jackets", "pants", "footwear", "accessories"] as const).map((c) => ({ href: `/shop/${c}`, label: t(`categories.${c}`) })),
+      links: SECTIONS.map((s) => ({ href: `/shop/${s}`, label: SECTION_DEF[s].label[locale === "ar" ? "ar" : "en"] })),
     },
     {
       title: t("footer.information"),

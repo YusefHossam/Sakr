@@ -63,7 +63,7 @@ export function SearchBox({ initial }: { initial: string }) {
 
   // One flat list so the arrow keys walk through brands, kinds and products in order.
   const rows = [
-    ...data.brands.map((b) => ({ key: `b-${b.slug}`, href: `/brands/${b.slug}`, text: b.name, hint: ar ? "براند" : "Brand", image: null as string | null })),
+    ...data.brands.map((b) => ({ key: `b-${b.slug}`, href: `/search?q=${encodeURIComponent(b.name)}`, text: b.name, hint: ar ? "براند" : "Brand", image: null as string | null })),
     ...data.types.map((t) => ({ key: `t-${t.href}`, href: t.href, text: ar ? t.label.ar : t.label.en, hint: ar ? "قسم" : "Section", image: null as string | null })),
     ...data.products.map((p) => ({ key: `p-${p.slug}`, href: `/product/${p.slug}`, text: p.title, hint: p.brand, image: p.image })),
   ];

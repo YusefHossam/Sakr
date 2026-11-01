@@ -192,67 +192,7 @@ export function pairScore(a: StyleItem, b: StyleItem): Pair {
   return { score, why: why.sort(byRank) };
 }
 
-// ---------- Outfits ----------
-
-export type Outfit = { items: StyleItem[]; total: number; score: number; why: ReasonKey[] };
-
-// Multipacks and underwear are not part of a fit; only accessories that show are.
-const PACK = /\b(\d ?pk|\d-?pack|pack of|multipack|bundle)\b/i;
-const FIT_ACCESSORIES = new Set(["headwear", "sunglasses", "chains", "bracelets", "rings", "watches"]);
-
-const hash = (s: string) => {
-  let h = 2166136261;
-  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
-  return (h >>> 0) / 4294967296;
-};
-
-type Opts = { count: number; seed: string; budget?: number | null; mood?: Mood | null; used?: Set<string>; /** Extra pull toward some pieces (e.g. black when the customer asked for black). */ bias?: (p: StyleItem) => number };
-
-/** Builds whole fits from a pool: a shoe first, then the bottom and top that suit it, then optional outerwear and an accessory. */
-export function buildOutfits(pool: StyleItem[], { count, seed, budget = null, mood = null, used = new Set(), bias = () => 0 }: Opts): Outfit[] {
-  const bySlot = (slot: Slot) => pool.filter((p) => slotOf(p.category) === slot && !used.has(p.slug));
-  const noise = (p: StyleItem, salt: string) => hash(`${seed}:${salt}:${p.slug}`) * 0.9;
-  const inMood = (p: StyleItem) => (mood && moodsOf(p.brandSlug).includes(mood) ? 1.5 : 0);
-  const outfits: Outfit[] = [];
-
-  for (let n = 0; n < count; n++) {
-    const left = () => (budget ? budget - picked.reduce((s, p) => s + p.price, 0) : Infinity);
-    const picked: StyleItem[] = [];
-    const pick = (slot: Slot, fit: (p: StyleItem) => number, share: number, optional = false) => {
-      const cap = optional ? left() : left() * share;
-      const choices = bySlot(slot).filter((p) => !picked.some((x) => x.slug === p.slug) && p.price <= cap && !PACK.test(p.title) && (slot !== "acc" || FIT_ACCESSORIES.has(p.subcategory ?? "")));
-      if (!choices.length) return;
-      const best = choices.map((p) => ({ p, v: fit(p) + inMood(p) + bias(p) + noise(p, `${n}${slot}`) })).sort((x, y) => y.v - x.v)[0];
-      picked.push(best.p);
-      used.add(best.p.slug);
-    };
-
-    // SAKR picks (Track, Curb) surface more often than a random shoe.
-    pick("shoes", (p) => (isTrack(p) || isCurb(p) ? 1.2 : 0), 0.55);
-    const shoe = picked[0];
-    if (!shoe) break;
-    pick("bottom", (p) => pairScore(p, shoe).score, 0.7);
-    const bottom = picked[1];
-    pick("top", (p) => (bottom ? pairScore(p, bottom).score : 0) + pairScore(p, shoe).score * 0.5, 0.8);
-    const top = picked[picked.length - 1];
-    pick("outer", (p) => pairScore(p, top).score + (bottom ? pairScore(p, bottom).score : 0), 1, true);
-    pick("acc", (p) => pairScore(p, top).score, 1, true);
-
-    let score = 0;
-    const why: ReasonKey[] = [];
-    for (let i = 0; i < picked.length; i++)
-      for (let j = i + 1; j < picked.length; j++) {
-        const r = pairScore(picked[i], picked[j]);
-        score += r.score;
-        for (const k of r.why) if (!why.includes(k)) why.push(k);
-      }
-    // A shoe that fights the leg sinks the whole fit, however good the rest is.
-    const legItem = picked.find((p) => slotOf(p.category) === "bottom");
-    if (legItem && pairScore(legItem, shoe).score < 0) continue;
-    if (picked.length >= 3 && score >= 2) outfits.push({ items: picked, total: picked.reduce((s, p) => s + p.price, 0), score, why: why.sort(byRank) });
-  }
-  return outfits.sort((a, b) => b.score - a.score);
-}
+// Whole outfits are built from researched recipes in outfit-formulas.ts.
 
 export const REASON_TEXT: Record<ReasonKey, { ar: string; en: string }> = {
   "pick-track": { ar: "SAKR Pick: Balenciaga Track على السكيني والفليرد موت", en: "SAKR pick: Balenciaga Track kills on skinny and flared" },

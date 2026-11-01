@@ -16,6 +16,7 @@ import { ProductTabs } from "@/components/product/product-tabs";
 import { RandomPicks } from "@/components/product/random-picks";
 import { ReviewForm } from "@/components/product/review-form";
 import { Link } from "@/i18n/navigation";
+import { SECTION_DEF, sectionHref, sectionOf } from "@/lib/sections";
 import { getProduct } from "@/lib/catalog";
 import { getApprovedReviews } from "@/lib/reviews";
 
@@ -41,7 +42,7 @@ async function ProductContent({ params }: Pick<PageProps<"/[locale]/product/[slu
   const { slug } = await params;
   const product = await getProduct(slug);
   if (!product) notFound();
-  const [t, tc, reviews, locale] = await Promise.all([getTranslations("product"), getTranslations("categories"), getApprovedReviews(slug), getLocale()]);
+  const [t, reviews, locale] = await Promise.all([getTranslations("product"), getApprovedReviews(slug), getLocale()]);
   const avg = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
 
   return (
@@ -51,9 +52,9 @@ async function ProductContent({ params }: Pick<PageProps<"/[locale]/product/[slu
         <ol className="flex flex-wrap items-center gap-2">
           <li><Link href="/" className="hover:text-bone">{t("breadcrumbHome")}</Link></li>
           <li aria-hidden="true">/</li>
-          <li><Link href={`/shop/${product.category}`} className="hover:text-bone">{tc(product.category)}</Link></li>
+          <li><Link href={sectionHref(product.category, product.subcategory)} className="hover:text-bone">{SECTION_DEF[sectionOf(product.category)].label[locale === "ar" ? "ar" : "en"]}</Link></li>
           <li aria-hidden="true">/</li>
-          <li><Link href={`/brands/${product.brandSlug}`} className="hover:text-bone">{product.brand}</Link></li>
+          <li dir="ltr">{product.brand}</li>
         </ol>
       </nav>
 
@@ -62,9 +63,7 @@ async function ProductContent({ params }: Pick<PageProps<"/[locale]/product/[slu
 
         <div className="flex min-w-0 flex-col gap-6 lg:sticky lg:top-32 lg:self-start">
           <div className="flex flex-col gap-2" dir="ltr">
-            <Link href={`/brands/${product.brandSlug}`} className="self-start text-xs tracking-[0.35em] text-dust uppercase hover:text-bone">
-              {product.brand}
-            </Link>
+            <p className="self-start text-xs tracking-[0.35em] text-dust uppercase">{product.brand}</p>
             <h1 className="street-heading text-[clamp(1.8rem,3.6vw,3rem)] leading-[0.95]">{product.model ?? product.title}</h1>
             {product.colorway && <p className="text-lg text-steel">{product.colorway}</p>}
             {reviews.length > 0 && (
