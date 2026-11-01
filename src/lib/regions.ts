@@ -24,3 +24,8 @@ export const findRegion = (code: string | null | undefined): Region =>
 
 /** EGP → currency multipliers. */
 export type Rates = Record<string, number>;
+
+/** Display currencies, one per currency (the flag is just a visual hint), Egypt first. */
+export const CURRENCIES: { code: string; flag: string }[] = [...new Map(REGIONS.map((r) => [r.currency, { code: r.currency, flag: r.code === "LB" ? "US" : r.code }])).values()];
+export const CURRENCY_STORAGE_KEY = "sakr-currency";
+export const DEFAULT_CURRENCY = "EGP";

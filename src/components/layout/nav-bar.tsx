@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { SECTION_DEF, SECTIONS, type Section } from "@/lib/sections";
 import { Logo } from "./logo";
-import { RegionMenu } from "./region-menu";
+import { CurrencyMenu, LanguageSwitch } from "./region-menu";
 
 type MenuKey = Section;
 
@@ -72,8 +72,9 @@ export function NavBar({ cartBadge }: { cartBadge?: React.ReactNode }) {
           <Link href="/search" aria-label={t("header.search")} className="text-steel hover:text-chrome">
             <Icon d={ICONS.search} />
           </Link>
-          <div className="hidden sm:block">
-            <RegionMenu />
+          <div className="hidden items-center gap-2 sm:flex">
+            <LanguageSwitch />
+            <CurrencyMenu />
           </div>
           <Link href="/account" aria-label={t("header.account")} className="text-steel hover:text-chrome">
             <Icon d={ICONS.user} />
@@ -147,8 +148,9 @@ export function NavBar({ cartBadge }: { cartBadge?: React.ReactNode }) {
                 <Icon d={ICONS.close} />
               </button>
             </div>
-            <div className="mb-4 sm:hidden">
-              <RegionMenu />
+            <div className="mb-4 flex items-center gap-2 sm:hidden">
+              <LanguageSwitch />
+              <CurrencyMenu />
             </div>
             <ul className="flex flex-col divide-y divide-ash">
               {SECTIONS.map((key) => (

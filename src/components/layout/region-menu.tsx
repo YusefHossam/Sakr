@@ -1,16 +1,49 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocale } from "next-intl";
 import { useRegion } from "@/components/providers/region-provider";
-import { REGIONS } from "@/lib/regions";
+import { useRouter } from "@/i18n/navigation";
+import { CURRENCIES } from "@/lib/regions";
 
-/** Flag button → list of countries; picking one switches currency (and language). */
-export function RegionMenu() {
-  const t = useTranslations();
-  const { region, setRegion } = useRegion();
+const pill = "flex items-center gap-2 rounded-full border border-ash px-2.5 py-1.5 text-xs text-steel transition-colors hover:border-iron hover:text-bone";
+
+/** One tap switches between Arabic and English on the same page. */
+export function LanguageSwitch() {
+  const locale = useLocale();
+  const router = useRouter();
+  const other = locale === "ar" ? "en" : "ar";
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        // Read the URL at click time (usePathname here would make every page wait on the URL).
+        const path = location.pathname.replace(new RegExp(`^/${locale}(?=/|$)`), "") || "/";
+        router.replace(`${path}${location.search}`, { locale: other });
+      }}
+      aria-label={other === "en" ? "Switch to English" : "التحويل للعربي"}
+      lang={other}
+      className={`${pill} min-w-11 justify-center font-medium`}
+    >
+      {other === "en" ? "EN" : "عربي"}
+    </button>
+  );
+}
+
+/** Display currency, independent from the language. */
+export function CurrencyMenu() {
+  const locale = useLocale();
+  const { currency, setCurrency } = useRegion();
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
+  const names = useMemo(() => {
+    try {
+      return new Intl.DisplayNames([locale === "ar" ? "ar" : "en"], { type: "currency" });
+    } catch {
+      return null;
+    }
+  }, [locale]);
+  const flag = CURRENCIES.find((c) => c.code === currency)?.flag ?? "EG";
 
   useEffect(() => {
     if (!open) return;
@@ -25,42 +58,28 @@ export function RegionMenu() {
     };
   }, [open]);
 
+  const label = locale === "ar" ? "العملة" : "Currency";
   return (
     <div ref={box} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        aria-haspopup="listbox"
-        aria-label={t("header.region")}
-        className="flex items-center gap-2 rounded-full border border-ash px-2.5 py-1.5 text-xs text-steel transition-colors hover:border-iron hover:text-bone"
-      >
-        <span className={`fi fi-${region.code.toLowerCase()} rounded-[2px]`} aria-hidden="true" />
-        <span dir="ltr">{region.currency}</span>
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="listbox" aria-label={`${label}: ${currency}`} className={pill}>
+        <span className={`fi fi-${flag.toLowerCase()} rounded-[2px]`} aria-hidden="true" />
+        <span dir="ltr">{currency}</span>
       </button>
       {open && (
-        <ul
-          role="listbox"
-          aria-label={t("header.region")}
-          className="absolute end-0 top-full z-50 mt-2 grid max-h-[70vh] w-72 grid-cols-1 overflow-y-auto rounded-lg border border-ash bg-pitch/95 p-1.5 shadow-2xl backdrop-blur-md"
-        >
-          {REGIONS.map((r) => (
-            <li key={r.code} role="option" aria-selected={r.code === region.code}>
+        <ul role="listbox" aria-label={label} className="absolute end-0 top-full z-50 mt-2 grid max-h-[70vh] w-64 grid-cols-1 overflow-y-auto rounded-lg border border-ash bg-pitch/95 p-1.5 shadow-2xl backdrop-blur-md">
+          {CURRENCIES.map((c) => (
+            <li key={c.code} role="option" aria-selected={c.code === currency}>
               <button
                 type="button"
                 onClick={() => {
-                  setRegion(r.code);
+                  setCurrency(c.code);
                   setOpen(false);
                 }}
-                className={`flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-start text-sm transition-colors hover:bg-ash ${
-                  r.code === region.code ? "bg-ash text-chrome" : "text-steel"
-                }`}
+                className={`flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-start text-sm transition-colors hover:bg-ash ${c.code === currency ? "bg-ash text-chrome" : "text-steel"}`}
               >
-                <span className={`fi fi-${r.code.toLowerCase()} shrink-0 rounded-[2px]`} aria-hidden="true" />
-                <span className="flex-1">{t(`regions.${r.code}`)}</span>
-                <span className="text-xs text-dust" dir="ltr">
-                  {r.currency} · {r.locale === "ar" ? "ع" : "EN"}
-                </span>
+                <span className={`fi fi-${c.flag.toLowerCase()} shrink-0 rounded-[2px]`} aria-hidden="true" />
+                <span className="flex-1">{names?.of(c.code) ?? c.code}</span>
+                <span className="text-xs text-dust" dir="ltr">{c.code}</span>
               </button>
             </li>
           ))}

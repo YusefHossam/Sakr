@@ -6,7 +6,7 @@ import { useRegion } from "@/components/providers/region-provider";
 /** Price in the visitor's currency, the EGP original under it, and the struck price when on sale. */
 export function Price({ price, salePrice, size = "md" }: { price: number; salePrice?: number | null; size?: "md" | "lg" }) {
   const t = useTranslations("common");
-  const { region, format, formatEgp } = useRegion();
+  const { currency, format, formatEgp } = useRegion();
   const shown = salePrice ?? price;
   const main = size === "lg" ? "text-2xl" : "text-sm";
 
@@ -16,7 +16,7 @@ export function Price({ price, salePrice, size = "md" }: { price: number; salePr
         <span className={`${main} font-semibold ${salePrice ? "text-blood" : "text-bone"}`}>{format(shown)}</span>
         {salePrice != null && <s className="text-xs text-dust">{format(price)}</s>}
       </div>
-      {region.currency !== "EGP" && <span className="text-[11px] text-dust">{t("approxEgp", { price: formatEgp(shown) })}</span>}
+      {currency !== "EGP" && <span className="text-[11px] text-dust">{t("approxEgp", { price: formatEgp(shown) })}</span>}
     </div>
   );
 }
