@@ -5,15 +5,12 @@ import Script from "next/script";
 import { locale as rootLocale } from "next/root-params";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
-import { Bats } from "@/components/layout/bats";
 import { AnnouncementBar } from "@/components/layout/announcement-bar";
-import { CartSync } from "@/components/cart/cart-sync";
-import { ChatWidget } from "@/components/layout/chat-widget";
 import { MOOD_STORAGE_KEY } from "@/lib/moods";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { Intro } from "@/components/layout/intro";
-import { MusicPlayer } from "@/components/layout/music-player";
+import { LateWidgets } from "@/components/layout/late-widgets";
 import { MusicProvider } from "@/components/providers/music-provider";
 import { RegionProvider } from "@/components/providers/region-provider";
 import { localeDirection, routing } from "@/i18n/routing";
@@ -24,10 +21,10 @@ import "../globals.css";
 const plex = IBM_Plex_Sans_Arabic({
   variable: "--font-plex",
   subsets: ["arabic", "latin"],
-  weight: ["400", "500", "700"],
+  weight: ["400", "700"],
   display: "swap",
 });
-const anton = Anton({ variable: "--font-anton", subsets: ["latin"], weight: "400", display: "block" });
+const anton = Anton({ variable: "--font-anton", subsets: ["latin"], weight: "400", display: "swap" });
 const gothic = UnifrakturMaguntia({ variable: "--font-gothic-face", subsets: ["latin"], weight: "400", display: "block" });
 
 export const viewport: Viewport = {
@@ -73,14 +70,11 @@ export default async function LocaleLayout({ children }: LayoutProps<"/[locale]"
           <RegionProvider rates={rates}>
             <MusicProvider>
               <Intro />
-              <Bats />
               <AnnouncementBar />
               <Header />
               <main className="flex-1">{children}</main>
               <Footer />
-              <MusicPlayer />
-              <ChatWidget />
-              <CartSync />
+              <LateWidgets />
             </MusicProvider>
           </RegionProvider>
         </NextIntlClientProvider>

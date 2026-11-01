@@ -18,26 +18,20 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/shop/[ca
   return { title: SECTION_DEF[category].label[lang] };
 }
 
-export default function SectionPage({ params, searchParams }: PageProps<"/[locale]/shop/[category]">) {
-  return (
-    <div className="mx-auto max-w-[1500px] px-4 pt-4 md:px-8">
-      <Suspense fallback={<ListingSkeleton />}>
-        <SectionContent params={params} searchParams={searchParams} />
-      </Suspense>
-    </div>
-  );
-}
-
-async function SectionContent({ params, searchParams }: Pick<PageProps<"/[locale]/shop/[category]">, "params" | "searchParams">) {
+// The heading is part of the static shell (the section list is known at build time), so it paints with the
+// first HTML; only the product grid, which reads the URL's filters, streams in.
+export default async function SectionPage({ params, searchParams }: PageProps<"/[locale]/shop/[category]">) {
   const [{ category }, locale] = await Promise.all([params, getLocale()]);
   // Links from before the seven sections (/shop/footwear, /shop/crewnecks …) still land in the right place.
   if (LEGACY_CATEGORY[category]) redirect({ href: LEGACY_CATEGORY[category], locale });
   if (!isSection(category)) notFound();
   const lang = locale === "ar" ? "ar" : "en";
   return (
-    <>
+    <div className="mx-auto max-w-[1500px] px-4 pt-4 md:px-8">
       <PageHeader eyebrow="SAKR" title={SECTION_DEF[category].label[lang]} />
-      <ShopListing basePath={`/shop/${category}`} section={category} searchParams={searchParams} />
-    </>
+      <Suspense fallback={<ListingSkeleton />}>
+        <ShopListing basePath={`/shop/${category}`} section={category} searchParams={searchParams} />
+      </Suspense>
+    </div>
   );
 }

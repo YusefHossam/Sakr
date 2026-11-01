@@ -9,7 +9,7 @@ import { PageHeader } from "@/components/shop/page-header";
 import { Price } from "@/components/product/price";
 import { Link } from "@/i18n/navigation";
 import { getFits } from "@/lib/catalog";
-import { isMood, MOOD_KEYS, MOODS } from "@/lib/moods";
+import { isMood, type Mood, MOOD_KEYS, MOODS } from "@/lib/moods";
 import { REASON_TEXT } from "@/lib/style";
 
 export function generateStaticParams() {
@@ -21,29 +21,29 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/fits/[mo
   return isMood(mood) ? { title: `${MOODS[mood].en} fits` } : {};
 }
 
-export default function FitsPage({ params }: PageProps<"/[locale]/fits/[mood]">) {
+export default async function FitsPage({ params }: PageProps<"/[locale]/fits/[mood]">) {
+  const [{ mood }, locale] = await Promise.all([params, getLocale()]);
+  if (!isMood(mood)) notFound();
+  const lang = locale === "ar" ? "ar" : "en";
   return (
     <div className="mx-auto max-w-[1500px] px-4 pt-4 md:px-8">
+      <MoodTint mood={mood} />
+      <PageHeader eyebrow={lang === "ar" ? "فيتس" : "FITS"} title={`${MOODS[mood][lang]} ${lang === "ar" ? "فيت" : "fits"}`} text={lang === "ar" ? "لوكات كاملة مركّبة على القصّة واللون والمود. بتتغير كل يوم." : "Whole looks built on cut, colour and mood. They change every day."} />
+      <div className="mb-10"><MoodChips active={mood} base="fits" /></div>
       <Suspense fallback={<div className="h-96 animate-pulse bg-smoke" />}>
-        <Content params={params} />
+        <FitList mood={mood} lang={lang} />
       </Suspense>
     </div>
   );
 }
 
-async function Content({ params }: Pick<PageProps<"/[locale]/fits/[mood]">, "params">) {
-  const { mood } = await params;
-  if (!isMood(mood)) notFound();
+async function FitList({ mood, lang }: { mood: Mood; lang: "ar" | "en" }) {
   await connection(); // the daily seed reads the clock
-  const lang = (await getLocale()) === "ar" ? "ar" : "en";
   const day = new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo" }).format(new Date());
   const fits = await getFits(mood, day);
 
   return (
     <>
-      <MoodTint mood={mood} />
-      <PageHeader eyebrow={lang === "ar" ? "فيتس" : "FITS"} title={`${MOODS[mood][lang]} ${lang === "ar" ? "فيت" : "fits"}`} text={lang === "ar" ? "لوكات كاملة مركّبة على القصّة واللون والمود. بتتغير كل يوم." : "Whole looks built on cut, colour and mood. They change every day."} />
-      <div className="mb-10"><MoodChips active={mood} base="fits" /></div>
       {fits.length ? (
         <div className="grid gap-10 lg:grid-cols-2">
           {fits.map(({ outfit, cards }, i) => (
