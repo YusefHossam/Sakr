@@ -3,6 +3,12 @@ import { defineConfig, devices } from "@playwright/test";
 // End-to-end tests against a running build. Start one first:
 //   npm run build && npx next start --port 3200
 // Then: npm run test:e2e   (BASE_URL overrides the address, e.g. a deployed preview)
+try {
+  process.loadEnvFile(".env.local"); // owner credentials for the admin tests
+} catch {
+  // no .env.local: admin tests will fail to sign in, the rest still run
+}
+
 export default defineConfig({
   testDir: "./e2e",
   timeout: 90_000,

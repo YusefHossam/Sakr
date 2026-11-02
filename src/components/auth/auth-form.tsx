@@ -42,7 +42,8 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       )}
       <label className="flex flex-col gap-1.5 text-xs text-dust">
         {t("email")}
-        <input name="email" type="email" required autoComplete="email" dir="ltr" className={field} />
+        {/* Sign-in also takes a username (the owner's account has one), so it is a plain text field there. */}
+        <input name="email" type={mode === "login" ? "text" : "email"} required autoComplete={mode === "login" ? "username" : "email"} dir="ltr" className={field} />
       </label>
       {mode === "register" && (
         <label className="flex flex-col gap-1.5 text-xs text-dust">

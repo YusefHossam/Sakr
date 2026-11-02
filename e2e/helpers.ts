@@ -2,7 +2,8 @@ import { expect, type Page } from "@playwright/test";
 
 // Local test accounts (docs/TEST_ACCOUNTS.md); override with env vars on other machines.
 export const CUSTOMER = { email: process.env.E2E_CUSTOMER_EMAIL ?? "buyer.test@sakr.local", password: process.env.E2E_CUSTOMER_PASSWORD ?? "Test-ad4f1712" };
-export const ADMIN = { email: process.env.E2E_ADMIN_EMAIL ?? "owner.test@sakr.local", password: process.env.E2E_ADMIN_PASSWORD ?? "Admin-e7cc5ead7b" };
+// The owner signs in with the ADMIN_USERNAME / ADMIN_PASSWORD from .env.local (loaded by playwright.config.ts).
+export const ADMIN = { email: process.env.ADMIN_USERNAME ?? "", password: process.env.ADMIN_PASSWORD ?? "" };
 
 /** Skips the ENTER intro and collects uncaught page errors so a test can assert there were none. */
 export async function prepare(page: Page): Promise<string[]> {

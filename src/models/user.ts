@@ -24,6 +24,8 @@ const userSchema = new Schema(
   {
     name: { type: String, required: true, maxlength: 80 },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    // Optional short login name (the owner signs in with one); customers use their email.
+    username: { type: String, lowercase: true, trim: true, match: /^[a-z0-9._-]{3,30}$/, unique: true, sparse: true },
     phone: { type: String, default: "" },
     phone2: { type: String, default: "" },
     passwordHash: { type: String, required: true },

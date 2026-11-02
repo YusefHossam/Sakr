@@ -31,7 +31,8 @@ export async function register(input: z.input<typeof registerSchema>): Promise<A
 }
 
 const loginSchema = z.object({
-  email: z.string().trim().toLowerCase().email(),
+  // An email address, or the short username some accounts (the owner's) have.
+  email: z.string().trim().toLowerCase().min(3).max(120),
   password: z.string().min(1).max(100),
 });
 
@@ -39,7 +40,8 @@ export async function login(input: z.input<typeof loginSchema>): Promise<AuthRes
   const parsed = loginSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid" };
   await connectDB();
-  const user = await User.findOne({ email: parsed.data.email });
+  const id = parsed.data.email;
+  const user = await User.findOne(id.includes("@") ? { email: id } : { username: id });
   // Compare even when the user is missing so timing doesn't reveal which emails exist.
   const ok = await bcrypt.compare(parsed.data.password, user?.passwordHash ?? "$2a$10$invalidinvalidinvalidinvalidinvalidinvalidinvalidinvali");
   if (!user || !ok) return { ok: false, error: "invalid" };
