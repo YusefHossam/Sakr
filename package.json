@@ -13,7 +13,17 @@
     "create-admin": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-admin.ts",
     "seed:extras": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed-extras.ts",
     "generate:descriptions": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/generate-descriptions.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "prod": "next build && next start --port 3200",
+    "check": "npm run typecheck && eslint && next build",
+    "test": "playwright test",
+    "test:phone": "playwright test --project=phone",
+    "test:live": "node scripts/test-live.mjs",
+    "deploy": "vercel deploy --prod --yes",
+    "unlock": "vercel project protection disable sakr-store --sso",
+    "logs": "vercel logs https://sakr-store.vercel.app",
+    "admin": "npm run create-admin",
+    "ship": "npm run check && npm run test && npm run deploy && npm run test:live"
   },
   "dependencies": {
     "@gradio/client": "^1.19.1",
