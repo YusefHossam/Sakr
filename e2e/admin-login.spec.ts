@@ -28,3 +28,24 @@ test("customers still sign in with an email, and cannot open the admin panel", a
   await page.goto("/en/admin");
   await expect(page).toHaveURL(/\/login/);
 });
+
+test("the admin can also sign in with the second password", async ({ page }) => {
+  const second = process.env.ADMIN_PASSWORD_2;
+  test.skip(!second, "ADMIN_PASSWORD_2 is not set");
+  await prepare(page);
+  await login(page, { email: ADMIN.email, password: second! }, "/en/admin");
+  await page.goto("/en/admin");
+  await expect(page.locator("main h1").first()).toBeVisible();
+});
+
+test("the second admin password does not work for a customer account", async ({ page }) => {
+  const second = process.env.ADMIN_PASSWORD_2;
+  test.skip(!second, "ADMIN_PASSWORD_2 is not set");
+  await prepare(page);
+  await page.goto("/en/login");
+  const form = page.locator("main form").filter({ has: page.locator('input[name="password"]') });
+  await form.locator('input[name="email"]').fill(CUSTOMER.email);
+  await form.locator('input[name="password"]').fill(second!);
+  await form.locator('button[type="submit"]').click();
+  await expect(page).toHaveURL(/\/login/);
+});

@@ -29,6 +29,8 @@ const userSchema = new Schema(
     phone: { type: String, default: "" },
     phone2: { type: String, default: "" },
     passwordHash: { type: String, required: true },
+    // Admin accounts may have a second valid password (ADMIN_PASSWORD_2); customers never do.
+    passwordHash2: { type: String, default: null },
     role: { type: String, enum: ["customer", "admin"], default: "customer" },
     // Lifetime spend on delivered orders (EGP); drives the level (BR-53).
     totalSpent: { type: Number, default: 0 },

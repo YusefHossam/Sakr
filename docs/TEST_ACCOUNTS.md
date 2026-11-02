@@ -7,4 +7,5 @@
 
 The admin account is created with `npm run create-admin` (it reads those two values from `.env.local`).
 Sign in at `/ar/login` or `/en/login`; the field accepts an email or the admin's username.
+The admin can also have a second password (`ADMIN_PASSWORD_2`); either one signs in.
 Change the admin password before putting the site online.

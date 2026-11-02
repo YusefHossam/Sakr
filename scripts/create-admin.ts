@@ -10,6 +10,7 @@ process.loadEnvFile(".env.local");
 const [argUser, argPassword, argEmail, argName] = process.argv.slice(2);
 const username = (argUser ?? process.env.ADMIN_USERNAME ?? "").trim();
 const password = argPassword ?? process.env.ADMIN_PASSWORD ?? "";
+const password2 = process.env.ADMIN_PASSWORD_2 ?? "";
 const email = (argEmail ?? process.env.ADMIN_EMAIL ?? `${username}@sakr.local`).trim().toLowerCase();
 const name = argName ?? process.env.ADMIN_NAME ?? username;
 if (!/^[A-Za-z0-9._-]{3,30}$/.test(username) || password.length < 8) {
@@ -21,9 +22,10 @@ await mongoose.connect(process.env.MONGODB_URI!, { dbName: process.env.MONGODB_D
 try {
   await User.syncIndexes();
   const passwordHash = await bcrypt.hash(password, 10);
+  const passwordHash2 = password2.length >= 8 ? await bcrypt.hash(password2, 10) : null;
   await User.updateOne(
     { username: username.toLowerCase() },
-    { $set: { role: "admin", passwordHash, blocked: false, name }, $setOnInsert: { username: username.toLowerCase(), email, phone: "" } },
+    { $set: { role: "admin", passwordHash, passwordHash2, blocked: false, name }, $setOnInsert: { username: username.toLowerCase(), email, phone: "" } },
     { upsert: true },
   );
   console.log(`✓ Admin ready: username "${username}" (email ${email})`);

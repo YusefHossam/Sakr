@@ -51,3 +51,6 @@ next-env.d.ts
 
 # Fake-camera feeds are large; regenerate them with e2e/make-camera-feeds.md
 /e2e/fixtures/*.y4m
+
+.vercel
+.env*

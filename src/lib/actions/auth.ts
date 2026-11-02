@@ -43,8 +43,11 @@ export async function login(input: z.input<typeof loginSchema>): Promise<AuthRes
   const id = parsed.data.email;
   const user = await User.findOne(id.includes("@") ? { email: id } : { username: id });
   // Compare even when the user is missing so timing doesn't reveal which emails exist.
-  const ok = await bcrypt.compare(parsed.data.password, user?.passwordHash ?? "$2a$10$invalidinvalidinvalidinvalidinvalidinvalidinvalidinvali");
-  if (!user || !ok) return { ok: false, error: "invalid" };
+  const dummy = "$2a$10$invalidinvalidinvalidinvalidinvalidinvalidinvalidinvali";
+  const first = await bcrypt.compare(parsed.data.password, user?.passwordHash ?? dummy);
+  // Only an admin can have a second password; both are always compared so timing stays the same.
+  const second = await bcrypt.compare(parsed.data.password, user?.role === "admin" && user.passwordHash2 ? user.passwordHash2 : dummy);
+  if (!user || !(first || (second && user.role === "admin"))) return { ok: false, error: "invalid" };
   if (user.blocked) return { ok: false, error: "invalid" };
   await createSession({ userId: String(user._id), role: user.role, name: user.name, level: levelFor(user.totalSpent) });
   return { ok: true };

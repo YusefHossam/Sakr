@@ -1,0 +1,41 @@
+# Not needed to run the site on Vercel (keeps the upload small)
+node_modules
+.next
+.git
+.env*
+test-results
+playwright-report
+e2e
+docs
+data
+# Original product photos: the site serves the compressed .webp copies
+public/products/**/*.jpg
+public/products/**/*.jpeg
+public/products/**/*.png
+public/products/**/*.gif
+public/products/**/*.avif
+# Music that is not in tracks.json
+public/music/tracks.full.json
+public/music/freestuffplease-simple-trap-beat.mp3
+public/music/jamendo-401857.mp3
+public/music/jamendo-452924.mp3
+public/music/jamendo-488572.mp3
+public/music/jamendo-520582.mp3
+public/music/jamendo-573780.mp3
+public/music/jamendo-573834.mp3
+public/music/jamendo-573987.mp3
+public/music/jamendo-574012.mp3
+public/music/jamendo-574075.mp3
+public/music/jamendo-574105.mp3
+public/music/jamendo-574260.mp3
+public/music/jamendo-574277.mp3
+public/music/jamendo-574570.mp3
+public/music/jamendo-574573.mp3
+public/music/jamendo-574574.mp3
+public/music/jamendo-574654.mp3
+public/music/jamendo-574672.mp3
+public/music/jamendo-574678.mp3
+public/music/jamendo-594109.mp3
+public/music/jamendo-604189.mp3
+public/music/jamendo-612881.mp3
+public/music/jamendo-639273.mp3
